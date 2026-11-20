@@ -82,4 +82,4 @@ jobs:
       - name: Stage for publication
         env:
           TARBALL: ${{ needs.build.outputs.tarball }}
-        run: npm stage publish "out/$TARBALL" --tag next --access public --provenance
+        run: npm stage publish "./out/$TARBALL" --tag next --access public --provenance
