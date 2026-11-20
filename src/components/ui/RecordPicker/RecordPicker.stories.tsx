@@ -22,7 +22,7 @@ const items = [
   ...model.anchorPairs.map((anchor) => ({
     id: anchor.id,
     label: anchor.path,
-    kind: "Codepfad",
+    kind: "Code path",
     hint: `:${anchor.line} · ${anchor.role}`,
   })),
 ];

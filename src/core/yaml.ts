@@ -108,7 +108,7 @@ function splitFlow(body: string, line?: number): string[] {
     cur += c;
   }
   if (cur.trim() !== "") out.push(cur);
-  if (depth !== 0) throw new YamlError("Unausgeglichene Flow-Collection", line);
+  if (depth !== 0) throw new YamlError("Unbalanced flow collection", line);
   return out;
 }
 
@@ -180,10 +180,10 @@ function trailingBackslashCount(s: string): number {
 function flow(s: string, line?: number): YamlValue {
   const t = s.trim();
   if (t[0] === "[") {
-    if (!t.endsWith("]")) throw new YamlError("Nicht geschlossene Flow-Sequenz", line);
+    if (!t.endsWith("]")) throw new YamlError("Unclosed flow sequence", line);
     return splitFlow(t.slice(1, -1), line).map((v) => scalar(v, line));
   }
-  if (!t.endsWith("}")) throw new YamlError("Nicht geschlossene Flow-Map", line);
+  if (!t.endsWith("}")) throw new YamlError("Unclosed flow map", line);
   const obj: Record<string, YamlValue> = {};
   splitFlow(t.slice(1, -1), line).forEach((pair) => {
     const idx = pair.indexOf(":");
@@ -268,7 +268,7 @@ function keyLine(s: string): [string, string] | null {
 }
 
 export function parseYaml(text: string): YamlValue {
-  if (typeof text !== "string") throw new YamlError("YAML-Text erwartet");
+  if (typeof text !== "string") throw new YamlError("Expected YAML text");
 
   const rows: Row[] = [];
   text
@@ -327,7 +327,7 @@ export function parseYaml(text: string): YamlValue {
     let text = head;
     while (flowDepth(text) > 0) {
       if (i >= rows.length) {
-        throw new YamlError("Nicht geschlossene Flow-Collection", line);
+        throw new YamlError("Unclosed flow collection", line);
       }
       // Line break as a space: in a flow collection it separates nothing the
       // comma has not already separated.
@@ -369,7 +369,7 @@ export function parseYaml(text: string): YamlValue {
     let closed = false;
     while (!closed) {
       if (i >= rows.length || rows[i].indent <= indent) {
-        throw new YamlError("Nicht geschlossene Zeichenkette", line);
+        throw new YamlError("Unclosed quoted string", line);
       }
       const row = rows[i];
       const sep: Segment["sep"] = row.n - prevN > 1 ? "newline" : "space";
@@ -504,7 +504,7 @@ export function parseYaml(text: string): YamlValue {
           ) {
             const kv2 = keyLine(rows[i].text);
             if (!kv2) {
-              throw new YamlError(`"key: value" erwartet, gefunden "${rows[i].text}"`, rows[i].n);
+              throw new YamlError(`"key: value" expected, found "${rows[i].text}"`, rows[i].n);
             }
             const own = rows[i].indent;
             const at = rows[i].n;
@@ -540,7 +540,7 @@ export function parseYaml(text: string): YamlValue {
       const row = rows[i];
       if (row.text.startsWith("- ")) break;
       const kv = keyLine(row.text);
-      if (!kv) throw new YamlError(`"key: value" erwartet, gefunden "${row.text}"`, row.n);
+      if (!kv) throw new YamlError(`"key: value" expected, found "${row.text}"`, row.n);
       i++;
       obj[kv[0]] = value(kv[1], indent, row.n);
     }

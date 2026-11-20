@@ -4,7 +4,7 @@ export type KbdProps = {
   computedStyle: CSSProperties;
   /** Shortcut to display, e.g. `⌘K`. */
   keys: string;
-  /** Plain text for screen readers, e.g. "Befehl K". */
+  /** Plain text for screen readers, e.g. "Command K". */
   label: string;
   "data-testid"?: string;
 };

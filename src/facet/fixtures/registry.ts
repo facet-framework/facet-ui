@@ -6341,7 +6341,7 @@ export const registry: FixtureRegistry = {
       capability: "board",
       slug: "header",
       summary:
-        "Lets a member work with the header in board: when the task is overdue, every member sees the same order. It also covers what happens when two edits arrive at once — the change is kept and shown at once. The header count, the list and the search results agree. An earlier version stays available for thirty days. The same rule applies on the web board, the des…",
+        "Lets a member work with the header in board: when the task is overdue, every member sees the same order. It also covers what happens when two edits arrive at once — the change is kept and shown at once. The header count, the list and the search results agree. An earlier version stays available for thirty days. The same rule applies on the web board, the desktop…",
       lifecycle: "active",
       owner: "core",
       createdAt: "2026-09-17",
