@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import GherkinStatementWithLogic, { GherkinStatement, withGherkinStatementLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const statement = [
   'Given a list "Groceries" exists',
@@ -101,10 +104,10 @@ describe("Unit tests for withGherkinStatementLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("shows the roles in German under the German locale", () => {
     renderInGerman(<GherkinStatementWithLogic statement={statement} />);
-    expect(screen.getByText("AUSGANGSLAGE")).toBeInTheDocument();
-    expect(screen.getByText("AKTION")).toBeInTheDocument();
-    expect(screen.getByText("ERGEBNIS")).toBeInTheDocument();
-    expect(screen.getByText("UND")).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("core.gherkin.given"))).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("core.gherkin.when"))).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("core.gherkin.then"))).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("core.gherkin.and"))).toBeInTheDocument();
   });
 });
 

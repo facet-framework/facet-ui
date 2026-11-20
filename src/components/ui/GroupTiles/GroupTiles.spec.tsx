@@ -1,8 +1,11 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import GroupTilesWithLogic, { GroupTiles, withGroupTilesLogic } from ".";
 import { TextProvider } from "../../../facet/i18n";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const groups = [
   { key: "tasks", label: "tasks", count: 3, meta: "3 features", proven: 4, total: 8 },
@@ -119,10 +122,28 @@ describe("Unit tests for withGroupTilesLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<GroupTilesWithLogic groups={groups} />);
-    expect(screen.getByText("7 Records in 3 Gruppen.")).toBeInTheDocument();
-    expect(screen.getByText("4/8 mit Testzuordnung · 50 %")).toBeInTheDocument();
     expect(
-      screen.getByRole("progressbar", { name: "sync: 5 von 5 mit Testzuordnung" }),
+      screen.getByText(
+        germanText.t("elements.groupTiles.caption", {
+          total: 7,
+          unit: "Records",
+          groups: 3,
+          noun: germanText.t("elements.groupTiles.noun"),
+        }),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(`4/8 ${germanText.t("elements.groupTiles.shareNoun")} · 50 %`),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("progressbar", {
+        name: germanText.t("elements.groupTiles.shareLabel", {
+          label: "sync",
+          proven: "5",
+          total: "5",
+          shareNoun: germanText.t("elements.groupTiles.shareNoun"),
+        }),
+      }),
     ).toBeInTheDocument();
   });
 

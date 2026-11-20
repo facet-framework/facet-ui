@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import SegmentBandWithLogic, { SegmentBand, withSegmentBandLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const segments = [
   { key: "active", label: "active", value: 11, color: "var(--ink)" },
@@ -88,7 +91,9 @@ describe("Unit tests for withSegmentBandLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<SegmentBandWithLogic segments={[]} />);
-    expect(screen.getByRole("img", { name: "keine Einträge" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: germanText.t("elements.segmentBand.empty") }),
+    ).toBeInTheDocument();
   });
 });
 

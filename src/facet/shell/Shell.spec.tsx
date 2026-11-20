@@ -24,6 +24,8 @@ import { renderInGerman } from "../i18n/testing";
 import { createText } from "../i18n/TextProvider";
 import { de } from "../i18n/de";
 
+const germanText = createText("de");
+
 const ROLES = rolesFor(createText("en").t);
 
 describe("TopBar", () => {
@@ -181,7 +183,7 @@ describe("TopBar actions", () => {
         stats={{ features: 1, provenPct: 1, drift: 1 }}
       />,
     );
-    expect(screen.queryByRole("button", { name: /^Vor/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Forward" })).toBeNull();
     expect(screen.queryByText("Features")).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Menu" }));
     await userEvent.click(screen.getByRole("button", { name: "Go to" }));
@@ -573,8 +575,8 @@ describe("German locale", () => {
           canForward={false}
           historyOpen
           history={{ entries: HISTORY }}
-          roleName="Entwicklung"
-          theme={{ label: "Hell", icon: "sun" }}
+          roleName={germanText.t("shell.role.dev.name")}
+          theme={{ label: germanText.t("shell.theme.light"), icon: "sun" }}
         />
         <BootScreen
           phase="records"
@@ -586,6 +588,6 @@ describe("German locale", () => {
     expect(screen.getByRole("button", { name: de["shell.top.backNone"] })).toBeDisabled();
     expect(screen.getByRole("menu", { name: de["shell.history.label"] })).toBeInTheDocument();
     expect(screen.getByText(de["shell.boot.phase.records"])).toBeInTheDocument();
-    expect(de["shell.history.label"]).toBe("Besuchte Orte");
+    expect(screen.getByRole("menu", { name: germanText.t("shell.history.label") })).toBeVisible();
   });
 });

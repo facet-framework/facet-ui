@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import ClauseSheetWithLogic, { ClauseSheet, withClauseSheetLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const clauses = [
   {
@@ -94,20 +97,28 @@ describe("Unit tests for withClauseSheetLogic", () => {
     renderInGerman(
       <ClauseSheetWithLogic
         clauses={[
-          { id: "DE-1", requirement: "Jede Meldung MUSS protokolliert werden.", measure: "" },
-          { id: "DE-2", requirement: "Das Protokoll SOLL kurz sein.", measure: "laenge" },
+          { id: "DE-1", requirement: germanText.t("core.requirement.bindingPattern"), measure: "" },
+          {
+            id: "DE-2",
+            requirement: germanText.t("core.requirement.recommendedPattern"),
+            measure: "length",
+          },
         ]}
       />,
     );
-    expect(screen.getByText("MUSS")).toBeInTheDocument();
-    expect(screen.getByText("SOLL")).toBeInTheDocument();
-    expect(screen.getByText("2 Klauseln · 1 verpflichtend. 1 ohne Messgröße.")).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("elements.clauseSheet.must"))).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("elements.clauseSheet.should"))).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        `${germanText.t("elements.clauseSheet.head", { total: 2, binding: 1 })} ${germanText.t("elements.clauseSheet.unmeasured", { count: 1 })}`,
+      ),
+    ).toBeInTheDocument();
   });
 
   it("reads German obligation wording as binding under the English default", () => {
     render(
       <ClauseSheetWithLogic
-        clauses={[{ id: "DE-1", requirement: "Jede Meldung MUSS protokolliert werden." }]}
+        clauses={[{ id: "DE-1", requirement: germanText.t("core.requirement.bindingPattern") }]}
       />,
     );
     expect(screen.getByText("MUST")).toBeInTheDocument();

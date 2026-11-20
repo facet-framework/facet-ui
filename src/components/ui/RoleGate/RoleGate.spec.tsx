@@ -1,8 +1,11 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RoleGateWithLogic, { RoleGate } from ".";
 import { ROLES } from "../../../core";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 describe("Unit tests for RoleGate", () => {
   it("asks the question and says what the answer does", () => {
@@ -64,12 +67,18 @@ describe("Unit tests for withRoleGateLogic", () => {
 
   it("speaks German under the German locale", () => {
     renderInGerman(<RoleGateWithLogic />);
-    expect(screen.getByRole("heading", { name: "Wofür bist du hier?" })).toBeInTheDocument();
     expect(
-      screen.getByText("Bestimmt die Reihenfolge, nicht den Zugang. Jederzeit umschaltbar."),
+      screen.getByRole("heading", { name: germanText.t("elements.roleGate.headline") }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "ohne Auswahl fortfahren" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Betrieb/ })).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("elements.roleGate.sub"))).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.roleGate.skip") }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: (name) => name.includes(germanText.t("core.roles.ops.title")),
+      }),
+    ).toBeInTheDocument();
   });
 
   it("leads “continue without choosing” to the first role", async () => {

@@ -1,7 +1,10 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import DependencyFanWithLogic, { DependencyFan, withDependencyFanLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const edges = [
   { from: "lists/core/list-store", to: "tasks/create/quick-add" },
@@ -73,7 +76,7 @@ describe("Unit tests for withDependencyFanLogic", () => {
       />,
     );
     // Colour alone would not carry the message.
-    expect(screen.getAllByText(/does\/not\/exist · no record/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("does/not/exist · no record").length).toBeGreaterThan(0);
   });
 
   it("counts the dangling references in the answer line", () => {
@@ -120,9 +123,16 @@ describe("Unit tests for withDependencyFanLogic", () => {
         ghosts={["does/not/exist"]}
       />,
     );
-    expect(screen.getAllByText(/does\/not\/exist · ohne Record/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/1 Verweis zeigt auf eine Kennung ohne Record/)).toBeInTheDocument();
-    expect(screen.getAllByText("hängt an").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(`does/not/exist · ${germanText.t("elements.dependencyFan.noRecord")}`)
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText(germanText.plural("elements.dependencyFan.ghostLinks", 1), { exact: false }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByText(germanText.t("elements.dependencyFan.upstream")).length,
+    ).toBeGreaterThan(0);
   });
 
   it("assigns a descriptive displayName", () => {

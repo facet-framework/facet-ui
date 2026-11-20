@@ -1,3 +1,4 @@
+import { createText as createGermanText } from "../i18n/text";
 import { useEffect, useState } from "react";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -38,6 +39,8 @@ import {
 } from "./collection";
 import { Breadcrumbs, Dialog, Menu, Sheet, Toast, Tooltip, useMenuTrigger } from "./overlay";
 import { renderInGerman } from "../i18n/testing";
+
+const germanText = createGermanText("de");
 
 describe("Icon", () => {
   it("is decoration without a label and an image with one", () => {
@@ -306,7 +309,7 @@ describe("display", () => {
           tone="ok"
           sentence="Almost everything backed."
           lead="118 open."
-          aside="mehr"
+          aside="more"
         />
         <Finding sentence="Just one sentence." />
         <Stat value="18" of="220" label="Drift" tone="warn" large />
@@ -839,13 +842,23 @@ describe("German locale", () => {
         </Dialog>
       </>,
     );
-    expect(screen.getByText("51–75 von 480")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Nächste Seite" })).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        germanText.t("primitives.pager.range", { from: "51", to: "75", total: "480" }),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("primitives.pager.next") }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("meter", { name: "m" })).toHaveAttribute(
       "aria-valuetext",
-      "nicht gemessen",
+      germanText.t("primitives.meter.unmeasured"),
     );
-    expect(screen.getByRole("button", { name: "Entfernen" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Schließen" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("primitives.chip.remove") }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("primitives.overlay.close") }),
+    ).toBeInTheDocument();
   });
 });

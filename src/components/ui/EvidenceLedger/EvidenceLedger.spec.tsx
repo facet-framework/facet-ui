@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import EvidenceLedgerWithLogic, { EvidenceLedger, withEvidenceLedgerLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const evidence = [
   { date: "2025-11-04", kind: "measurement", note: "Deviation under 2 s" },
@@ -90,9 +93,21 @@ describe("Unit tests for withEvidenceLedgerLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<EvidenceLedgerWithLogic evidence={evidence} today={today} staleMonths={3} />);
-    expect(screen.getByText("Vorfall")).toBeInTheDocument();
-    expect(screen.getByText(/zuletzt vor 4 Monaten/)).toBeInTheDocument();
-    expect(screen.getByText(/Seit über 3 Monaten ungeprüft/)).toBeInTheDocument();
+    expect(
+      screen.getByText(germanText.t("elements.evidenceLedger.kind.incident")),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        germanText.t("elements.evidenceLedger.head", {
+          evidence: germanText.plural("elements.evidenceLedger.pieces", 2),
+          age: germanText.plural("elements.evidenceLedger.months", 4),
+        }),
+        { exact: false },
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(germanText.plural("elements.evidenceLedger.stale", 3), { exact: false }),
+    ).toBeInTheDocument();
   });
 });
 

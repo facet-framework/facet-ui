@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import LifecycleBadgeWithLogic, { LifecycleBadge, withLifecycleBadgeLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const styles = { containerStyle: {}, markStyle: {}, labelStyle: {}, ageStyle: {} };
 
@@ -89,11 +92,15 @@ describe("Unit tests for the German locale", () => {
         data-testid="badge"
       />,
     );
-    expect(screen.getByText("abgelöst")).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("core.label.lifecycle.deprecated"))).toBeInTheDocument();
     expect(screen.getByText("29 T")).toBeInTheDocument();
     expect(screen.getByTestId("badge")).toHaveAttribute(
       "title",
-      "abgelöst · seit 29 Tagen · abgelöst von sync/conflict/crdt-merge",
+      [
+        germanText.t("core.label.lifecycle.deprecated"),
+        germanText.plural("elements.lifecycleBadge.sinceDays", 29),
+        germanText.t("elements.lifecycleBadge.supersededBy", { id: "sync/conflict/crdt-merge" }),
+      ].join(" · "),
     );
   });
 });

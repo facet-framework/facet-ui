@@ -1,7 +1,10 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import DepthLadderWithLogic, { DepthLadder, withDepthLadderLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 describe("Unit tests for DepthLadder", () => {
   it("renders the levels as a tab list", () => {
@@ -45,9 +48,13 @@ describe("Unit tests for withDepthLadderLogic", () => {
 
   it("names the default levels and the hint in German under the German locale", () => {
     renderInGerman(<DepthLadderWithLogic depth={2} />);
-    expect(screen.getByRole("tablist", { name: "Detailstufen" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Beleg");
-    expect(screen.getByText("→ detaillierter · ← zurück")).toBeInTheDocument();
+    expect(
+      screen.getByRole("tablist", { name: germanText.t("elements.depthLadder.label") }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent(
+      germanText.t("elements.depthLadder.evidence"),
+    );
+    expect(screen.getByText(germanText.t("elements.depthLadder.hint"))).toBeInTheDocument();
   });
 
   it("marks the current level", () => {

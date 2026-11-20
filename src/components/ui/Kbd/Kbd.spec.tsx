@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import KbdWithLogic, { Kbd, withKbdLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 describe("Unit tests for Kbd", () => {
   it("shows the shortcut", () => {
@@ -44,7 +47,11 @@ describe("Unit tests for withKbdLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German key names under the German locale", () => {
     renderInGerman(<KbdWithLogic keys={["⌘", "→"]} />);
-    expect(screen.getByLabelText("Befehl Pfeil rechts")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        `${germanText.t("elements.kbd.command")} ${germanText.t("elements.kbd.right")}`,
+      ),
+    ).toBeInTheDocument();
   });
 });
 

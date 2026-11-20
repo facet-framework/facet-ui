@@ -1,7 +1,10 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import ProofMatrixWithLogic, { ProofMatrix, withProofMatrixLogic } from ".";
 import type { Scenario } from "../../../core";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const backed = { state: "backed", reason: "", unblockedBy: "" } as const;
 
@@ -132,12 +135,18 @@ describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     const { container } = renderInGerman(<ProofMatrixWithLogic scenarios={scenarios} />);
     expect(
-      screen.getByText("1 von 2 Zusagen haben eine Testzuordnung — eine ohne Test."),
+      screen.getByText(
+        germanText.t("elements.proofMatrix.someMapped", {
+          proven: "1",
+          total: "2",
+          gap: germanText.t("elements.proofMatrix.gap.one"),
+        }),
+      ),
     ).toBeInTheDocument();
-    expect(screen.getByText("Modul")).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("core.label.testKind.unit"))).toBeInTheDocument();
     expect(container.querySelector('[data-cell="offline-added:unit"]')).toHaveAttribute(
       "title",
-      "offline-added · Modul: kein Test zugeordnet",
+      `offline-added · ${germanText.t("core.label.testKind.unit")}: ${germanText.t("elements.proofMatrix.noTest")}`,
     );
   });
 });

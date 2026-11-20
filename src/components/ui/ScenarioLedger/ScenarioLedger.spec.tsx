@@ -1,7 +1,10 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import type { Scenario } from "../../../core";
 import ScenarioLedgerWithLogic, { ScenarioLedger, withScenarioLedgerLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const backed = { state: "backed", reason: "", unblockedBy: "" } as const;
 
@@ -346,13 +349,32 @@ describe("Unit tests for withScenarioLedgerLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<ScenarioLedgerWithLogic scenarios={[...scenarios, unbackedScenario]} />);
-    expect(screen.getByText("3 Zusagen · 1 mit Testzuordnung · 1 Test.")).toBeInTheDocument();
-    expect(screen.getByText("vorher: count 0 · nachher: count 1")).toBeInTheDocument();
-    expect(screen.getByText("Modul · creates_task")).toBeInTheDocument();
-    expect(screen.getAllByText("ohne Test").length).toBeGreaterThan(0);
     expect(
       screen.getByText(
-        "Ohne Beleg — Transactions do not carry a category column yet. · löst sich mit billing/categories/assign-category",
+        germanText.t("elements.scenarioLedger.caption", {
+          total: "3",
+          proven: "1",
+          tests: "1 Test",
+        }),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        `${germanText.t("elements.scenarioLedger.before")}: count 0 · ${germanText.t("elements.scenarioLedger.after")}: count 1`,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(`${germanText.t("core.label.testKind.unit")} · creates_task`),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByText(germanText.t("elements.scenarioLedger.noTest")).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText(
+        germanText.t("elements.scenarioLedger.unbackedUnblockedBy", {
+          reason: "Transactions do not carry a category column yet.",
+          by: "billing/categories/assign-category",
+        }),
       ),
     ).toBeInTheDocument();
   });

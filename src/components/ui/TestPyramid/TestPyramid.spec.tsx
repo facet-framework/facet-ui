@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import TestPyramidWithLogic, { TestPyramid, withTestPyramidLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 describe("Unit tests for TestPyramid", () => {
   it("renders one row per level", () => {
@@ -83,9 +86,19 @@ describe("Unit tests for withTestPyramidLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<TestPyramidWithLogic counts={{ unit: 2, e2e: 19 }} />);
-    expect(screen.getByText(/teure Tests tragen die Last/)).toBeInTheDocument();
-    expect(screen.getByText(/21 Tests über 2 Ebenen/)).toBeInTheDocument();
-    expect(screen.getByText("Modul")).toBeInTheDocument();
+    expect(
+      screen.getByText(germanText.t("elements.testPyramid.topWider"), { exact: false }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        germanText.t("elements.testPyramid.caption", {
+          tests: germanText.plural("elements.testPyramid.tests", 21),
+          levels: 2,
+          shape: germanText.t("elements.testPyramid.topWider"),
+        }),
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("core.label.testKind.unit"))).toBeInTheDocument();
   });
 });
 

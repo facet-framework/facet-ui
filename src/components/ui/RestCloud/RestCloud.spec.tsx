@@ -1,7 +1,10 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RestCloudWithLogic, { RestCloud, withRestCloudLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const items = Array.from({ length: 87 }, (_, index) => ({ id: `rest-${index}` }));
 
@@ -113,11 +116,21 @@ describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     const { rerender } = renderInGerman(<RestCloudWithLogic items={[{ id: "a" }]} />);
     expect(
-      screen.getByRole("button", { name: "1 weiterer Eintrag — aufklappen" }),
+      screen.getByRole("button", {
+        name: germanText.t("elements.restCloud.expand", {
+          count: 1,
+          noun: germanText.t("elements.restCloud.entryOne"),
+        }),
+      }),
     ).toBeInTheDocument();
     rerender(<RestCloudWithLogic items={items} expanded />);
     expect(
-      screen.getByRole("button", { name: "87 weitere Einträge — einklappen" }),
+      screen.getByRole("button", {
+        name: germanText.t("elements.restCloud.collapse", {
+          count: "87",
+          noun: germanText.t("elements.restCloud.entryMany"),
+        }),
+      }),
     ).toBeInTheDocument();
   });
 });

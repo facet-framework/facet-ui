@@ -1,8 +1,11 @@
+import { createText as createGermanText } from "./text";
 import { render, screen } from "@testing-library/react";
 import { de, en, TextProvider, useText, type TextKey } from ".";
 import { Pagination } from "../primitives/collection";
 import { BootScreen, HistoryMenu, TopBar } from "../shell/Shell";
 import { HISTORY } from "../fixtures/shell";
+
+const germanText = createGermanText("de");
 
 /**
  * Keys whose German text may equal the English one, because the word is a
@@ -93,15 +96,21 @@ describe("useText", () => {
         <Probe count={1} />
       </TextProvider>,
     );
-    expect(screen.getByTestId("text")).toHaveTextContent("Rolle: Agent");
-    expect(screen.getByTestId("plural")).toHaveTextContent("1 älterer");
+    expect(screen.getByTestId("text")).toHaveTextContent(
+      germanText.t("shell.more.role", { name: germanText.t("shell.role.agent.name") }),
+    );
+    expect(screen.getByTestId("plural")).toHaveTextContent(
+      germanText.t("shell.history.older.one", { count: "1" }),
+    );
     expect(screen.getByTestId("number")).toHaveTextContent("12.345");
     rerender(
       <TextProvider locale="de">
         <Probe count={1234} />
       </TextProvider>,
     );
-    expect(screen.getByTestId("plural")).toHaveTextContent("1.234 ältere");
+    expect(screen.getByTestId("plural")).toHaveTextContent(
+      germanText.t("shell.history.older.other", { count: "1.234" }),
+    );
   });
 
   it("leaves a placeholder without a value visible instead of printing undefined", () => {
@@ -136,14 +145,14 @@ describe("components reach the dictionary", () => {
           canBack={false}
           canForward
           roleName="Agent"
-          theme={{ label: "Hell", icon: "sun" }}
+          theme={{ label: germanText.t("shell.theme.light"), icon: "sun" }}
           stats={{ features: 1234, provenPct: 61, drift: null }}
         />
       </TextProvider>,
     );
-    expect(screen.getByRole("button", { name: "Zurück — noch kein früherer Ort" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Vor" })).toBeEnabled();
-    expect(screen.getByText("Merkmale")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: germanText.t("shell.top.backNone") })).toBeDisabled();
+    expect(screen.getByRole("button", { name: germanText.t("shell.top.forward") })).toBeEnabled();
+    expect(screen.getByText(germanText.t("shell.top.features"))).toBeInTheDocument();
     expect(screen.getByText("1.234")).toBeInTheDocument();
     expect(screen.getByText("61 %")).toBeInTheDocument();
   });
@@ -162,11 +171,12 @@ describe("components reach the dictionary", () => {
         />
       </TextProvider>,
     );
-    expect(screen.getByRole("menuitem", { name: /adr-plugin/ })).toHaveTextContent("Akte");
-    expect(screen.getByText("Anker indizieren")).toBeInTheDocument();
-    expect(screen.getByRole("progressbar", { name: "Fortschritt" })).toHaveAttribute(
-      "aria-valuetext",
-      "Anteil noch unbekannt",
+    expect(screen.getByRole("menuitem", { name: /adr-plugin/ })).toHaveTextContent(
+      germanText.t("shell.history.kind.record"),
     );
+    expect(screen.getByText(germanText.t("shell.boot.phase.index"))).toBeInTheDocument();
+    expect(
+      screen.getByRole("progressbar", { name: germanText.t("shell.boot.progress") }),
+    ).toHaveAttribute("aria-valuetext", germanText.t("shell.boot.shareUnknown"));
   });
 });

@@ -1,8 +1,11 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { stableIds } from "../../../../test/stableIds";
 import RecordPickerWithLogic, { RecordPicker, withRecordPickerLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const items = [
   { id: "tasks/create/quick-add", label: "Quick add", kind: "Record", terms: ["core-tasks"] },
@@ -458,13 +461,17 @@ describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", async () => {
     renderInGerman(<RecordPickerWithLogic items={[]} />);
     expect(
-      screen.getByRole("combobox", { name: "Records, Zusagen, Tests und Codepfade suchen" }),
+      screen.getByRole("combobox", { name: germanText.t("elements.recordPicker.searchLabel") }),
     ).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Records, Zusagen, Tests, Codepfade …")).toBeInTheDocument();
-    expect(screen.getByText("Tippen, um zu suchen.")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(germanText.t("elements.recordPicker.placeholder")),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(germanText.t("elements.recordPicker.typeToSearch")),
+    ).toBeInTheDocument();
     await userEvent.type(screen.getByRole("combobox"), "doesnotexist");
     expect(
-      screen.getByText(/Nichts gefunden zu „doesnotexist“ — weder Record noch Zusage/),
+      screen.getByText(germanText.t("elements.recordPicker.noMatchFor", { query: "doesnotexist" })),
     ).toBeInTheDocument();
   });
 });

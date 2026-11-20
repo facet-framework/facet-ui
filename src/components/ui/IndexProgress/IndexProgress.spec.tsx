@@ -1,7 +1,10 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import { initialStatus, type IndexStatus } from "../../../core";
 import IndexProgressWithLogic, { IndexProgress, withIndexProgressLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 function status(patch: Partial<IndexStatus> = {}): IndexStatus {
   return { ...initialStatus(), ...patch };
@@ -164,10 +167,20 @@ describe("Unit tests for the German locale", () => {
         root="/repo"
       />,
     );
-    expect(screen.getByText("Suche die Einstiege im Code")).toBeInTheDocument();
-    expect(screen.getByText("1.204 von 2.481 Dateien durchsucht · 37 Anker")).toBeInTheDocument();
+    expect(
+      screen.getByText(germanText.t("elements.indexProgress.title.index")),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        germanText.t("elements.indexProgress.caption.indexOf", {
+          done: "1.204",
+          total: "2.481",
+          anchors: "37",
+        }),
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText("/repo · Registry storefront")).toBeInTheDocument();
-    expect(screen.getByText("Anker suchen")).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("elements.indexProgress.step.index"))).toBeInTheDocument();
   });
 });
 

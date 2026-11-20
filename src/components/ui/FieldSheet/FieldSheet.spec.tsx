@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import FieldSheetWithLogic, { FieldSheet, withFieldSheetLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const fields = [
   { name: "id", type: "uuid", sensitivity: "internal", retention: "" },
@@ -104,10 +107,14 @@ describe("Unit tests for withFieldSheetLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<FieldSheetWithLogic fields={fields} />);
-    expect(screen.getAllByText("personenbezogen")).toHaveLength(2);
-    expect(screen.getByText("keine Aufbewahrung festgelegt")).toBeInTheDocument();
+    expect(screen.getAllByText(germanText.t("elements.fieldSheet.sensitivity.pii"))).toHaveLength(
+      2,
+    );
+    expect(screen.getByText(germanText.t("elements.fieldSheet.noRetention"))).toBeInTheDocument();
     expect(
-      screen.getByText("3 Felder · 2 mit Personenbezug. 1 davon ohne Aufbewahrung."),
+      screen.getByText(
+        `${germanText.t("elements.fieldSheet.head", { total: 3, pii: 2 })} ${germanText.t("elements.fieldSheet.openRetention", { count: 1 })}`,
+      ),
     ).toBeInTheDocument();
   });
 });

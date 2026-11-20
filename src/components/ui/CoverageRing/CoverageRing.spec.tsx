@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import CoverageRingWithLogic, { CoverageRing, withCoverageRingLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const base = {
   size: 96,
@@ -65,7 +68,9 @@ describe("Unit tests for withCoverageRingLogic", () => {
   it("phrases the plain words in German under the German locale", () => {
     renderInGerman(<CoverageRingWithLogic value={31} total={38} />);
     expect(
-      screen.getByRole("img", { name: "31 von 38 Zusagen mit Testzuordnung" }),
+      screen.getByRole("img", {
+        name: germanText.t("elements.coverageRing.label", { value: "31", total: "38" }),
+      }),
     ).toBeInTheDocument();
   });
 

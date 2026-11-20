@@ -1,7 +1,10 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import AnchorMapWithLogic, { AnchorMap, withAnchorMapLogic } from ".";
 import type { Anchor } from "../../../core";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const anchors: Anchor[] = [
   { path: "crates/sync/src/queue.rs", line: 118, role: "primary", excerpt: "pub fn enqueue()" },
@@ -145,8 +148,18 @@ describe("Unit tests for withAnchorMapLogic", () => {
 
   it("speaks German under the German locale", () => {
     renderInGerman(<AnchorMapWithLogic anchors={anchors} drift={[drift]} />);
-    expect(screen.getByText(/2 Einstiege in 2 Dateien\./)).toBeInTheDocument();
-    expect(screen.getByText(/1 Datei hat sich geändert, der Record nicht/)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        germanText.t("elements.anchorMap.head", {
+          entries: germanText.plural("elements.anchorMap.entryPoints", 2),
+          files: germanText.plural("elements.anchorMap.files", 2),
+        }),
+        { exact: false },
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(germanText.plural("elements.anchorMap.driftedFiles", 1), { exact: false }),
+    ).toBeInTheDocument();
   });
 
   it("assigns a descriptive displayName", () => {

@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import ScanValueWithLogic, { ScanValue, withScanValueLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 describe("Unit tests for ScanValue", () => {
   it("shows the value and names the origin as title", () => {
@@ -70,7 +73,7 @@ describe("Unit tests for the German locale", () => {
     renderInGerman(<ScanValueWithLogic data-testid="value">96</ScanValueWithLogic>);
     expect(screen.getByTestId("value")).toHaveAttribute(
       "title",
-      "aus dem Repo-Scan, nicht aus dem Record",
+      germanText.t("elements.scanValue.fromScan"),
     );
   });
 });

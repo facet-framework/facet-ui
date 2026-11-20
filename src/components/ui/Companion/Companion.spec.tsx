@@ -1,8 +1,11 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import CompanionWithLogic, { Companion, type CompanionEntry } from ".";
 import type { CompanionPlan } from "../../../core";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const plan: CompanionPlan = {
   text: "Two promises without a test.\n\nOpen: two promises without a test.",
@@ -141,13 +144,23 @@ describe("Unit tests for withCompanionLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German in the header, the answer and the composer under the German locale", () => {
     renderInGerman(<CompanionWithLogic {...base} entries={entries} />);
-    expect(screen.getByRole("button", { name: "leeren" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "schließen" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Fragen" })).toBeInTheDocument();
-    expect(screen.getByText("GELESEN")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "EINZELHEIT ÖFFNEN →" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "IM REGISTER ↑" })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Frage zu Records oder Code")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.companion.clear") }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.companion.close") }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: germanText.t("shell.tab.ask") })).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("core.companion.fact.read"))).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.companion.openDetail") }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.companion.inRegister") }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(germanText.t("elements.companion.placeholder")),
+    ).toBeInTheDocument();
   });
 
   it("speaks German while it is working under the German locale", () => {
@@ -160,9 +173,11 @@ describe("Unit tests for the German locale", () => {
         onStop={jest.fn()}
       />,
     );
-    expect(screen.getByText("ARBEITET")).toBeInTheDocument();
-    expect(screen.getByText("LIEST")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Stopp" })).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("elements.companion.working"))).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("elements.companion.reading"))).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.companion.stop") }),
+    ).toBeInTheDocument();
   });
 });
 

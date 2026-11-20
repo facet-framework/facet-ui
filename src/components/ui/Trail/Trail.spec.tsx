@@ -1,7 +1,10 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import TrailWithLogic, { Trail, withTrailLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 describe("Unit tests for Trail", () => {
   it("renders the trail as navigation", () => {
@@ -94,7 +97,9 @@ describe("Unit tests for withTrailLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<TrailWithLogic steps={[{ key: "overview", label: "Overview" }]} />);
-    expect(screen.getByRole("navigation", { name: "Spur" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: germanText.t("elements.trail.label") }),
+    ).toBeInTheDocument();
   });
 });
 

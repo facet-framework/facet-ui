@@ -1,8 +1,11 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { YamlError } from "../../../core";
 import ErrorStateWithLogic, { ErrorState, withErrorStateLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const styles = {
   containerStyle: {},
@@ -60,10 +63,16 @@ describe("Unit tests for withErrorStateLogic", () => {
 
   it("speaks German under the German locale", () => {
     renderInGerman(<ErrorStateWithLogic error={new YamlError("broken", 7)} onRetry={jest.fn()} />);
-    expect(screen.getByText("Zeile 8")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "erneut lesen" })).toBeInTheDocument();
+    expect(
+      screen.getByText(germanText.t("elements.errorState.line", { line: 8 })),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.errorState.retry") }),
+    ).toBeInTheDocument();
     renderInGerman(<ErrorStateWithLogic error={{ strange: true }} />);
-    expect(screen.getAllByRole("alert")[1]).toHaveTextContent("Unbekannter Fehler beim Lesen.");
+    expect(screen.getAllByRole("alert")[1]).toHaveTextContent(
+      germanText.t("elements.errorState.unknown"),
+    );
   });
 
   it("reports the way back", async () => {

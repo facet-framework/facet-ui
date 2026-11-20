@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import SkeletonWithLogic, { Skeleton, withSkeletonLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 describe("Unit tests for Skeleton", () => {
   it("announces itself as an ongoing process", () => {
@@ -39,7 +42,9 @@ describe("Unit tests for withSkeletonLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<SkeletonWithLogic />);
-    expect(screen.getByRole("status", { name: "lädt" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("status", { name: germanText.t("elements.skeleton.loading") }),
+    ).toBeInTheDocument();
   });
 });
 

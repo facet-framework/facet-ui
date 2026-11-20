@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import SignalStackWithLogic, { SignalStack, withSignalStackLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const rec = { id: "a/b/c" } as never;
 
@@ -100,11 +103,15 @@ describe("Unit tests for withSignalStackLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<SignalStackWithLogic slos={slos} alerts={alerts} />);
-    expect(screen.getByText("1 SLO · 2 Alarme. 1 Alarm ohne Anleitung.")).toBeInTheDocument();
-    expect(screen.getByText("Ziel p95 < 2s")).toBeInTheDocument();
     expect(
-      screen.getByText("keine Anleitung — im Alarmfall gibt es keinen beschriebenen Weg"),
+      screen.getByText(
+        `${germanText.plural("elements.signalStack.slos", 1)} · ${germanText.plural("elements.signalStack.alerts", 2)}. ${germanText.plural("elements.signalStack.alertsWithoutRunbook", 1)}`,
+      ),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(germanText.t("elements.signalStack.target", { target: "p95 < 2s" })),
+    ).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("elements.signalStack.noRunbook"))).toBeInTheDocument();
   });
 });
 

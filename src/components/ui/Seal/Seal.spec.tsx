@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import SealWithLogic, { Seal, withSealLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 describe("Unit tests for Seal", () => {
   it("renders one stripe per facet", () => {
@@ -78,9 +81,21 @@ describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<SealWithLogic present={{ intent: true }} />);
     expect(
-      screen.getByRole("img", { name: "1 von 7 Facetten befüllt: Zweck" }),
+      screen.getByRole("img", {
+        name: germanText.t("elements.seal.summary", {
+          count: "1",
+          names: germanText.t("core.label.facet.intent"),
+        }),
+      }),
     ).toBeInTheDocument();
-    expect(screen.getByTitle("Zweck — befüllt")).toBeInTheDocument();
+    expect(
+      screen.getByTitle(
+        germanText.t("elements.seal.stripe", {
+          facet: germanText.t("core.label.facet.intent"),
+          state: germanText.t("elements.seal.filled"),
+        }),
+      ),
+    ).toBeInTheDocument();
   });
 });
 

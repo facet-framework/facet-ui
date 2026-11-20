@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import KnowledgeSlotsWithLogic, { KnowledgeSlots, withKnowledgeSlotsLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const slots = [
   {
@@ -122,8 +125,12 @@ describe("Unit tests for withKnowledgeSlotsLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<KnowledgeSlotsWithLogic slots={slots} />);
-    expect(screen.getByText("2 Fragen · 1 offen.")).toBeInTheDocument();
-    expect(screen.getByText("offen — hierauf gibt es noch keine Antwort")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        germanText.t("elements.knowledgeSlots.someOpen.other", { count: "2", open: "1" }),
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("elements.knowledgeSlots.open"))).toBeInTheDocument();
   });
 });
 

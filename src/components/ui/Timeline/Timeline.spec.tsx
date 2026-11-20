@@ -1,6 +1,13 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
+const monthName = (month: number) =>
+  new Intl.DateTimeFormat("de", { month: "long", timeZone: "UTC" }).format(
+    new Date(Date.UTC(2000, month - 1, 1)),
+  );
 import { render, screen } from "@testing-library/react";
 import TimelineWithLogic, { Timeline } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 /** Creates `count` events in the given month. */
 function at(month: string, count: number) {
@@ -137,9 +144,12 @@ describe("Unit tests for withTimelineLogic", () => {
       <TimelineWithLogic events={[...at("2026-01", 2), ...at("2026-03", 5)]} />,
     );
     expect(container).toHaveTextContent(
-      "7 Records · Januar 2026 bis März 2026 · dichtester Abschnitt März 2026 mit 5",
+      `7 Records · ${germanText.t("elements.timeline.range", { first: `${monthName(1)} 2026`, last: `${monthName(3)} 2026` })} · ${germanText.t("elements.timeline.peak", { name: `${monthName(3)} 2026`, count: 5 })}`,
     );
-    expect(columns(container)[1]).toHaveAttribute("aria-label", "Februar 2026 · nichts angelegt");
+    expect(columns(container)[1]).toHaveAttribute(
+      "aria-label",
+      `${monthName(2)} 2026 · ${germanText.t("elements.timeline.nothingCreated")}`,
+    );
   });
 
   it("falls back to the English unit and month names", () => {

@@ -1,6 +1,9 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import RecordSourceWithLogic, { RecordSource, tokenizeYamlLine, withRecordSourceLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const raw = [
   "id: tasks/create/quick-add",
@@ -109,7 +112,9 @@ describe("Unit tests for withRecordSourceLogic", () => {
 describe("Unit tests for the German locale", () => {
   it("speaks German under the German locale", () => {
     renderInGerman(<RecordSourceWithLogic raw={raw} path="quick-add.yaml" />);
-    expect(screen.getByText("quick-add.yaml · 4 Zeilen")).toBeInTheDocument();
+    expect(
+      screen.getByText(`quick-add.yaml · ${germanText.plural("elements.recordSource.lines", 4)}`),
+    ).toBeInTheDocument();
   });
 });
 

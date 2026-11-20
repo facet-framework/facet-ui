@@ -1,7 +1,10 @@
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import EntryCardsWithLogic, { EntryCards } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const entries = [
   {
@@ -95,7 +98,7 @@ describe("Unit tests for withEntryCardsLogic", () => {
     expect(screen.getByText("Nothing to show.")).toBeInTheDocument();
     unmount();
     renderInGerman(<EntryCardsWithLogic entries={[]} />);
-    expect(screen.getByText("Nichts zu zeigen.")).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("elements.entryCards.empty"))).toBeInTheDocument();
   });
 
   it("says so when there is no entry", () => {
