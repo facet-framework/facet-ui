@@ -125,9 +125,9 @@ export function withCompanionLogic(Component: ComponentType<CompanionProps>) {
       [entries, onAsk, onOpenRecord, onOpenSection, t],
     );
 
-    // No longer tied to '!busy': sending during a running answer is now a valid
-    // move that appends the question instead of rejecting it. A button that
-    // stayed grey for it would look as if it did nothing.
+    // Not tied to '!busy': sending during a running answer is a valid move that
+    // appends the question. A button that stayed grey for it would look as if
+    // it did nothing.
     const ready = Boolean(draft.trim());
 
     const containerStyle = useMemo<CSSProperties>(

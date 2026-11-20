@@ -342,10 +342,9 @@ describe("Multi-line quoted scalars", () => {
 
 describe("Multi-line scalars and indented continuations", () => {
   it("does not drag the key along with '-   key: value' (more than one space)", () => {
-    // `childIndent` was fixed at `row.indent + 2` — with more than one space
-    // after the dash the actual key sat further right than this fixed column
-    // assumed, and the new multi-line folding dragged it along as the
-    // continuation of the previous scalar value.
+    // With more than one space after the dash, the key sits further right than
+    // `row.indent + 2`; a fixed child indent would fold it into the previous
+    // scalar value as a continuation line.
     const doc = parseYaml(["scenarios:", "  -   id: x", "      statement: y", ""].join("\n"));
     expect(doc).toEqual({ scenarios: [{ id: "x", statement: "y" }] });
   });

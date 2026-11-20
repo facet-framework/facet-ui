@@ -65,8 +65,8 @@ describe("Unit tests for withKnowledgeSlotsLogic", () => {
   it("turns the open question into a statement", () => {
     render(<KnowledgeSlotsWithLogic slots={slots} />);
     const open = screen.getByText("open — there is no answer to this yet");
-    // The answer now runs through <Markdown>; the colour sits on its container
-    // div, no longer directly on the text node.
+    // The answer runs through <Markdown>; the colour sits on its container div,
+    // not on the text node.
     expect(open.closest("div")).toHaveStyle({ color: "var(--signal)" });
   });
 

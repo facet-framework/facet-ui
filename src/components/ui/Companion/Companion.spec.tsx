@@ -248,12 +248,11 @@ describe("Unit tests for Companion", () => {
 });
 
 describe("Unit tests for the height limit of the chat", () => {
-  // Since `41d1bfe` the companion no longer grows without bound: the page
-  // around it sets 'height: 100vh; overflow: hidden' instead of only
-  // 'minHeight', and this column resolves its own overflow with
-  // 'flex: 1; minHeight: 0; overflowY: auto' on the message log.
-  // This test pins the second half: even with many long messages the line
-  // stays, instead of silently disappearing in the next rework.
+  // The companion does not grow without bound: the page around it sets
+  // 'height: 100vh; overflow: hidden', and this column resolves its own
+  // overflow with 'flex: 1; minHeight: 0; overflowY: auto' on the message log.
+  // This test pins the second half: even with many long messages the column
+  // keeps those properties.
   it("keeps 'overflowY: auto' and 'minHeight: 0' on the message log, even with many long entries", () => {
     const longEntries: CompanionEntry[] = Array.from({ length: 40 }, (_, index) => {
       const askEntry: CompanionEntry = {

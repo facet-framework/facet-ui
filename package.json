@@ -1,7 +1,7 @@
 {
   "name": "@facet-tools/ui",
   "version": "0.1.0-rc.2",
-  "description": "FACET UI \u2014 the FACET design system: React components, data layer and custom elements",
+  "description": "The FACET design system: React components, design tokens, custom elements and the FACET record data layer.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
