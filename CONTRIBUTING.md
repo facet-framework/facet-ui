@@ -15,6 +15,7 @@ Use Node.js 24 and pnpm 10.33.0. From a fresh clone:
 pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm lint
+pnpm format:check
 pnpm build
 pnpm test:coverage --runInBand
 npm pack --dry-run
@@ -24,10 +25,9 @@ Build before testing: the integration tests load the published CommonJS and ESM
 entry points. Coverage must meet the thresholds in `jest.config.ts`.
 
 `src/components/` contains React components, `src/core/` the React-free data layer,
-`src/facet/` the FACET design system components, localization and application views, and
+`src/facet/` the FACET design system components, localization and shell, and
 `src/elements/` custom-element adapters. Stories and tests live beside their source.
-`src/i18n/legacy/` keeps localized compatibility literals and test expectations;
-its public discriminant values must remain compatible. `test/` supplies test utilities. `dist/` is generated and excluded from Git.
+`test/` supplies test utilities. `dist/` is generated and excluded from Git.
 
 Use synthetic examples. Add regression coverage for behavior changes and preserve
 public entry points. Run `pnpm format` before submitting. Preserve third-party
