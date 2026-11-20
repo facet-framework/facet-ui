@@ -6,7 +6,12 @@ const meta: Meta<typeof EvidenceLedgerWithLogic> = {
   title: "FACET UI/EvidenceLedger",
   component: EvidenceLedgerWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Evidence of an assumption, newest first. Without evidence the assumption is a claim — and that is the only sentence this compartment then shows.",
+      },
+    },
   },
   args: {
     evidence: taskflowRecord("assumption/sync/clock-skew-bounded").evidence,
@@ -24,8 +29,9 @@ const meta: Meta<typeof EvidenceLedgerWithLogic> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Evidence: Story = {};
+export const EvidenceList: Story = {};
 
-export const Stale: Story = { args: { staleMonths: 3 } };
+/** Not checked for too long — the answer line becomes a deadline. */
+export const Outdated: Story = { args: { staleMonths: 3 } };
 
 export const WithoutEvidence: Story = { args: { evidence: [] } };

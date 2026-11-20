@@ -1,81 +1,94 @@
-import { labelText } from "../i18n/legacy/labels";
-import { remainingText } from "../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../i18n/legacy/shared";
-import { localized } from "../i18n/legacy/core/probes";
+/**
+ * The derivation behind a number in the lead sentence.
+ *
+ * A number in a sentence is a claim. Whoever clicks it gets the calculation:
+ * which items it consists of, and next to it in prose, which records are
+ * meant. None of it is rounded or estimated — everything comes from the
+ * model.
+ */
 
-import { formatNumber, pct } from "./model";
+import { ENGLISH_TEXT, type FacetText } from "../facet/i18n/text";
+import { testKindLabel } from "./labels";
+import { pct } from "./model";
 import type { AtlasModel } from "./types";
 import type { ProbeKey } from "./lead";
 
-export type ProbeMeaning = "neutral" | "signal" | "deadline";
+/**
+ * The tone of a row. Deliberately not the design system's colour palette: the
+ * data layer says what is the case, and the surface decides what that looks
+ * like.
+ */
+export type ProbeMeaning = "neutral" | "signal" | "due";
 
 export type ProbeRow = {
   label: string;
   value: string;
-
+  /** `signal` means: something is missing here. `due` means: a deadline has passed. */
   meaning: ProbeMeaning;
-
+  /** Register section opened on click, containing the full list counted by this row. */
   sectionKey?: string;
 };
 
 export type ProbeView = {
   head: string;
   rows: ProbeRow[];
-
+  /** Evidence line by line — empty when there is nothing to list. */
   note: string[];
 };
 
-const row = (
-  label: string,
-  value: string | number,
-  meaning: ProbeMeaning = "neutral",
-  sectionKey?: string,
-): ProbeRow => ({
-  label,
-  value: typeof value === "number" ? formatNumber(value) : value,
-  meaning,
-  sectionKey,
-});
-
+/** `signal` as soon as the number is above zero — otherwise neutral. */
 const gap = (count: number): ProbeMeaning => (count > 0 ? "signal" : "neutral");
-const due = (count: number): ProbeMeaning => (count > 0 ? "deadline" : "neutral");
+const due = (count: number): ProbeMeaning => (count > 0 ? "due" : "neutral");
 
-const KIND_LABEL: Record<string, string> = {
-  unit: remainingText.text62,
-  property: remainingText.text63,
-  integration: "INTEGRATION",
-  e2e: germanLabels.text121,
-};
 const KINDS = ["unit", "property", "integration", "e2e"];
 
-export function probeOf(model: AtlasModel, key: ProbeKey): ProbeView {
+export function probeOf(
+  model: AtlasModel,
+  key: ProbeKey,
+  text: FacetText = ENGLISH_TEXT,
+): ProbeView {
+  const { t, number } = text;
+  const row = (
+    label: string,
+    value: string | number,
+    meaning: ProbeMeaning = "neutral",
+    sectionKey?: string,
+  ): ProbeRow => ({
+    label,
+    value: typeof value === "number" ? number(value) : value,
+    meaning,
+    sectionKey,
+  });
+
   switch (key) {
     case "coverage": {
       const testLoc = typeof model.scan.testLoc === "number" ? model.scan.testLoc : 0;
       const totalLoc = typeof model.scan.totalLoc === "number" ? model.scan.totalLoc : 0;
       const testFiles = typeof model.scan.testFiles === "number" ? model.scan.testFiles : 0;
       return {
-        head: "TESTZUORDNUNGEN",
+        head: t("core.probes.head.coverage"),
         rows: [
+          row(t("core.probes.testMapped"), `${number(model.scnProven)}/${number(model.scnTotal)}`),
           row(
-            "TEST ZUGEORDNET",
-            `${formatNumber(model.scnProven)}/${formatNumber(model.scnTotal)}`,
-          ),
-          row(
-            localized.text1,
+            t("core.probes.noTest"),
             model.scnTotal - model.scnProven,
             gap(model.scnTotal - model.scnProven),
           ),
           ...KINDS.filter((kind) => model.testKinds[kind]).map((kind) =>
-            row(KIND_LABEL[kind], model.testKinds[kind]),
+            row(testKindLabel(kind, text).toLocaleUpperCase(text.locale), model.testKinds[kind]),
           ),
         ],
-
+        // Line coverage is not connected. The test-code share says something
+        // else and is therefore named differently.
         note:
           testLoc && totalLoc
             ? [
-                `${labelText.text358}${pct(testLoc, totalLoc)} % · ${formatNumber(testLoc)}${germanLabels.text109}${formatNumber(totalLoc)}${labelText.text359}`,
-                `${formatNumber(testFiles)}${localized.text2}`,
+                t("core.probes.testCodeShare", {
+                  pct: pct(testLoc, totalLoc),
+                  test: number(testLoc),
+                  total: number(totalLoc),
+                }),
+                t("core.probes.testFiles", { count: number(testFiles) }),
               ]
             : [],
       };
@@ -83,107 +96,122 @@ export function probeOf(model: AtlasModel, key: ProbeKey): ProbeView {
 
     case "features":
       return {
-        head: "BESTAND",
+        head: t("core.probes.head.features"),
         rows: [
-          row("KERNFUNKTIONEN", model.features.length),
-          row("REGELWERKE", model.policies.length),
-          row(labelText.text360, model.assumptions.length),
-          row("DATENOBJEKTE", model.entities.length),
-          row(germanLabels.text122, model.domains.length),
+          row(t("core.probes.features"), model.features.length),
+          row(t("core.probes.policies"), model.policies.length),
+          row(t("core.probes.assumptions"), model.assumptions.length),
+          row(t("core.probes.entities"), model.entities.length),
+          row(t("core.probes.areas"), model.domains.length),
         ],
-        note: model.domainCov.map(
-          (domain) => `${domain.name} · ${domain.proven}/${domain.total}${localized.text3}`,
+        note: model.domainCov.map((domain) =>
+          t("core.probes.domainCoverage", {
+            name: domain.name,
+            proven: String(domain.proven),
+            total: String(domain.total),
+          }),
         ),
       };
 
     case "open":
       return {
-        head: "OFFENE PUNKTE",
+        head: t("core.probes.head.open"),
         rows: [
-          row(localized.text4, model.overdue, due(model.overdue)),
-          row(localized.text5, model.stale, due(model.stale)),
+          row(t("core.probes.overdue"), model.overdue, due(model.overdue)),
+          row(t("core.probes.staleAssumptions"), model.stale, due(model.stale)),
           row(
-            localized.text6,
+            t("core.probes.promisesWithoutTest"),
             model.scnTotal - model.scnProven,
             gap(model.scnTotal - model.scnProven),
           ),
-          row(localized.text7, model.noRunbook, gap(model.noRunbook)),
-          row(localized.text8, model.unanchored.length, gap(model.unanchored.length)),
-          row(localized.text9, model.noOwner.length, gap(model.noOwner.length)),
-          row(localized.text10, model.noIntent.length, gap(model.noIntent.length)),
-          row(localized.text11, model.uncovered.length, gap(model.uncovered.length)),
-          row(localized.text12, model.noObs.length, gap(model.noObs.length)),
-          row(localized.text13, model.ghosts.length, gap(model.ghosts.length)),
+          row(t("core.probes.noRunbook"), model.noRunbook, gap(model.noRunbook)),
+          row(t("core.probes.noEntryPoint"), model.unanchored.length, gap(model.unanchored.length)),
+          row(t("core.probes.noOwner"), model.noOwner.length, gap(model.noOwner.length)),
+          row(t("core.probes.noDescription"), model.noIntent.length, gap(model.noIntent.length)),
+          row(t("core.probes.noPolicy"), model.uncovered.length, gap(model.uncovered.length)),
+          row(t("core.probes.noMeasurement"), model.noObs.length, gap(model.noObs.length)),
+          row(t("core.probes.ghosts"), model.ghosts.length, gap(model.ghosts.length)),
         ],
-        note: [localized.text14],
+        note: [t("core.probes.openNote")],
       };
 
     case "overdue":
       return {
-        head: remainingText.text38,
+        head: t("core.probes.head.overdue"),
         rows: [
-          row(localized.text15, model.overdue, due(model.overdue)),
-          row(localized.text16, model.checks.length),
-          row(labelText.text361, model.clauseCount),
-          row("VERPFLICHTEND", model.mustCount),
+          row(t("core.probes.overdue"), model.overdue, due(model.overdue)),
+          row(t("core.probes.reviews"), model.checks.length),
+          row(t("core.probes.clauses"), model.clauseCount),
+          row(t("core.probes.mandatory"), model.mustCount),
         ],
         note: model.overdueList.length
-          ? model.overdueList.map(
-              ({ rec, check }) => `${rec.label} · ${check.id}${localized.text17}${check.next_due}`,
+          ? model.overdueList.map(({ rec, check }) =>
+              t("core.probes.dueLine", {
+                label: rec.label,
+                id: String(check.id),
+                date: String(check.next_due),
+              }),
             )
-          : [localized.text18],
+          : [t("core.probes.noDeadlinePassed")],
       };
 
     case "edges":
       return {
-        head: labelText.text362,
+        head: t("core.probes.head.edges"),
         rows: [
-          row("KANTEN", model.edges.length),
-          row("DEPTH", model.maxDepth),
-          row(remainingText.text45, model.ghosts.length, gap(model.ghosts.length)),
-          row(localized.text19, model.superseded.length),
+          row(t("core.probes.edges"), model.edges.length),
+          row(t("core.probes.depth"), model.maxDepth),
+          row(t("core.probes.openReferences"), model.ghosts.length, gap(model.ghosts.length)),
+          row(t("core.probes.superseded"), model.superseded.length),
         ],
-        note: model.ghosts.length ? model.ghosts : [localized.text20],
+        note: model.ghosts.length ? model.ghosts : [t("core.probes.allResolved")],
       };
 
     case "anchors": {
       const drift = model.scan.drift ?? [];
       return {
-        head: germanLabels.text123,
+        head: t("core.probes.head.anchors"),
         rows: [
-          row(labelText.text363, model.anchorPairs.length),
-          row("KERNFUNKTIONEN", Object.keys(model.anchorMap).length),
-          row(localized.text21, model.unanchored.length, gap(model.unanchored.length)),
-          row(labelText.text364, drift.length, due(drift.length)),
+          row(t("core.probes.entryPoints"), model.anchorPairs.length),
+          row(t("core.probes.features"), Object.keys(model.anchorMap).length),
+          row(
+            t("core.probes.withoutEntryPoint"),
+            model.unanchored.length,
+            gap(model.unanchored.length),
+          ),
+          row(t("core.probes.moved"), drift.length, due(drift.length)),
         ],
-        note: drift.map((entry) => `${labelText.text365}${entry.id}`),
+        note: drift.map((entry) => t("core.probes.movedLine", { id: entry.id })),
       };
     }
 
     case "pii":
       return {
-        head: labelText.extra7,
+        head: t("core.probes.head.pii"),
         rows: [
-          row(labelText.text366, model.pii, due(model.pii)),
-          row(localized.text22, model.enc),
-          row("DATENOBJEKTE", model.entities.length),
+          row(t("core.probes.personal"), model.pii, due(model.pii)),
+          row(t("core.probes.encrypted"), model.enc),
+          row(t("core.probes.entities"), model.entities.length),
         ],
-        note: model.entities.map(
-          (entity) =>
-            `${entity.label} · ${entity.fields.length}${labelText.text301}${retentionOf(entity.retention)}`,
+        note: model.entities.map((entity) =>
+          t("core.probes.entityLine", {
+            label: entity.label,
+            fields: entity.fields.length,
+            retention: retentionOf(entity.retention, text),
+          }),
         ),
       };
 
     case "ops":
       return {
-        head: remainingText.text58,
+        head: t("core.probes.head.ops"),
         rows: [
           row("SLOS", model.slos.length),
-          row(labelText.text367, model.alerts.length),
-          row(localized.text23, model.noRunbook, gap(model.noRunbook)),
-          row(localized.text24, model.checks.length),
+          row(t("core.probes.alerts"), model.alerts.length),
+          row(t("core.probes.noRunbook"), model.noRunbook, gap(model.noRunbook)),
+          row(t("core.probes.runningReviews"), model.checks.length),
         ],
-        note: model.sources.length ? [model.sources.join(", ")] : [localized.text25],
+        note: model.sources.length ? [model.sources.join(", ")] : [t("core.probes.noSource")],
       };
 
     case "know": {
@@ -191,44 +219,45 @@ export function probeOf(model: AtlasModel, key: ProbeKey): ProbeView {
         feature.knowledge.some((slot) => !slot.answer),
       );
       return {
-        head: remainingText.text64,
+        head: t("core.probes.head.know"),
         rows: [
           row(
-            "BEANTWORTET",
-            `${formatNumber(model.knowAnswered)}/${formatNumber(model.knowSlots)}`,
+            t("core.probes.answered"),
+            `${number(model.knowAnswered)}/${number(model.knowSlots)}`,
           ),
-          row(localized.text26, model.noIntent.length, gap(model.noIntent.length)),
+          row(t("core.probes.noDescription"), model.noIntent.length, gap(model.noIntent.length)),
           row(
-            "ENTSCHEIDUNGSVERWEISE",
+            t("core.probes.decisionRefs"),
             model.decisionTargets.reduce((sum, entry) => sum + entry.count, 0),
             "neutral",
             "decisions",
           ),
         ],
         note: openQuestions.length
-          ? openQuestions.map((feature) => `${feature.label}${localized.text27}`)
-          : [localized.text28],
+          ? openQuestions.map((feature) => t("core.probes.openLine", { label: feature.label }))
+          : [t("core.probes.allAnswered")],
       };
     }
 
     case "teams":
       return {
-        head: localized.text29,
+        head: t("core.probes.head.teams"),
         rows: [
           row("TEAMS", Object.keys(model.teams).length),
-          row(localized.text30, model.noOwner.length, gap(model.noOwner.length)),
+          row(t("core.probes.noOwner"), model.noOwner.length, gap(model.noOwner.length)),
         ],
         note: Object.keys(model.teams).map(
-          (team) => `${team} · ${model.teams[team].contact || localized.text31}`,
+          (team) => `${team} · ${model.teams[team].contact || t("core.probes.noContact")}`,
         ),
       };
   }
 }
 
-function retentionOf(retention: unknown): string {
+/** Retention period of a data object, if one is stated. */
+function retentionOf(retention: unknown, text: FacetText): string {
   if (retention && typeof retention === "object" && !Array.isArray(retention)) {
     const duration = (retention as Record<string, unknown>).duration;
     if (typeof duration === "string" && duration) return duration;
   }
-  return localized.text32;
+  return text.t("core.probes.noRetention");
 }

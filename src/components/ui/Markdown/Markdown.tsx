@@ -1,10 +1,11 @@
 import type { CSSProperties, ReactNode } from "react";
 
+/** A piece of text, fully marked up. */
 export type MarkdownPiece = {
   key: string;
   text: string;
   style: CSSProperties;
-
+  /** Set only on links, and only on those that may be visited. */
   href?: string;
 };
 
@@ -42,6 +43,14 @@ export type MarkdownProps = {
   "data-testid"?: string;
 };
 
+/**
+ * Markdown in the house design language.
+ *
+ * A code block is a surface with a hairline, not a grey box with rounded
+ * corners; a quote carries a stroke on the left instead of a tint; a rule is a
+ * hairline. What the reader does not know arrives here as text and is shown
+ * as text.
+ */
 export function Markdown({ containerStyle, blocks, ...rest }: MarkdownProps) {
   return (
     <div style={containerStyle} {...rest}>

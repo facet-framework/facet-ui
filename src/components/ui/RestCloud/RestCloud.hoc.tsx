@@ -1,5 +1,3 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/RestCloud/RestCloud.hoc";
 import {
   memo,
   useCallback,
@@ -9,11 +7,12 @@ import {
   type KeyboardEvent,
 } from "react";
 import { color, font, fontSize, MEANING_COLOR, type Meaning } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { RestCloudProps, RestTick } from "./RestCloud";
 
 export type RestItem = {
   id: string;
-
+  /** Meaning of the entry — it colours its stroke in the strip. */
   meaning?: Meaning;
 };
 
@@ -28,27 +27,34 @@ export type WithRestCloudProps = Omit<
   | "onKeyDown"
   | "expanded"
 > & {
+  /** Is the rest unfolded? */
   expanded?: boolean;
-
+  /** The entries that no longer stand as a row. */
   items: RestItem[];
-
+  /** Word for one or several entries. */
   noun?: [singular: string, plural: string];
   onToggle?: (expanded: boolean) => void;
-
+  /** From how many entries on the strip aggregates instead of showing every stroke. */
   maxTicks?: number;
   style?: CSSProperties;
 };
 
+/** Converts the remainder into proportional strokes and phrases the plain text. */
 export function withRestCloudLogic(Component: ComponentType<RestCloudProps>) {
   const Wrapped = ({
     items,
     expanded = false,
-    noun = [localized.text1, localized.text2],
+    noun: nounProp,
     onToggle,
     maxTicks = 60,
     style,
     ...rest
   }: WithRestCloudProps) => {
+    const { t } = useText();
+    const noun = useMemo<[singular: string, plural: string]>(
+      () => nounProp ?? [t("elements.restCloud.entryOne"), t("elements.restCloud.entryMany")],
+      [nounProp, t],
+    );
     const ticks = useMemo<RestTick[]>(() => {
       if (items.length <= maxTicks) {
         return items.map((item) => ({
@@ -57,7 +63,7 @@ export function withRestCloudLogic(Component: ComponentType<RestCloudProps>) {
           flexGrow: 1,
         }));
       }
-
+      // Above the limit it is bundled: one stroke per group, width = group size.
       const bucketSize = Math.ceil(items.length / maxTicks);
       const buckets: RestTick[] = [];
       for (let index = 0; index < items.length; index += bucketSize) {
@@ -73,10 +79,11 @@ export function withRestCloudLogic(Component: ComponentType<RestCloudProps>) {
 
     const label = useMemo(() => {
       const word = items.length === 1 ? noun[0] : noun[1];
-      return expanded
-        ? `${items.length} ${word} — einklappen`
-        : `${items.length} ${word}${labelText.text432}`;
-    }, [expanded, items.length, noun]);
+      return t(expanded ? "elements.restCloud.collapse" : "elements.restCloud.expand", {
+        count: items.length,
+        noun: word,
+      });
+    }, [expanded, items.length, noun, t]);
 
     const handleToggle = useCallback(() => onToggle?.(!expanded), [expanded, onToggle]);
 

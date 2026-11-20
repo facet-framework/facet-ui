@@ -1,4 +1,3 @@
-import { localized } from "../../../i18n/legacy/components/ui/Stack/Stack.stories.text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import StackWithLogic from ".";
 import Text from "../Text";
@@ -7,15 +6,21 @@ const meta: Meta<typeof StackWithLogic> = {
   title: "Primitives/Stack",
   component: StackWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Layout primitive for tracks. `minWidth: 0` is set so long paths truncate instead of widening the grid.",
+      },
+    },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const items = ["records", localized.text2, "Operations", "RuleSets"];
+const items = ["Records", "Promises & Tests", "Operations", "Policies"];
 
+/** Vertical track — the register index. */
 export const Vertical: Story = {
   args: {
     gap: "s2",
@@ -27,6 +32,7 @@ export const Vertical: Story = {
   },
 };
 
+/** Horizontal track with a gap from the grid. */
 export const Horizontal: Story = {
   args: {
     direction: "row",
@@ -40,6 +46,7 @@ export const Horizontal: Story = {
   },
 };
 
+/** Wrapping track for rows of chips. */
 export const Wrapping: Story = {
   args: {
     direction: "row",

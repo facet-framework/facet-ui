@@ -1,20 +1,25 @@
-import { localized } from "../../../i18n/legacy/components/ui/TestPyramid/TestPyramid.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
-import { color, font, fontSize, TEST_KINDS, TEST_KIND_LABEL } from "../../../design-system/tokens";
+import { testKindLabel } from "../../../core";
+import { color, font, fontSize, TEST_KINDS } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { PyramidLevel, TestPyramidProps } from "./TestPyramid";
 
 export type WithTestPyramidProps = Omit<
   TestPyramidProps,
   "containerStyle" | "captionStyle" | "levels" | "caption"
 > & {
+  /** Number of tests per level, keys as in the schema (`unit`, `e2e`, …). */
   counts: Record<string, number>;
-
+  /** Order of the levels — from bottom (wide) to top (narrow). */
   kinds?: readonly string[];
   style?: CSSProperties;
 };
 
+/** Computes shares and phrases what the distribution says. */
 export function withTestPyramidLogic(Component: ComponentType<TestPyramidProps>) {
   const Wrapped = ({ counts, kinds = TEST_KINDS, style, ...rest }: WithTestPyramidProps) => {
+    const text = useText();
+    const { t, plural } = text;
     const total = useMemo(
       () => kinds.reduce((sum, kind) => sum + (counts[kind] ?? 0), 0),
       [counts, kinds],
@@ -27,7 +32,7 @@ export function withTestPyramidLogic(Component: ComponentType<TestPyramidProps>)
           const share = total > 0 ? Math.round((count / total) * 100) : 0;
           return {
             key: kind,
-            label: TEST_KIND_LABEL[kind] ?? kind,
+            label: testKindLabel(kind, text),
             count,
             share,
             rowStyle: {
@@ -61,18 +66,21 @@ export function withTestPyramidLogic(Component: ComponentType<TestPyramidProps>)
             },
           };
         }),
-      [counts, kinds, total],
+      [counts, kinds, text, total],
     );
 
     const caption = useMemo(() => {
-      if (!total) return localized.text1;
+      if (!total) return t("elements.testPyramid.empty");
       const base = counts[kinds[0]] ?? 0;
       const top = counts[kinds[kinds.length - 1]] ?? 0;
-      const shape = base >= top ? localized.text2 : localized.text3;
-      return `${total} ${total === 1 ? "Test" : "Tests"}${localized.text4}${
-        kinds.filter((kind) => (counts[kind] ?? 0) > 0).length
-      } Ebenen. ${shape}`;
-    }, [counts, kinds, total]);
+      const shape =
+        base >= top ? t("elements.testPyramid.baseWider") : t("elements.testPyramid.topWider");
+      return t("elements.testPyramid.caption", {
+        tests: plural("elements.testPyramid.tests", total),
+        levels: kinds.filter((kind) => (counts[kind] ?? 0) > 0).length,
+        shape,
+      });
+    }, [counts, kinds, plural, t, total]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({ display: "grid", gap: 2, minWidth: 0, ...style }),

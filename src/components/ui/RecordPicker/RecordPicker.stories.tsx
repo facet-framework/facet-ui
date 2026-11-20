@@ -22,7 +22,7 @@ const items = [
   ...model.anchorPairs.map((anchor) => ({
     id: anchor.id,
     label: anchor.path,
-    kind: "CodePath",
+    kind: "Codepfad",
     hint: `:${anchor.line} · ${anchor.role}`,
   })),
 ];
@@ -31,7 +31,12 @@ const meta: Meta<typeof RecordPickerWithLogic> = {
   title: "FACET UI/RecordPicker",
   component: RecordPickerWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "⌘K: one line for everything — records, promises, tests, code paths. ↑/↓ select, Enter opens.",
+      },
+    },
   },
   args: { items },
   decorators: [
@@ -48,6 +53,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Search: Story = {};
 
+/** With a footer for the keyboard contract. */
 export const WithKeyHint: Story = {
   args: {
     footer: (
@@ -67,4 +73,5 @@ export const WithKeyHint: Story = {
   },
 };
 
+/** Nothing found — the sentence names everywhere that was searched. */
 export const WithoutMatches: Story = { args: { items: [] } };

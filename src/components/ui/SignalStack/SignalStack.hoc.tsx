@@ -1,8 +1,7 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/SignalStack/SignalStack.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import type { AlertEntry, SloEntry } from "../../../core";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { SignalEntry, SignalStackProps } from "./SignalStack";
 
 export type WithSignalStackProps = Omit<
@@ -11,13 +10,15 @@ export type WithSignalStackProps = Omit<
 > & {
   slos?: SloEntry[];
   alerts?: AlertEntry[];
-
+  /** Only alerts without a runbook. */
   onlyGaps?: boolean;
   style?: CSSProperties;
 };
 
+/** Merges SLOs and alerts; alerts without a runbook come first. */
 export function withSignalStackLogic(Component: ComponentType<SignalStackProps>) {
   const Wrapped = ({ slos = [], alerts = [], onlyGaps, style, ...rest }: WithSignalStackProps) => {
+    const { t, plural } = useText();
     const entries = useMemo<SignalEntry[]>(() => {
       const rowStyle: CSSProperties = {
         display: "grid",
@@ -35,10 +36,12 @@ export function withSignalStackLogic(Component: ComponentType<SignalStackProps>)
         return {
           key: `alert-${String(alert.name || alert.id || index)}`,
           kind: "alert",
-          name: String(alert.name || alert.id || `${labelText.text283}${index + 1}`),
-          detail: String(alert.condition || localized.text1),
-          meta: alert.severity ? String(alert.severity) : localized.text2,
-          runbook: open ? localized.text3 : String(alert.runbook),
+          name: String(
+            alert.name || alert.id || t("elements.signalStack.alertN", { n: index + 1 }),
+          ),
+          detail: String(alert.condition || t("elements.signalStack.noCondition")),
+          meta: alert.severity ? String(alert.severity) : t("elements.signalStack.noSeverity"),
+          runbook: open ? t("elements.signalStack.noRunbook") : String(alert.runbook),
           open,
           rowStyle,
           nameStyle: {
@@ -78,9 +81,11 @@ export function withSignalStackLogic(Component: ComponentType<SignalStackProps>)
         key: `slo-${String(slo.name || slo.id || index)}`,
         kind: "slo",
         name: String(slo.name || slo.id || `SLO ${index + 1}`),
-        detail: String(slo.query || slo.target || localized.text4),
-        meta: slo.window ? String(slo.window) : localized.text5,
-        runbook: slo.target ? `${labelText.text284}${slo.target}` : localized.text6,
+        detail: String(slo.query || slo.target || t("elements.signalStack.noQuery")),
+        meta: slo.window ? String(slo.window) : t("elements.signalStack.noWindow"),
+        runbook: slo.target
+          ? t("elements.signalStack.target", { target: slo.target })
+          : t("elements.signalStack.noTarget"),
         open: false,
         rowStyle,
         nameStyle: {
@@ -120,18 +125,19 @@ export function withSignalStackLogic(Component: ComponentType<SignalStackProps>)
         ...sloRows,
       ];
       return onlyGaps ? all.filter((row) => row.open) : all;
-    }, [alerts, onlyGaps, slos]);
+    }, [alerts, onlyGaps, slos, t]);
 
     const caption = useMemo(() => {
-      if (!slos.length && !alerts.length) return localized.text7;
+      if (!slos.length && !alerts.length) return t("elements.signalStack.empty");
       const gaps = alerts.filter((alert) => !alert.runbook).length;
-      const head = `${slos.length} ${slos.length === 1 ? "SLO" : "SLOs"} · ${
-        alerts.length
-      } ${alerts.length === 1 ? labelText.text285 : labelText.text286}.`;
+      const head = `${plural("elements.signalStack.slos", slos.length)} · ${plural(
+        "elements.signalStack.alerts",
+        alerts.length,
+      )}.`;
       return gaps
-        ? `${head} ${gaps} ${gaps === 1 ? labelText.text285 : labelText.text286}${localized.text8}`
-        : `${head}${localized.text9}`;
-    }, [alerts, slos]);
+        ? `${head} ${plural("elements.signalStack.alertsWithoutRunbook", gaps)}`
+        : `${head} ${t("elements.signalStack.allHaveRunbook")}`;
+    }, [alerts, plural, slos, t]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({ display: "grid", gap: 0, minWidth: 0, ...style }),

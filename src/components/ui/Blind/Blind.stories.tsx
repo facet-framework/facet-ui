@@ -1,4 +1,3 @@
-import { localized } from "../../../i18n/legacy/components/ui/Blind/Blind.stories.text";
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import BlindWithLogic from ".";
@@ -9,7 +8,11 @@ const meta: Meta<typeof BlindWithLogic> = {
   title: "FACET UI/Blind",
   component: BlindWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component: "The detail slides in from the right and goes back to the right.",
+      },
+    },
     layout: "fullscreen",
   },
   args: { label: "Detail: Quick add" },
@@ -18,7 +21,7 @@ const meta: Meta<typeof BlindWithLogic> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Open: Story = {
+export const Opened: Story = {
   args: {
     open: true,
     children: (
@@ -34,7 +37,7 @@ export const Open: Story = {
   },
 };
 
-export const Narrow: Story = { ...Open, args: { ...Open.args, width: 420 } };
+export const Narrow: Story = { ...Opened, args: { ...Opened.args, width: 420 } };
 
 export const WithSwitch: Story = {
   render: (args) => {
@@ -42,14 +45,14 @@ export const WithSwitch: Story = {
     return (
       <div style={{ padding: 24 }}>
         <Button variant="signal" onClick={() => setOpen(true)}>
-          {localized.text2}
+          Open detail
         </Button>
         <BlindWithLogic {...args} open={open} onClose={() => setOpen(false)}>
           <div style={{ padding: 24, display: "grid", gap: 12 }}>
             <Text as="p" variant="title">
               Quick add
             </Text>
-            <Button onClick={() => setOpen(false)}>{localized.text3}</Button>
+            <Button onClick={() => setOpen(false)}>back</Button>
           </div>
         </BlindWithLogic>
       </div>

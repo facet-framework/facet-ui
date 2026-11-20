@@ -1,133 +1,129 @@
-import { labelText } from "../i18n/legacy/labels";
-import { remainingText } from "../i18n/legacy/remaining";
-import { localized } from "../i18n/legacy/core/markdown.spec.text";
 import { isSafeHref, parseInline, parseMarkdown } from "./markdown";
 
 describe("Unit tests for parseMarkdown", () => {
-  it("returns no blocks for empty text", () => {
+  it("emits no blocks for empty text", () => {
     expect(parseMarkdown("")).toEqual([]);
     expect(parseMarkdown("\n\n  \n")).toEqual([]);
   });
 
-  it("combines adjacent lines into a paragraph", () => {
-    const blocks = parseMarkdown(remainingText.text54);
+  it("joins consecutive lines into one paragraph", () => {
+    const blocks = parseMarkdown("First line\nsecond line\n\nsecond paragraph");
     expect(blocks).toHaveLength(2);
     expect(blocks[0]).toEqual({
       kind: "paragraph",
-      inline: [{ kind: "text", text: remainingText.text55 }],
+      inline: [{ kind: "text", text: "First line second line" }],
     });
   });
 
-  it("reads headings with their levels", () => {
-    const blocks = parseMarkdown(localized.text4);
+  it("reads headings with their level", () => {
+    const blocks = parseMarkdown("### What is open");
     expect(blocks[0]).toEqual({
       kind: "heading",
       level: 3,
-      inline: [{ kind: "text", text: localized.text5 }],
+      inline: [{ kind: "text", text: "What is open" }],
     });
   });
 
-  it("reads a list as one block of items", () => {
-    const blocks = parseMarkdown(labelText.text368);
+  it("reads a bullet list as one block with items", () => {
+    const blocks = parseMarkdown("- one\n- two\n- three");
     expect(blocks).toHaveLength(1);
     expect(blocks[0]).toMatchObject({ kind: "list", ordered: false });
     expect((blocks[0] as { items: unknown[] }).items).toHaveLength(3);
   });
 
-  it("distinguishes ordered and unordered lists", () => {
-    expect(parseMarkdown(labelText.text369)[0]).toMatchObject({ ordered: true });
-    expect(parseMarkdown(labelText.text370)[0]).toMatchObject({ ordered: false });
+  it("tells numbered from unnumbered", () => {
+    expect(parseMarkdown("1. one\n2. two")[0]).toMatchObject({ ordered: true });
+    expect(parseMarkdown("* one")[0]).toMatchObject({ ordered: false });
   });
 
-  it("appends continuation lines to the preceding item", () => {
-    const blocks = parseMarkdown(localized.text9);
+  it("pulls a continuation line into the item before it", () => {
+    const blocks = parseMarkdown("- an item that\n  continues\n- the next");
     const items = (blocks[0] as { items: { text: string }[][] }).items;
     expect(items).toHaveLength(2);
-    expect(items[0][0].text).toBe(localized.text10);
+    expect(items[0][0].text).toBe("an item that continues");
   });
 
-  it("preserves code blocks and their language", () => {
-    const blocks = parseMarkdown(labelText.text371);
-    expect(blocks[0]).toEqual({ kind: "code", language: "go", text: labelText.text372 });
+  it("keeps a code block unchanged, with its language", () => {
+    const blocks = parseMarkdown("```go\nfunc main() {}\n\ttwo\n```");
+    expect(blocks[0]).toEqual({ kind: "code", language: "go", text: "func main() {}\n\ttwo" });
   });
 
-  it("leaves Markdown inside code blocks untouched", () => {
-    const blocks = parseMarkdown(localized.text13);
-    expect((blocks[0] as { text: string }).text).toBe(localized.text14);
+  it("leaves Markdown inside a code block alone", () => {
+    const blocks = parseMarkdown("```\n**not bold** and `no code`\n```");
+    expect((blocks[0] as { text: string }).text).toBe("**not bold** and `no code`");
   });
 
-  it("closes an open fence at the end of the text", () => {
-    const blocks = parseMarkdown(labelText.text373);
+  it("closes an open fence at the end of the text instead of showing the rest as prose", () => {
+    const blocks = parseMarkdown("```\nline one\nline two");
     expect(blocks).toHaveLength(1);
-    expect(blocks[0]).toMatchObject({ kind: "code", text: labelText.text374 });
+    expect(blocks[0]).toMatchObject({ kind: "code", text: "line one\nline two" });
   });
 
-  it("reads multiline quotes", () => {
-    const blocks = parseMarkdown(remainingText.text56);
-    expect(blocks[0]).toEqual({
-      kind: "quote",
-      inline: [{ kind: "text", text: remainingText.text57 }],
-    });
+  it("reads a quote across several lines", () => {
+    const blocks = parseMarkdown("> first\n> second");
+    expect(blocks[0]).toEqual({ kind: "quote", inline: [{ kind: "text", text: "first second" }] });
   });
 
-  it("recognizes horizontal rules", () => {
+  it("recognises the horizontal rule", () => {
     expect(parseMarkdown("---")[0]).toEqual({ kind: "rule" });
   });
 
-  it("starts a block at each block boundary", () => {
-    const blocks = parseMarkdown(localized.text19);
+  it("starts a new block where one begins", () => {
+    const blocks = parseMarkdown("A paragraph\n- and a list right below it");
     expect(blocks.map((block) => block.kind)).toEqual(["paragraph", "list"]);
   });
 });
 
 describe("Unit tests for parseInline", () => {
-  it("reads bold, italic and inline code", () => {
-    expect(parseInline(localized.text21)).toEqual([
-      { kind: "strong", text: labelText.extra2 },
-      { kind: "text", text: localized.text22 },
-      { kind: "em", text: labelText.text375 },
-      { kind: "text", text: localized.text23 },
+  it("reads bold, italic and code", () => {
+    expect(parseInline("**bold** and *italic* and `code`")).toEqual([
+      { kind: "strong", text: "bold" },
+      { kind: "text", text: " and " },
+      { kind: "em", text: "italic" },
+      { kind: "text", text: " and " },
       { kind: "code", text: "code" },
     ]);
   });
 
   it("reads bold before italic", () => {
+    // Otherwise `**x**` would end up as two italic asterisks.
     expect(parseInline("**x**")).toEqual([{ kind: "strong", text: "x" }]);
   });
 
-  it("preserves asterisks inside code", () => {
-    expect(parseInline(localized.text26)).toEqual([{ kind: "code", text: localized.text27 }]);
+  it("keeps asterisks inside code", () => {
+    expect(parseInline("`**no bold**`")).toEqual([{ kind: "code", text: "**no bold**" }]);
   });
 
-  it("preserves underscores in identifiers", () => {
-    expect(parseInline(localized.text29)).toEqual([{ kind: "text", text: localized.text30 }]);
-  });
-
-  it("reads link text and destinations", () => {
-    expect(parseInline(localized.text32)).toEqual([
-      { kind: "text", text: labelText.text376 },
-      { kind: "link", text: localized.text33, href: "https://example.org/spec" },
+  it("leaves underscores in identifiers alone", () => {
+    // `schema_version` is a field name, not italics.
+    expect(parseInline("schema_version is a field")).toEqual([
+      { kind: "text", text: "schema_version is a field" },
     ]);
   });
 
-  it("returns an empty text piece for empty input", () => {
+  it("reads a link with text and target", () => {
+    expect(parseInline("siehe [die Spec](https://example.org/spec)")).toEqual([
+      { kind: "text", text: "siehe " },
+      { kind: "link", text: "die Spec", href: "https://example.org/spec" },
+    ]);
+  });
+
+  it("emits an empty piece for empty text, never nothing", () => {
     expect(parseInline("")).toEqual([{ kind: "text", text: "" }]);
   });
 });
 
 describe("Unit tests for isSafeHref", () => {
-  it("allows HTTP and HTTPS", () => {
+  it("lets http and https through", () => {
     expect(isSafeHref("https://example.org")).toBe(true);
     expect(isSafeHref("http://example.org")).toBe(true);
   });
 
-  it("withholds other protocols", () => {
-    [
-      "javascript:alert(1)",
-      "data:text/html,x",
-      "file:///etc/passwd",
-      labelText.text377,
-      "",
-    ].forEach((href) => expect(isSafeHref(href)).toBe(false));
+  it("holds back everything else", () => {
+    // The text comes from a model. It must not be able to conjure up an address
+    // that a click visits.
+    ["javascript:alert(1)", "data:text/html,x", "file:///etc/passwd", "/lokal", ""].forEach(
+      (href) => expect(isSafeHref(href)).toBe(false),
+    );
   });
 });

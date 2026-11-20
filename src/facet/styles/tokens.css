@@ -1,3 +1,16 @@
+/*
+ * FACET — design tokens.
+ *
+ * Four palettes: theme `facet` (cool, blue signal) and `paper` (warm, ink-blue
+ * signal), each `dark` and `light`. A palette is chosen on any ancestor with
+ * `data-t-theme` and `data-t-mode`; without them `.t-app` defaults to facet/dark.
+ * Nothing is set on `:root` except `--t-` variables, so the design system can share a page
+ * and a stylesheet bundle with other readers without changing it.
+ * Nested scopes are allowed (theme previews in the settings render four at once).
+ *
+ * Depth replaces borders: ground → surface → raised → float, each with its own
+ * colour and shadow. Hairlines are for divisions inside one surface only.
+ */
 .t-app:not([data-t-theme]):not([data-t-theme] .t-app),
 [data-t-theme="facet"][data-t-mode="dark"] {
   --t-ground: #0b0d12;

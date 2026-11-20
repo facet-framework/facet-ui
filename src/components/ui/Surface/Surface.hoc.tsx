@@ -2,17 +2,18 @@ import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import { color, space } from "../../../design-system/tokens";
 import type { SurfaceProps } from "./Surface";
 
+/** `paper` is the background, `surface` carries content, `tint` marks context zones. */
 export type SurfaceTone = "paper" | "surface" | "tint" | "tint2" | "transparent";
 
 export type WithSurfaceProps = Omit<SurfaceProps, "computedStyle"> & {
   tone?: SurfaceTone;
-
+  /** Padding in pixels or as a token key. */
   padding?: number | keyof typeof space;
-
+  /** Hairline on exactly one edge — never a surrounding border. */
   edge?: "top" | "bottom" | "left" | "right" | "none";
-
+  /** Coloured rail on the left, e.g. for the lifecycle of a row. */
   rail?: string;
-
+  /** Its own surface scrolls itself instead of lengthening the page. */
   scroll?: boolean;
   style?: CSSProperties;
 };
@@ -25,6 +26,7 @@ const TONE_BACKGROUND: Record<SurfaceTone, string> = {
   transparent: "transparent",
 };
 
+/** Translates tone, edge and rail into concrete surface values. */
 export function withSurfaceLogic(Component: ComponentType<SurfaceProps>) {
   const Wrapped = ({
     tone = "surface",

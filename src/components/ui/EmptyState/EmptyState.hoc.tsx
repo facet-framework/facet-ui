@@ -6,10 +6,12 @@ export type WithEmptyStateProps = Omit<
   EmptyStateProps,
   "containerStyle" | "headlineStyle" | "bodyStyle"
 > & {
+  /** `quiet` is the normal case, `open` marks an open task. */
   tone?: "quiet" | "open";
   style?: CSSProperties;
 };
 
+/** Sets tone and spacing of the empty state. */
 export function withEmptyStateLogic(Component: ComponentType<EmptyStateProps>) {
   const Wrapped = ({ tone = "quiet", style, ...rest }: WithEmptyStateProps) => {
     const containerStyle = useMemo<CSSProperties>(

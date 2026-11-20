@@ -5,15 +5,19 @@ export type LifecycleBadgeProps = {
   markStyle: CSSProperties;
   labelStyle: CSSProperties;
   ageStyle: CSSProperties;
-
+  /** Plain words for the state, e.g. "active". */
   label: string;
-
+  /** Days in the state, already formatted — empty if there is no date. */
   age: string;
-
+  /** Complete statement for screen readers. */
   title: string;
   "data-testid"?: string;
 };
 
+/**
+ * Lifecycle of a record. The state is encoded twice: shape of the badge
+ * (filled · open · struck through) and word — never by colour alone.
+ */
 export function LifecycleBadge({
   containerStyle,
   markStyle,

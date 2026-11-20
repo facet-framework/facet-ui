@@ -1,4 +1,5 @@
-import { germanText as germanLabels } from "../../i18n/legacy/shared";
+/* Synthetic story data for TaskFlow, an example product: a registry of the same shape and size
+ * as a real one, with invented ids, texts, paths and history. Not taken from any repository. */
 import type { FixtureRegistry } from "./types";
 
 export const registry: FixtureRegistry = {
@@ -6339,7 +6340,8 @@ export const registry: FixtureRegistry = {
       domain: "workspace",
       capability: "board",
       slug: "header",
-      summary: germanLabels.text95,
+      summary:
+        "Lets a member work with the header in board: when the task is overdue, every member sees the same order. It also covers what happens when two edits arrive at once — the change is kept and shown at once. The header count, the list and the search results agree. An earlier version stays available for thirty days. The same rule applies on the web board, the des…",
       lifecycle: "active",
       owner: "core",
       createdAt: "2026-09-17",
@@ -21566,9 +21568,9 @@ export const registry: FixtureRegistry = {
   scan: {
     loc: 432019,
     files: 1852,
-    verankert: 525,
-    unverankert: 1327,
-    waisen: [],
+    anchored: 525,
+    unanchored: 1327,
+    orphans: [],
     lastChanged: 745,
   },
   calibration: [
@@ -21668,19 +21670,19 @@ export const registry: FixtureRegistry = {
     { path: "packages/task/webhook_export.go", loc: 172, dir: "packages/task", dirAnchoredPct: 95 },
   ],
   runners: [
-    { id: "web-cucumber", cwd: "apps/web", command: "pnpm test:e2e", bericht: "cucumber-json" },
+    { id: "web-cucumber", cwd: "apps/web", command: "pnpm test:e2e", report: "cucumber-json" },
     {
       id: "web-unit",
       cwd: "apps/web",
       command: "pnpm exec tsc --noEmit && pnpm exec jest --ci",
-      bericht: "junit",
+      report: "junit",
     },
-    { id: "sync-go", cwd: "", command: "go test -json ./services/sync/...", bericht: "go-json" },
+    { id: "sync-go", cwd: "", command: "go test -json ./services/sync/...", report: "go-json" },
     {
       id: "web-support",
       cwd: "",
       command: "node apps/web/scripts/support-checks.mjs",
-      bericht: "junit",
+      report: "junit",
     },
   ],
   bpmn: [

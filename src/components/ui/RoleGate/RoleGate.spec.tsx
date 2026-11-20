@@ -1,19 +1,19 @@
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/RoleGate/RoleGate.spec.text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RoleGateWithLogic, { RoleGate } from ".";
 import { ROLES } from "../../../core";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
 describe("Unit tests for RoleGate", () => {
-  it("asks the question and explains the effect of the answer", () => {
+  it("asks the question and says what the answer does", () => {
     render(<RoleGateWithLogic />);
-    expect(screen.getByRole("heading", { name: localized.text2 })).toBeInTheDocument();
-    expect(screen.getByText(localized.text3)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What are you here for?" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Sets the order, not the access. Switchable at any time."),
+    ).toBeInTheDocument();
   });
 
-  it("accepts an empty role list", () => {
+  it("accepts the plain version without roles", () => {
     render(
       <RoleGate
         containerStyle={{}}
@@ -23,18 +23,18 @@ describe("Unit tests for RoleGate", () => {
         listStyle={{}}
         skipStyle={{}}
         roles={[]}
-        headline={localized.text5}
+        headline="What are you here for?"
         sub=""
-        skipLabel={germanLabels.text157}
+        skipLabel="continue"
         onSkip={jest.fn()}
       />,
     );
-    expect(screen.getByRole("button", { name: germanLabels.text157 })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "continue" })).toBeInTheDocument();
   });
 });
 
 describe("Unit tests for withRoleGateLogic", () => {
-  it("offers all eight roles", () => {
+  it("offers all eight roles to choose from", () => {
     const { container } = render(<RoleGateWithLogic />);
     expect(container.querySelectorAll("[data-role]")).toHaveLength(ROLES.length);
   });
@@ -47,14 +47,14 @@ describe("Unit tests for withRoleGateLogic", () => {
     expect(numbers).toEqual(["01", "02", "03", "04", "05", "06", "07", "08"]);
   });
 
-  it("reports the selected role", async () => {
+  it("reports the chosen role", async () => {
     const onPick = jest.fn();
     render(<RoleGateWithLogic onPick={onPick} />);
-    await userEvent.click(screen.getByRole("button", { name: remainingText.text85 }));
+    await userEvent.click(screen.getByRole("button", { name: /Operations/ }));
     expect(onPick).toHaveBeenCalledWith("ops");
   });
 
-  it("supports keyboard interaction through button rows", async () => {
+  it("can be operated by keyboard — the rows are buttons", async () => {
     const onPick = jest.fn();
     render(<RoleGateWithLogic onPick={onPick} />);
     await userEvent.tab();
@@ -62,17 +62,27 @@ describe("Unit tests for withRoleGateLogic", () => {
     expect(onPick).toHaveBeenCalledWith("c");
   });
 
-  it("continues with the first role when skipping selection", async () => {
+  it("speaks German under the German locale", () => {
+    renderInGerman(<RoleGateWithLogic />);
+    expect(screen.getByRole("heading", { name: "Wofür bist du hier?" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Bestimmt die Reihenfolge, nicht den Zugang. Jederzeit umschaltbar."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ohne Auswahl fortfahren" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Betrieb/ })).toBeInTheDocument();
+  });
+
+  it("leads “continue without choosing” to the first role", async () => {
     const onPick = jest.fn();
     render(<RoleGateWithLogic onPick={onPick} />);
-    await userEvent.click(screen.getByRole("button", { name: localized.text10 }));
+    await userEvent.click(screen.getByRole("button", { name: "continue without choosing" }));
     expect(onPick).toHaveBeenCalledWith("c");
   });
 
-  it("accepts an alternative fallback", async () => {
+  it("accepts a different fallback", async () => {
     const onPick = jest.fn();
     render(<RoleGateWithLogic onPick={onPick} fallback="qa" />);
-    await userEvent.click(screen.getByRole("button", { name: localized.text12 }));
+    await userEvent.click(screen.getByRole("button", { name: "continue without choosing" }));
     expect(onPick).toHaveBeenCalledWith("qa");
   });
 

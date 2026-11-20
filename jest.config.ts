@@ -1,7 +1,6 @@
 import type { Config } from "jest";
 
 const config: Config = {
-  snapshotResolver: "<rootDir>/test/snapshotResolver.cjs",
   testEnvironment: "jest-environment-jsdom",
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   moduleNameMapper: {
@@ -17,7 +16,6 @@ const config: Config = {
   collectCoverageFrom: [
     "src/**/*.{ts,tsx}",
     "!src/**/*.stories.tsx",
-    "!src/i18n/**",
     "!src/**/index.ts",
     "!src/core/fixtures/**",
     "!src/facet/fixtures/**",

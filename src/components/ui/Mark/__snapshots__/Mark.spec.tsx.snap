@@ -1,0 +1,143 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for Mark brand animation 1`] = `
+<button
+  aria-label="Facet Atlas"
+  style="all: unset; cursor: pointer; display: inline-flex; line-height: 0; flex: 0 0 auto;"
+  type="button"
+>
+  <svg
+    aria-hidden="true"
+    height="13"
+    viewBox="0 0 158 100"
+    width="20"
+  >
+    <rect
+      data-facet-mark-bar="open-1"
+      fill="var(--ink)"
+      height="78"
+      width="22"
+      x="0"
+      y="11"
+    />
+    <rect
+      data-facet-mark-bar="open-2"
+      fill="var(--signal)"
+      height="78"
+      width="22"
+      x="34"
+      y="11"
+    />
+    <rect
+      data-facet-mark-bar="open-3"
+      fill="var(--line-2)"
+      height="78"
+      width="22"
+      x="68"
+      y="11"
+    />
+    <rect
+      data-facet-mark-bar="open-4"
+      fill="var(--line-2)"
+      height="78"
+      width="22"
+      x="102"
+      y="11"
+    />
+    <rect
+      data-facet-mark-bar="open-5"
+      fill="var(--line-2)"
+      height="78"
+      width="22"
+      x="136"
+      y="11"
+    />
+  </svg>
+</button>
+`;
+
+exports[`Snapshot tests for Mark loading animation 1`] = `
+<span
+  aria-label="Facet Atlas"
+  role="img"
+  style="display: inline-flex; line-height: 0; flex: 0 0 auto;"
+>
+  <svg
+    aria-hidden="true"
+    height="13"
+    viewBox="0 0 158 100"
+    width="20"
+  >
+    <rect
+      data-facet-mark-bar="load-1"
+      fill="var(--ink)"
+      height="78"
+      width="22"
+      x="0"
+      y="11"
+    />
+    <rect
+      data-facet-mark-bar="load-2"
+      fill="var(--signal)"
+      height="78"
+      width="22"
+      x="34"
+      y="11"
+    />
+    <rect
+      data-facet-mark-bar="load-3"
+      fill="var(--line-2)"
+      height="78"
+      width="22"
+      x="68"
+      y="11"
+    />
+    <rect
+      data-facet-mark-bar="load-4"
+      fill="var(--line-2)"
+      height="78"
+      width="22"
+      x="102"
+      y="11"
+    />
+    <rect
+      data-facet-mark-bar="load-5"
+      fill="var(--line-2)"
+      height="78"
+      width="22"
+      x="136"
+      y="11"
+    />
+  </svg>
+</span>
+`;
+
+exports[`Snapshot tests for Mark resting 1`] = `
+<span
+  aria-label="Facet Atlas"
+  role="img"
+  style="display: inline-flex; line-height: 0; flex: 0 0 auto;"
+>
+  <svg
+    aria-hidden="true"
+    height="20"
+    viewBox="0 0 100 100"
+    width="20"
+  >
+    <rect
+      fill="var(--ink)"
+      height="78"
+      width="44"
+      x="0"
+      y="0"
+    />
+    <rect
+      fill="var(--signal)"
+      height="78"
+      width="44"
+      x="56"
+      y="22"
+    />
+  </svg>
+</span>
+`;

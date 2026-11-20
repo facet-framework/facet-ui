@@ -1,0 +1,436 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for IndexProgress anchors are being searched 1`] = `
+<section
+  aria-busy="true"
+  aria-live="polite"
+  role="status"
+  style="display: grid; gap: 10px; align-content: center; justify-items: stretch; width: min(560px, 100%); margin: 0px auto; padding: var(--space-5) var(--space-4); min-width: 0;"
+>
+  <span
+    aria-label="Facet Atlas"
+    role="img"
+    style="display: inline-flex; line-height: 0; flex: 0 0 auto; justify-content: center; margin: 0 0 var(--space-3);"
+  >
+    <svg
+      aria-hidden="true"
+      height="41"
+      viewBox="0 0 158 100"
+      width="64"
+    >
+      <rect
+        data-facet-mark-bar="load-1"
+        fill="var(--ink)"
+        height="78"
+        width="22"
+        x="0"
+        y="11"
+      />
+      <rect
+        data-facet-mark-bar="load-2"
+        fill="var(--signal)"
+        height="78"
+        width="22"
+        x="34"
+        y="11"
+      />
+      <rect
+        data-facet-mark-bar="load-3"
+        fill="var(--line-2)"
+        height="78"
+        width="22"
+        x="68"
+        y="11"
+      />
+      <rect
+        data-facet-mark-bar="load-4"
+        fill="var(--line-2)"
+        height="78"
+        width="22"
+        x="102"
+        y="11"
+      />
+      <rect
+        data-facet-mark-bar="load-5"
+        fill="var(--line-2)"
+        height="78"
+        width="22"
+        x="136"
+        y="11"
+      />
+    </svg>
+  </span>
+  <p
+    style="margin: 0px; font-family: var(--font-sans); font-size: var(--text-lead); font-weight: 400; color: var(--ink);"
+  >
+    Searching the entry points in code
+  </p>
+  <ol
+    style="display: grid; gap: 2px; list-style: none; margin: var(--space-3) 0 0; padding: 0px;"
+  >
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid transparent;"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--ok);"
+      >
+        ✓
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; color: var(--ink);"
+      >
+        Connection
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--dim);"
+      >
+        up
+      </span>
+    </li>
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid transparent;"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--ok);"
+      >
+        ✓
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; color: var(--ink);"
+      >
+        Configuration
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--dim);"
+      >
+        .facetrc.yaml
+      </span>
+    </li>
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid transparent;"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--ok);"
+      >
+        ✓
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; color: var(--ink);"
+      >
+        Read records
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--dim);"
+      >
+        17
+      </span>
+    </li>
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid transparent;"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--ok);"
+      >
+        ✓
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; color: var(--ink);"
+      >
+        Count files
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--dim);"
+      >
+        0
+      </span>
+    </li>
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid var(--line-2);"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--signal);"
+      >
+        ▸
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 500; color: var(--ink);"
+      >
+        Find anchors
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--signal);"
+      >
+        1,204/2,481
+      </span>
+    </li>
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid transparent;"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--faint);"
+      >
+        ·
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; color: var(--faint);"
+      >
+        Build model
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--dim);"
+      />
+    </li>
+  </ol>
+  <div
+    aria-label="1,204 of 2,481 — Searching the entry points in code"
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="49"
+    role="progressbar"
+    style="position: relative; width: 100%; height: 2px; background: var(--line); min-width: 0;"
+  >
+    <div
+      style="width: 49%; height: 100%; background: var(--signal);"
+    />
+  </div>
+  <p
+    style="margin: 0px; font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--soft);"
+  >
+    1,204 of 2,481 files searched · 37 anchors
+  </p>
+  <ul
+    aria-hidden="true"
+    style="display: grid; gap: 1px; list-style: none; margin: var(--space-2) 0 0; padding: 0px; min-height: 90px; align-content: start;"
+  >
+    <li
+      style="font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0; text-transform: none; color: var(--dim); opacity: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      crates/sync/src/queue.rs
+    </li>
+  </ul>
+</section>
+`;
+
+exports[`Snapshot tests for IndexProgress records are being read 1`] = `
+<section
+  aria-busy="true"
+  aria-live="polite"
+  role="status"
+  style="display: grid; gap: 10px; align-content: center; justify-items: stretch; width: min(560px, 100%); margin: 0px auto; padding: var(--space-5) var(--space-4); min-width: 0;"
+>
+  <span
+    aria-label="Facet Atlas"
+    role="img"
+    style="display: inline-flex; line-height: 0; flex: 0 0 auto; justify-content: center; margin: 0 0 var(--space-3);"
+  >
+    <svg
+      aria-hidden="true"
+      height="41"
+      viewBox="0 0 158 100"
+      width="64"
+    >
+      <rect
+        data-facet-mark-bar="load-1"
+        fill="var(--ink)"
+        height="78"
+        width="22"
+        x="0"
+        y="11"
+      />
+      <rect
+        data-facet-mark-bar="load-2"
+        fill="var(--signal)"
+        height="78"
+        width="22"
+        x="34"
+        y="11"
+      />
+      <rect
+        data-facet-mark-bar="load-3"
+        fill="var(--line-2)"
+        height="78"
+        width="22"
+        x="68"
+        y="11"
+      />
+      <rect
+        data-facet-mark-bar="load-4"
+        fill="var(--line-2)"
+        height="78"
+        width="22"
+        x="102"
+        y="11"
+      />
+      <rect
+        data-facet-mark-bar="load-5"
+        fill="var(--line-2)"
+        height="78"
+        width="22"
+        x="136"
+        y="11"
+      />
+    </svg>
+  </span>
+  <p
+    style="margin: 0px; font-family: var(--font-sans); font-size: var(--text-lead); font-weight: 400; color: var(--ink);"
+  >
+    Reading the records
+  </p>
+  <p
+    style="margin: 0px; font-family: var(--font-mono); font-size: var(--text-meta); color: var(--dim); overflow-wrap: anywhere;"
+  >
+    /projects/taskflow
+  </p>
+  <ol
+    style="display: grid; gap: 2px; list-style: none; margin: var(--space-3) 0 0; padding: 0px;"
+  >
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid transparent;"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--ok);"
+      >
+        ✓
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; color: var(--ink);"
+      >
+        Connection
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--dim);"
+      >
+        up
+      </span>
+    </li>
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid transparent;"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--ok);"
+      >
+        ✓
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; color: var(--ink);"
+      >
+        Configuration
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--dim);"
+      >
+        .facetrc.yaml
+      </span>
+    </li>
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid var(--line-2);"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--signal);"
+      >
+        ▸
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 500; color: var(--ink);"
+      >
+        Read records
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--signal);"
+      >
+        7/17
+      </span>
+    </li>
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid transparent;"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--faint);"
+      >
+        ·
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; color: var(--faint);"
+      >
+        Count files
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--dim);"
+      />
+    </li>
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid transparent;"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--faint);"
+      >
+        ·
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; color: var(--faint);"
+      >
+        Find anchors
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--dim);"
+      />
+    </li>
+    <li
+      style="display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0px; border-bottom: 1px solid transparent;"
+    >
+      <span
+        aria-hidden="true"
+        style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--faint);"
+      >
+        ·
+      </span>
+      <span
+        style="font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; color: var(--faint);"
+      >
+        Build model
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--dim);"
+      />
+    </li>
+  </ol>
+  <div
+    aria-label="7 of 17 — Reading the records"
+    aria-valuemax="100"
+    aria-valuemin="0"
+    aria-valuenow="41"
+    role="progressbar"
+    style="position: relative; width: 100%; height: 2px; background: var(--line); min-width: 0;"
+  >
+    <div
+      style="width: 41%; height: 100%; background: var(--signal);"
+    />
+  </div>
+  <p
+    style="margin: 0px; font-family: var(--font-mono); font-size: var(--text-meta); font-variant-numeric: tabular-nums; color: var(--soft);"
+  >
+    7 of 17 records read
+  </p>
+  <ul
+    aria-hidden="true"
+    style="display: grid; gap: 1px; list-style: none; margin: var(--space-2) 0 0; padding: 0px; min-height: 90px; align-content: start;"
+  >
+    <li
+      style="font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0; text-transform: none; color: var(--dim); opacity: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      docs/facets/features/tasks/create/quick-add.yaml
+    </li>
+  </ul>
+</section>
+`;

@@ -1,27 +1,48 @@
-import { labelText } from "../i18n/legacy/labels";
-import { remainingText } from "../i18n/legacy/remaining";
-import { localized } from "../i18n/legacy/core/companion";
+/**
+ * The companion — the question in prose, answered from the corpus that was
+ * read.
+ *
+ * What lives here is a planner: it answers from what Atlas has counted anyway
+ * — how many records there are, which ones have no anchor, what is overdue.
+ * It is the floor everything else falls back to.
+ *
+ * Above it lie two paths that can do more. `agent.ts` sends the question to
+ * Claude Code in the repo, which really opens the files; `rag.ts` searches the
+ * vector index that `facet rag index` built. Which path is used when is decided
+ * by `companionRoute` further down: the index is asked when the planner could
+ * otherwise only say what it sees.
+ *
+ * What all three share is the limit of the tool: an advisor who speculates
+ * about a repository it has not read is worse than none. Every answer
+ * therefore names what it has read.
+ */
 
+import { de } from "../facet/i18n/de";
+import { en, type TextKey } from "../facet/i18n/en";
+import { ENGLISH_TEXT, type FacetText } from "../facet/i18n/text";
 import { focusItems } from "./focus";
-import { formatNumber, pct } from "./model";
+import { pct } from "./model";
 import type { ProbeMeaning } from "./probes";
 import type { AtlasModel, FacetRecord } from "./types";
 
+/** A key figure below the answer. */
 export type CompanionFact = { label: string; value: string; meaning: ProbeMeaning };
 
+/** A location that was read. `recordId` means: from here a jump leads into the detail view. */
 export type CompanionSource = { text: string; recordId: string | null };
 
 export type CompanionPlan = {
+  /** The answer in prose, with line breaks. */
   text: string;
   facts: CompanionFact[];
-
+  /** What the companion reads — step by step, while it answers. */
   reads: string[];
   sources: CompanionSource[];
-
+  /** The record the answer refers to. */
   openId: string | null;
-
+  /** Register section in which the answer continues. */
   section: string | null;
-
+  /** Obvious follow-up questions. */
   follow: string[];
 };
 
@@ -36,31 +57,84 @@ const from = (record: FacetRecord): CompanionSource => ({
   recordId: record.id,
 });
 
-export const COMPANION_INTRO = localized.text1;
+/**
+ * The opening sentence without a question — what the companion sees and what
+ * it can do. English; `text.t("core.companion.intro")` gives it in the active
+ * language.
+ */
+export const COMPANION_INTRO: string = en["core.companion.intro"];
 
-export const COMPANION_FOOT = localized.text2;
+/**
+ * The footer below the input field. It says what is behind it and covers all
+ * three cases: Atlas answers from what it has counted; with an index also from
+ * the wording of the records; with Claude Code in the repo also from the code.
+ * Each of the three is an honest account, and the difference shows in the
+ * sources anyway. English; `text.t("core.companion.foot")` gives it in the
+ * active language.
+ */
+export const COMPANION_FOOT: string = en["core.companion.foot"];
 
-export function companionScope(model: AtlasModel, roleTag: string, openId: string | null): string {
+/** The companion's header line: scope and role. */
+export function companionScope(
+  model: AtlasModel,
+  roleTag: string,
+  openId: string | null,
+  text: FacetText = ENGLISH_TEXT,
+): string {
   const sources = asStrings(model.rc.sources);
   const lines = typeof model.scan.totalLoc === "number" ? model.scan.totalLoc : 0;
+  const { number } = text;
   return (
-    `sieht: ${formatNumber(model.recs.length)} Records · ${sources.join(", ") || "—"} · ${formatNumber(lines)}${labelText.text386}` +
-    `${labelText.text387}${roleTag}${openId ? `${localized.text3}${openId}` : ""}`
+    text.t("core.companion.scope", {
+      records: number(model.recs.length),
+      sources: sources.join(", ") || "—",
+      lines: number(lines),
+    }) +
+    "\n" +
+    (openId
+      ? text.t("core.companion.scopeRoleOpen", { role: roleTag, id: openId })
+      : text.t("core.companion.scopeRole", { role: roleTag }))
   );
 }
 
-export function companionSuggestions(model: AtlasModel, openId: string | null, asked: number) {
+/** Suggestions while nothing has been asked yet — or matching the open record. */
+export function companionSuggestions(
+  model: AtlasModel,
+  openId: string | null,
+  asked: number,
+  text: FacetText = ENGLISH_TEXT,
+) {
+  const { t } = text;
   const open = openId ? model.byId[openId] : null;
   if (open) {
-    return [`${localized.text4}${open.label}${localized.text5}`, localized.text6, localized.text7];
+    return [
+      t("core.companion.suggest.recordOpen", { label: open.label }),
+      t("core.companion.suggest.where"),
+      t("core.companion.suggest.who"),
+    ];
   }
   if (asked) return [];
-  return [labelText.text388, localized.text8, localized.text9, localized.text10];
+  return [
+    t("core.companion.suggest.start"),
+    t("core.companion.suggest.overdue"),
+    t("core.companion.suggest.coverage"),
+    t("core.companion.suggest.unanchored"),
+  ];
 }
 
+/**
+ * The area in which a question is answered.
+ *
+ * `corpus` means: none. Neither a record by name nor one of the counted areas
+ * — Atlas then says what it sees instead of guessing. That is exactly the case
+ * the search index exists for, and that is why the decision is a function of
+ * its own and not a chain of `if`s in the answer path: what Atlas can answer
+ * itself and what it cannot must be readable from the outside.
+ */
 export type CompanionRoute =
   "record" | "rules" | "tests" | "open" | "teams" | "data" | "code" | "graph" | "ops" | "corpus";
 
+/** The record a question names — or none. */
 export function companionRecord(model: AtlasModel, question: string): FacetRecord | null {
   const q = question.toLowerCase();
   return (
@@ -73,110 +147,114 @@ export function companionRecord(model: AtlasModel, question: string): FacetRecor
   );
 }
 
-export function companionRoute(model: AtlasModel, question: string): CompanionRoute {
-  const q = question.toLowerCase();
-  const has = (...words: string[]) => words.some((word) => q.includes(word));
+type KeywordRoute = Exclude<CompanionRoute, "record" | "corpus">;
 
-  if (companionRecord(model, question)) return "record";
+/** The keyword areas in the order they are tried. */
+const ROUTE_ORDER: readonly KeywordRoute[] = [
+  "rules",
+  "tests",
+  "open",
+  "teams",
+  "data",
+  "code",
+  "graph",
+  "ops",
+];
 
-  if (has(localized.text11, "deadline", "compliance", localized.text12, "audit")) return "rules";
-  if (has("test", labelText.text389, "coverage", labelText.text13, labelText.extra8))
-    return "tests";
-  if (
-    has(
-      labelText.text390,
-      labelText.text391,
-      labelText.text392,
-      labelText.text393,
-      labelText.extra9,
-      labelText.extra10,
-    )
-  )
-    return "open";
-  if (has(localized.text13, "team", labelText.text394, "owner", labelText.text395)) return "teams";
-  if (
-    has(
-      labelText.extra11,
-      "pii",
-      labelText.text297,
-      labelText.extra12,
-      labelText.text396,
-      localized.text14,
-    )
-  )
-    return "data";
-  if (
-    has(
-      "code",
-      remainingText.text29,
-      labelText.text397,
-      labelText.text398,
-      "drift",
-      labelText.text399,
-      labelText.extra13,
-    )
-  )
-    return "code";
-  if (has(localized.text15, labelText.text400, labelText.text401, "graph", labelText.text402))
-    return "graph";
-  if (
-    has(remainingText.text30, "slo", labelText.text403, "runbook", labelText.text404, "monitoring")
-  )
-    return "ops";
-
-  return "corpus";
+/**
+ * The keywords of an area, from both dictionaries: a reader asks in their own
+ * language whatever language the surface speaks, so a German question finds
+ * its area in an English Atlas and the other way round. The entries are word
+ * stems separated by commas; a trailing space is part of the stem ("who ").
+ */
+function routeWords(route: KeywordRoute): string[] {
+  const key = `core.companion.route.${route}` as TextKey;
+  return [...en[key].split(","), ...de[key].split(",")].filter(Boolean);
 }
 
-export function companionAnswer(model: AtlasModel, question: string): CompanionPlan {
+/**
+ * Decides what the question is about.
+ *
+ * First a record is searched for in the wording — whoever names a name means
+ * it. After that, keywords decide the area. If both find nothing, it is
+ * `corpus`.
+ */
+export function companionRoute(model: AtlasModel, question: string): CompanionRoute {
+  const q = question.toLowerCase();
+  if (companionRecord(model, question)) return "record";
+  return (
+    ROUTE_ORDER.find((route) => routeWords(route).some((word) => q.includes(word))) ?? "corpus"
+  );
+}
+
+/**
+ * Plans the answer to a question from what Atlas has counted.
+ */
+export function companionAnswer(
+  model: AtlasModel,
+  question: string,
+  text: FacetText = ENGLISH_TEXT,
+): CompanionPlan {
   switch (companionRoute(model, question)) {
     case "record":
-      return aboutRecord(model, companionRecord(model, question)!);
+      return aboutRecord(model, companionRecord(model, question)!, text);
     case "rules":
-      return aboutRules(model);
+      return aboutRules(model, text);
     case "tests":
-      return aboutTests(model);
+      return aboutTests(model, text);
     case "open":
-      return aboutOpen(model);
+      return aboutOpen(model, text);
     case "teams":
-      return aboutTeams(model);
+      return aboutTeams(model, text);
     case "data":
-      return aboutData(model);
+      return aboutData(model, text);
     case "code":
-      return aboutCode(model);
+      return aboutCode(model, text);
     case "graph":
-      return aboutGraph(model);
+      return aboutGraph(model, text);
     case "ops":
-      return aboutOps(model);
+      return aboutOps(model, text);
     default:
-      return aboutCorpus(model);
+      return aboutCorpus(model, text);
   }
 }
 
+/**
+ * The agent's answer in the shape the companion renders.
+ *
+ * The difference to everything above: these sources are files that were
+ * really opened, not paths derived from the model. Where one of them is a
+ * record, the jump leads into the detail view as usual.
+ */
 export function agentPlan(
   model: AtlasModel,
-  text: string,
+  answer: string,
   reads: string[],
   searches: string[] = [],
+  text: FacetText = ENGLISH_TEXT,
 ): CompanionPlan {
   const seen = reads.filter((path, index) => path && reads.indexOf(path) === index);
   const byPath = new Map(model.recs.map((record) => [record.path, record.id]));
 
   const facts = [
-    fact("GELESEN", seen.length === 1 ? labelText.text405 : `${seen.length}${localized.text16}`),
+    fact(text.t("core.companion.fact.read"), text.plural("core.companion.files", seen.length)),
   ];
-
+  // A search in the index is not a read and is counted separately. Counting it
+  // under READ (`core.companion.fact.read`) would claim files nobody opened —
+  // and the agent really opens the found ones afterwards, so both numbers
+  // hold side by side.
   const found = searches.filter((query, index) => query && searches.indexOf(query) === index);
   if (found.length) {
     facts.push(
       fact(
-        "GESUCHT",
-        found.length === 1 ? remainingText.text31 : `${found.length}${localized.text17}`,
+        text.t("core.companion.fact.searched"),
+        text.plural("core.companion.questions", found.length),
       ),
     );
   }
 
   return {
-    text,
+    text: answer,
     facts,
     reads: seen,
     sources: seen.map((path) => ({ text: path, recordId: byPath.get(path) ?? null })),
@@ -186,34 +264,45 @@ export function agentPlan(
   };
 }
 
-function aboutRecord(model: AtlasModel, hit: FacetRecord): CompanionPlan {
+/** A record by name: what it is, and what is open about it. */
+function aboutRecord(model: AtlasModel, hit: FacetRecord, text: FacetText): CompanionPlan {
+  const { t, plural } = text;
   const anchors = model.anchorMap[hit.id] ?? [];
-  const facts = [fact(localized.text18, hit.lifecycle), fact("TEAM", hit.team || "—")];
+  const facts = [
+    fact(t("core.companion.fact.state"), hit.lifecycle),
+    fact(t("core.companion.fact.team"), hit.team || "—"),
+  ];
   if (hit.total) {
     facts.push(
       fact(
-        localized.text19,
-        `${hit.proven}/${hit.total}${localized.text20}`,
+        t("core.companion.fact.promises"),
+        t("core.companion.provenOf", { proven: String(hit.proven), total: String(hit.total) }),
         hit.proven === hit.total ? "neutral" : "signal",
       ),
     );
   }
-  if (anchors.length) facts.push(fact("CODE", `${anchors.length}${labelText.text406}`));
-  if (hit.clauses.length) facts.push(fact(labelText.text361, String(hit.clauses.length)));
-  if (hit.fields.length) facts.push(fact(labelText.text407, String(hit.fields.length)));
+  if (anchors.length)
+    facts.push(
+      fact(t("core.companion.fact.code"), plural("core.companion.entryPoints", anchors.length)),
+    );
+  if (hit.clauses.length) facts.push(fact(t("core.probes.clauses"), String(hit.clauses.length)));
+  if (hit.fields.length)
+    facts.push(fact(t("core.companion.fact.fields"), String(hit.fields.length)));
 
   const gaps: string[] = [];
   if (hit.total && hit.proven < hit.total) {
-    const missing = hit.total - hit.proven;
-    gaps.push(missing === 1 ? localized.text21 : `${missing}${localized.text22}`);
+    gaps.push(plural("core.companion.gap.untested", hit.total - hit.proven));
   }
-  if (hit.lifecycle === "active" && !anchors.length) gaps.push(localized.text23);
-  if (!hit.slos.length && !hit.alerts.length && hit.kind === "feature") gaps.push(localized.text24);
-  if (model.driftIds[hit.id]?.length) gaps.push(localized.text25);
+  if (hit.lifecycle === "active" && !anchors.length) gaps.push(t("core.companion.gap.unanchored"));
+  if (!hit.slos.length && !hit.alerts.length && hit.kind === "feature")
+    gaps.push(t("core.companion.gap.unmeasured"));
+  if (model.driftIds[hit.id]?.length) gaps.push(t("core.companion.gap.drift"));
 
   return {
     text: `${hit.summary || hit.label}\n\n${
-      gaps.length ? `${localized.text26}${gaps.join(", ")}.` : localized.text27
+      gaps.length
+        ? t("core.companion.record.open", { gaps: gaps.join(", ") })
+        : t("core.companion.record.nothingOpen")
     }`,
     facts,
     reads: [hit.path, ...anchors.map((anchor) => anchor.path)],
@@ -224,33 +313,41 @@ function aboutRecord(model: AtlasModel, hit: FacetRecord): CompanionPlan {
     openId: hit.id,
     section: null,
     follow: [
-      `${localized.text28}${hit.label}${localized.text29}`,
-      `${remainingText.text32}${hit.label}?`,
+      t("core.companion.follow.owner", { label: hit.label }),
+      t("core.companion.follow.missingTests", { label: hit.label }),
     ],
   };
 }
 
-function aboutRules(model: AtlasModel): CompanionPlan {
-  const rows = model.overdueList.map(
-    ({ rec, check }) => `${rec.label} · ${check.id}${localized.text30}${check.next_due}`,
+function aboutRules(model: AtlasModel, text: FacetText): CompanionPlan {
+  const { t, plural } = text;
+  const rows = model.overdueList.map(({ rec, check }) =>
+    t("core.probes.dueLine", {
+      label: rec.label,
+      id: String(check.id),
+      date: String(check.next_due),
+    }),
   );
-  const head = model.overdue === 1 ? localized.text31 : `${model.overdue}${localized.text32}`;
+  const head = plural("core.companion.rules.overdue", model.overdue, {
+    count: String(model.overdue),
+  });
   const tail = !model.stale
-    ? localized.text33
-    : model.stale === 1
-      ? localized.text34
-      : `${labelText.text408}${model.stale}${localized.text35}`;
+    ? t("core.companion.rules.noStale")
+    : plural("core.companion.rules.stale", model.stale, { count: String(model.stale) });
 
   return {
     text: model.overdue
       ? `${head}\n${rows.join("\n")}\n\n${tail}`
-      : `${localized.text36}${model.clauseCount}${labelText.text409}${model.mustCount} davon verpflichtend.\n\n${tail}`,
+      : `${t("core.companion.rules.noneOverdue", {
+          clauses: String(model.clauseCount),
+          must: String(model.mustCount),
+        })}\n\n${tail}`,
     facts: [
-      fact(localized.text37, String(model.overdue), model.overdue ? "deadline" : "neutral"),
-      fact(labelText.text361, String(model.clauseCount)),
-      fact("VERPFLICHTEND", String(model.mustCount)),
+      fact(t("core.probes.overdue"), String(model.overdue), model.overdue ? "due" : "neutral"),
+      fact(t("core.probes.clauses"), String(model.clauseCount)),
+      fact(t("core.probes.mandatory"), String(model.mustCount)),
       fact(
-        labelText.text410,
+        t("core.companion.fact.artifacts"),
         String(model.policies.reduce((sum, policy) => sum + policy.artifacts.length, 0)),
       ),
     ],
@@ -258,48 +355,66 @@ function aboutRules(model: AtlasModel): CompanionPlan {
     sources: model.policies.map(from),
     openId: null,
     section: "rules",
-    follow: [labelText.text411, remainingText.text33],
+    follow: [t("core.companion.follow.artifacts"), t("core.companion.follow.noPolicy")],
   };
 }
 
-function aboutTests(model: AtlasModel): CompanionPlan {
+function aboutTests(model: AtlasModel, text: FacetText): CompanionPlan {
+  const { t, number } = text;
   const worst = [...model.domainCov].sort((a, b) => (a.pct ?? 0) - (b.pct ?? 0))[0];
   const testLoc = typeof model.scan.testLoc === "number" ? model.scan.testLoc : 0;
   const totalLoc = typeof model.scan.totalLoc === "number" ? model.scan.totalLoc : 0;
 
   return {
     text:
-      `${pct(model.scnProven, model.scnTotal)}${localized.text38}${model.scnProven}${remainingText.text34}${model.scnTotal}${localized.text39}` +
-      `${localized.text40}${worst ? `${worst.name}${localized.text41}${worst.pct} %` : "—"}. ` +
-      `${remainingText.text35}${formatNumber(testLoc)}${remainingText.text34}${formatNumber(totalLoc)}${localized.text42}`,
+      t("core.companion.tests.share", {
+        pct: String(pct(model.scnProven, model.scnTotal)),
+        proven: String(model.scnProven),
+        total: String(model.scnTotal),
+      }) +
+      "\n\n" +
+      t("core.companion.tests.weakest", {
+        area: worst
+          ? t("core.companion.tests.area", { name: worst.name, pct: String(worst.pct) })
+          : "—",
+      }) +
+      " " +
+      t("core.companion.tests.lines", {
+        test: number(testLoc),
+        total: number(totalLoc),
+      }),
     facts: [
-      fact("TEST ZUGEORDNET", `${model.scnProven}/${model.scnTotal}`),
-      fact(localized.text43, String(model.scnTotal - model.scnProven), "signal"),
+      fact(t("core.probes.testMapped"), `${model.scnProven}/${model.scnTotal}`),
+      fact(t("core.probes.noTest"), String(model.scnTotal - model.scnProven), "signal"),
     ],
     reads: model.features.map((feature) => feature.path),
     sources: model.features.map(from),
     openId: null,
     section: "promises",
-    follow: [localized.text44, remainingText.text36],
+    follow: [t("core.companion.follow.untested"), t("core.companion.follow.e2e")],
   };
 }
 
-function aboutOpen(model: AtlasModel): CompanionPlan {
-  const all = focusItems(model);
+function aboutOpen(model: AtlasModel, text: FacetText): CompanionPlan {
+  const { t, plural } = text;
+  const all = focusItems(model, text);
   const items = all.slice(0, 5);
 
   return {
     text:
       `${
         all.length === 1
-          ? localized.text45
-          : `${remainingText.text37}${all.length}${localized.text46}${items.length === 1 ? localized.text47 : `${items.length}${localized.text48}`}:`
+          ? t("core.companion.open.single")
+          : plural("core.companion.open.many", items.length, {
+              total: String(all.length),
+              count: String(items.length),
+            })
       }\n${items.map((item, index) => `${index + 1}. ${item.title} — ${item.why}`).join("\n")}\n\n` +
-      localized.text49,
+      t("core.companion.open.deadlinesFirst"),
     facts: [
-      fact(localized.text50, String(all.length), all.length ? "signal" : "neutral"),
-      fact(remainingText.text38, String(model.overdue), model.overdue ? "deadline" : "neutral"),
-      fact(localized.text51, String(model.scnTotal - model.scnProven), "signal"),
+      fact(t("core.companion.fact.open"), String(all.length), all.length ? "signal" : "neutral"),
+      fact(t("core.probes.head.overdue"), String(model.overdue), model.overdue ? "due" : "neutral"),
+      fact(t("core.probes.noTest"), String(model.scnTotal - model.scnProven), "signal"),
     ],
     reads: model.paths.slice(0, 6),
     sources: items
@@ -308,28 +423,32 @@ function aboutOpen(model: AtlasModel): CompanionPlan {
       .map(from),
     openId: null,
     section: null,
-    follow: [localized.text52, localized.text53],
+    follow: [t("core.companion.suggest.overdue"), t("core.companion.follow.reach")],
   };
 }
 
-function aboutTeams(model: AtlasModel): CompanionPlan {
+function aboutTeams(model: AtlasModel, text: FacetText): CompanionPlan {
+  const { t, plural } = text;
   const names = Object.keys(model.teams);
   return {
     text:
-      `${names.length === 1 ? localized.text54 : `${names.length} Teams tragen Records. `}` +
+      plural("core.companion.teams.head", names.length, { count: String(names.length) }) +
       names
         .map(
           (team) =>
-            `${team} (${model.teams[team].items.length}, ${model.teams[team].contact || localized.text55})`,
+            `${team} (${model.teams[team].items.length}, ${model.teams[team].contact || t("core.probes.noContact")})`,
         )
         .join("\n") +
+      "\n\n" +
       (model.noOwner.length
-        ? `${localized.text56}${model.noOwner.map((record) => record.label).join(", ")}.`
-        : localized.text57),
+        ? t("core.companion.teams.noOwner", {
+            list: model.noOwner.map((record) => record.label).join(", "),
+          })
+        : t("core.quiet.allOwned")),
     facts: [
-      fact("TEAMS", String(names.length)),
+      fact(t("core.companion.fact.teams"), String(names.length)),
       fact(
-        localized.text58,
+        t("core.companion.fact.noTeam"),
         String(model.noOwner.length),
         model.noOwner.length ? "signal" : "neutral",
       ),
@@ -338,56 +457,74 @@ function aboutTeams(model: AtlasModel): CompanionPlan {
     sources: model.recs.slice(0, 5).map(from),
     openId: null,
     section: "teams",
-    follow: [localized.text59],
+    follow: [t("core.companion.follow.teamMostOpen")],
   };
 }
 
-function aboutData(model: AtlasModel): CompanionPlan {
+function aboutData(model: AtlasModel, text: FacetText): CompanionPlan {
+  const { t } = text;
   return {
     text:
-      `${model.pii}${localized.text60}${model.enc}${localized.text61}` +
+      t("core.companion.data.head", { pii: String(model.pii), enc: String(model.enc) }) +
+      "\n" +
       model.entities
-        .map((entity) => `${entity.label} · ${entity.fields.length}${labelText.text412}`)
+        .map((entity) =>
+          t("core.companion.data.entity", {
+            label: entity.label,
+            count: String(entity.fields.length),
+          }),
+        )
         .join("\n"),
     facts: [
-      fact(labelText.text366, String(model.pii), model.pii ? "deadline" : "neutral"),
-      fact(localized.text62, String(model.enc)),
-      fact("DATENOBJEKTE", String(model.entities.length)),
+      fact(t("core.probes.personal"), String(model.pii), model.pii ? "due" : "neutral"),
+      fact(t("core.probes.encrypted"), String(model.enc)),
+      fact(t("core.probes.entities"), String(model.entities.length)),
     ],
     reads: model.entities.map((entity) => entity.path),
     sources: model.entities.map(from),
     openId: null,
     section: "data",
-    follow: [localized.text63],
+    follow: [t("core.companion.follow.piiPolicies")],
   };
 }
 
-function aboutCode(model: AtlasModel): CompanionPlan {
+function aboutCode(model: AtlasModel, text: FacetText): CompanionPlan {
+  const { t, plural } = text;
   const drift = model.scan.drift ?? [];
   const orphans = (model.scan.orphanAnchors ?? []).length;
 
   return {
     text:
-      `${model.anchorPairs.length}${remainingText.text39}${Object.keys(model.anchorMap).length}${remainingText.text40}` +
-      (drift.length ? `${localized.text64}${drift.map((entry) => entry.id).join(", ")}.\n` : "") +
+      t("core.companion.code.head", {
+        anchors: String(model.anchorPairs.length),
+        features: String(Object.keys(model.anchorMap).length),
+      }) +
+      "\n" +
+      (drift.length
+        ? t("core.companion.code.changed", { ids: drift.map((entry) => entry.id).join(", ") }) +
+          "\n"
+        : "") +
       (!model.unanchored.length
-        ? localized.text65
-        : model.unanchored.length === 1
-          ? `${localized.text66}${model.unanchored[0].label}.`
-          : `${model.unanchored.length}${localized.text67}${model.unanchored.map((record) => record.label).join(", ")}.`) +
+        ? t("core.companion.code.allAnchored")
+        : plural("core.companion.code.unanchored", model.unanchored.length, {
+            count: String(model.unanchored.length),
+            labels: model.unanchored.map((record) => record.label).join(", "),
+          })) +
       (!orphans
         ? ""
-        : orphans === 1
-          ? localized.text68
-          : `${remainingText.text41}${orphans}${localized.text69}`),
+        : "\n" + plural("core.companion.code.orphans", orphans, { count: String(orphans) })),
     facts: [
-      fact(labelText.text363, String(model.anchorPairs.length)),
+      fact(t("core.probes.entryPoints"), String(model.anchorPairs.length)),
       fact(
-        localized.text70,
+        t("core.probes.withoutEntryPoint"),
         String(model.unanchored.length),
         model.unanchored.length ? "signal" : "neutral",
       ),
-      fact(localized.text71, String(drift.length), drift.length ? "deadline" : "neutral"),
+      fact(
+        t("core.companion.fact.changed"),
+        String(drift.length),
+        drift.length ? "due" : "neutral",
+      ),
     ],
     reads: model.anchorPairs.slice(0, 6).map((anchor) => anchor.path),
     sources: model.anchorPairs
@@ -395,22 +532,29 @@ function aboutCode(model: AtlasModel): CompanionPlan {
       .map((anchor) => ({ text: `${anchor.path}:${anchor.line}`, recordId: null })),
     openId: null,
     section: "code",
-    follow: [localized.text72],
+    follow: [t("core.companion.follow.unanchored")],
   };
 }
 
-function aboutGraph(model: AtlasModel): CompanionPlan {
+function aboutGraph(model: AtlasModel, text: FacetText): CompanionPlan {
+  const { t, plural } = text;
   return {
     text:
-      `${localized.text73}${model.edges.length}${localized.text74}${model.maxDepth}${model.maxDepth === 1 ? remainingText.text42 : remainingText.text43}` +
+      plural("core.companion.graph.head", model.maxDepth, {
+        edges: String(model.edges.length),
+        count: String(model.maxDepth),
+      }) +
+      "\n" +
       (!model.ghosts.length
-        ? localized.text75
-        : `${model.ghosts.length === 1 ? localized.text76 : remainingText.text44}${model.ghosts.join(", ")}.`),
+        ? t("core.companion.graph.allResolve")
+        : plural("core.companion.graph.ghosts", model.ghosts.length, {
+            list: model.ghosts.join(", "),
+          })),
     facts: [
-      fact("KANTEN", String(model.edges.length)),
-      fact("DEPTH", String(model.maxDepth)),
+      fact(t("core.probes.edges"), String(model.edges.length)),
+      fact(t("core.probes.depth"), String(model.maxDepth)),
       fact(
-        remainingText.text45,
+        t("core.probes.openReferences"),
         String(model.ghosts.length),
         model.ghosts.length ? "signal" : "neutral",
       ),
@@ -419,40 +563,53 @@ function aboutGraph(model: AtlasModel): CompanionPlan {
     sources: model.recs.slice(0, 4).map(from),
     openId: null,
     section: "graph",
-    follow: [localized.text77],
+    follow: [t("core.companion.follow.coupled")],
   };
 }
 
-function aboutOps(model: AtlasModel): CompanionPlan {
+function aboutOps(model: AtlasModel, text: FacetText): CompanionPlan {
+  const { t, plural } = text;
   const measured = model.recs.filter((record) => record.slos.length || record.alerts.length);
   return {
     text:
-      `${model.slos.length}${localized.text78}${model.alerts.length}${localized.text79}` +
+      t("core.companion.ops.head", {
+        slos: String(model.slos.length),
+        alerts: String(model.alerts.length),
+      }) +
+      "\n" +
       (!model.noRunbook
-        ? localized.text80
-        : model.noRunbook === 1
-          ? localized.text81
-          : `${model.noRunbook}${localized.text82}`) +
+        ? t("core.companion.ops.allRunbooks")
+        : plural("core.companion.ops.noRunbook", model.noRunbook, {
+            count: String(model.noRunbook),
+          })) +
       (!model.noObs.length
         ? ""
-        : model.noObs.length === 1
-          ? `${localized.text83}${model.noObs[0].label}.`
-          : `\n${model.noObs.length}${localized.text84}${model.noObs.map((feature) => feature.label).join(", ")}.`),
+        : "\n" +
+          plural("core.companion.ops.unmeasured", model.noObs.length, {
+            count: String(model.noObs.length),
+            labels: model.noObs.map((feature) => feature.label).join(", "),
+          })),
     facts: [
       fact("SLOS", String(model.slos.length)),
-      fact(labelText.text367, String(model.alerts.length)),
-      fact(localized.text85, String(model.noRunbook), model.noRunbook ? "signal" : "neutral"),
-      fact("MESSQUELLEN", model.sources.join(", ") || "—"),
+      fact(t("core.probes.alerts"), String(model.alerts.length)),
+      fact(
+        t("core.probes.noRunbook"),
+        String(model.noRunbook),
+        model.noRunbook ? "signal" : "neutral",
+      ),
+      fact(t("core.companion.fact.sources"), model.sources.join(", ") || "—"),
     ],
     reads: measured.map((record) => record.path),
     sources: measured.map(from),
     openId: null,
     section: "ops",
-    follow: [localized.text86],
+    follow: [t("core.companion.follow.noRunbook")],
   };
 }
 
-function aboutCorpus(model: AtlasModel): CompanionPlan {
+/** No question recognised: say what you see instead of guessing. */
+function aboutCorpus(model: AtlasModel, text: FacetText): CompanionPlan {
+  const { t, number } = text;
   const records = typeof model.rc.records === "string" ? model.rc.records : "docs/facets";
   const sources = asStrings(model.rc.sources);
   const lines = typeof model.scan.totalLoc === "number" ? model.scan.totalLoc : 0;
@@ -460,19 +617,30 @@ function aboutCorpus(model: AtlasModel): CompanionPlan {
 
   return {
     text:
-      `${localized.text87}${model.recs.length} Records unter ${records}${localized.text88}${sources.join(", ") || "sources"} — ${formatNumber(lines)}${labelText.text359}${scannedAt ? `, Stand ${scannedAt}` : ""}.\n\n` +
-      localized.text89,
+      t("core.companion.corpus.reads", {
+        count: String(model.recs.length),
+        records,
+        sources: sources.join(", ") || "sources",
+        lines: number(lines),
+        asOf: scannedAt ? t("core.companion.corpus.asOf", { date: scannedAt }) : "",
+      }) +
+      "\n\n" +
+      t("core.companion.corpus.ask"),
     facts: [
       fact("RECORDS", String(model.recs.length)),
-      fact(localized.text90, String(model.paths.length)),
-      fact(labelText.text413, formatNumber(lines)),
-      fact(localized.text91, String(focusItems(model).length), "signal"),
+      fact(t("core.companion.fact.files"), String(model.paths.length)),
+      fact(t("core.companion.fact.lines"), number(lines)),
+      fact(t("core.companion.fact.open"), String(focusItems(model, text).length), "signal"),
     ],
     reads: [".facetrc.yaml", records],
     sources: model.recs.slice(0, 3).map(from),
     openId: null,
     section: null,
-    follow: [labelText.text388, localized.text92, localized.text93],
+    follow: [
+      t("core.companion.suggest.start"),
+      t("core.companion.suggest.overdue"),
+      t("core.companion.suggest.coverage"),
+    ],
   };
 }
 

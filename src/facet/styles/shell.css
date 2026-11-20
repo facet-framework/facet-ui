@@ -1,8 +1,18 @@
+/* FACET — app frame: head with history chevrons, area bar, mobile tab bar, boot. */
+
+/* --t-bars-h is the bottom edge of the bars at the top: AppShell measures the
+   head and writes it here. Sticky rails and jump targets derive their offset
+   from it. The fallback is the head as drawn (rows plus their borders), for
+   the first paint and for markup without the shell component. */
 .t-shell {
+  --t-bars-h: calc(var(--t-head-h) + var(--t-nav-h) + 2px);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: var(--t-ground);
+}
+.t-shell__part {
+  display: contents;
 }
 .t-shell__head {
   position: sticky;
@@ -15,11 +25,16 @@
 .t-shell__nav {
   border-top: 1px solid var(--t-line);
 }
+.t-shell[data-layout="mobile"] {
+  --t-bars-h: 57px;
+}
 .t-shell__main {
   flex: 1;
   min-width: 0;
 }
 
+/* Focus mode ------------------------------------------------------------- */
+/* The page reads in larger type; the frame around it keeps its size. */
 .t-shell[data-focus="on"] .t-shell__main {
   --t-fs-12: 13px;
   --t-fs-13: 14px;
@@ -29,11 +44,13 @@
   --t-fs-20: 22px;
   --t-fs-28: 32px;
 }
-
+/* About four fifths of the window on a desktop, centred. */
 .t-shell[data-focus="on"][data-layout="desktop"] .t-page {
   max-width: min(1600px, 80vw);
 }
-
+/* With a pointer that hovers: once one block holds the pointer or the focus,
+   the blocks around it blur. Nothing hovered, nothing blurred; an open sheet
+   or dialog switches it off. */
 @media (hover: hover) {
   .t-shell[data-focus="on"] .t-shell__main :is(.t-page > *, .t-surface) {
     transition:
@@ -50,12 +67,74 @@
   }
 }
 
+/* Density ---------------------------------------------------------------- */
+/* Every gap and padding of the shell is a step of `--t-s-*`: compact takes
+   about three quarters of each step, wide about one and a third. Type keeps
+   its size, so a compact page shows more rows rather than smaller ones. */
+.t-shell[data-density="compact"] {
+  --t-s-1: 3px;
+  --t-s-2: 6px;
+  --t-s-3: 8px;
+  --t-s-4: 12px;
+  --t-s-5: 16px;
+  --t-s-6: 24px;
+  --t-s-7: 36px;
+  --t-s-8: 48px;
+}
+.t-shell[data-density="spacious"] {
+  --t-s-1: 6px;
+  --t-s-2: 10px;
+  --t-s-3: 16px;
+  --t-s-4: 22px;
+  --t-s-5: 32px;
+  --t-s-6: 44px;
+  --t-s-7: 64px;
+  --t-s-8: 84px;
+}
+
+/* Rows set their height in pixels of their own; density moves them too. */
+.t-shell[data-density="compact"] :is(.t-table td, .t-table th > span, .t-list-row, .t-c-setrow) {
+  padding-block: 6px;
+}
+.t-shell[data-density="spacious"] :is(.t-table td, .t-table th > span, .t-list-row, .t-c-setrow) {
+  padding-block: 16px;
+}
+
+/* Reduced motion ---------------------------------------------------------- */
+/* Set by the app for the reader's choice and for `prefers-reduced-motion`:
+   nothing animates, nothing transitions, nothing scrolls smoothly. A state
+   change lands at once, so motion can never stand between a click and its
+   result. Portalled cards render inside the shell and are covered too. */
+.t-shell[data-motion="reduced"] {
+  --t-dur-hit: 0ms;
+  --t-dur-enter: 0ms;
+  --t-dur-sheet: 0ms;
+  --t-dur-flight: 0ms;
+  --t-depth-blur: 0px;
+}
+.t-shell[data-motion="reduced"],
+.t-shell[data-motion="reduced"] *,
+.t-shell[data-motion="reduced"] *::before,
+.t-shell[data-motion="reduced"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* Top bar ---------------------------------------------------------------- */
+
 .t-top {
   display: flex;
   align-items: center;
   gap: 14px;
   height: var(--t-head-h);
   padding: 0 20px;
+}
+/* Only the command field and the plugins' actions give way on a narrow bar.
+   At 768 px the theme and settings buttons were squeezed to their 16 px icon
+   and the last one ran over the bar's padding (measured in Chromium). */
+.t-top > :not(.t-top__command):not(.t-top__actions) {
+  flex-shrink: 0;
 }
 .t-top[data-compact] {
   gap: 6px;
@@ -119,10 +198,44 @@
   font-size: var(--t-fs-14);
   font-weight: 600;
 }
+.t-top__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.t-more-actions {
+  gap: 8px;
+  margin-bottom: 16px;
+}
+/* Plugin doors in the bar: each plugin gets its own block holder from the
+   host, so without a row of their own two doors stack into a column. Scoped
+   to the shell so the older reader's own rule (and its bar gap) stays its own;
+   the gap is the bar's own 6px. */
+.t-shell .pluginslot[data-slot="header.action"] {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+/* The host's dot beside a plugin place nobody has opened yet. */
+.t-shell .pluginslot > .glow {
+  display: inline-block;
+  flex-shrink: 0;
+  align-self: center;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--t-signal);
+  animation: t-d-glow 1.8s ease-out infinite;
+}
+.t-shell[data-motion="reduced"] .pluginslot > .glow {
+  animation: none;
+}
 .t-top__command {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 120px;
   width: min(420px, 34vw);
   height: 36px;
   padding: 0 8px 0 12px;
@@ -150,7 +263,8 @@
     display: none;
   }
 }
-
+/* The offset follows the measured drift; a change slides, never blocks, and
+   reduced motion jumps straight to the new offset. */
 .t-logo-mark {
   flex: none;
 }
@@ -171,6 +285,8 @@
   background: var(--t-signal-wash);
   box-shadow: inset 2px 0 0 var(--t-signal);
 }
+
+/* Area bar ---------------------------------------------------------------- */
 
 .t-nav {
   display: flex;
@@ -248,6 +364,8 @@
   border-color: var(--t-signal);
 }
 
+/* Mobile tab bar ------------------------------------------------------------ */
+
 .t-tabbar {
   position: fixed;
   z-index: 40;
@@ -312,6 +430,8 @@
   font-size: var(--t-fs-12);
   cursor: pointer;
 }
+
+/* Boot ------------------------------------------------------------------------ */
 
 .t-boot {
   position: fixed;
@@ -407,11 +527,13 @@
   font-family: var(--t-mono);
   font-weight: 500;
 }
-
+/* Leaving: the mark shrinks toward the logo's place, the ground fades. */
 .t-boot[data-leaving] {
   animation: t-boot-out var(--t-dur-flight) var(--t-ease-out) forwards;
 }
 .t-boot {
+  /* Where the top bar draws the logo: after the history group on desktop,
+     after the back chevron on mobile. The mark lands there. */
   --t-boot-target-x: 144px;
   --t-boot-target-y: 32px;
 }
@@ -421,7 +543,7 @@
     --t-boot-target-y: 28px;
   }
 }
-
+/* Leaving: the mark leaves the flow and flies from the middle to the logo. */
 .t-boot[data-leaving] .t-loadmark {
   position: fixed;
   left: 50%;
@@ -450,6 +572,9 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .t-shell .pluginslot > .glow {
+    animation: none;
+  }
   .t-shell[data-focus="on"] .t-shell__main :is(.t-page > *, .t-surface) {
     transition: none;
   }

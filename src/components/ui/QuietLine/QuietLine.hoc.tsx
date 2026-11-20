@@ -3,10 +3,12 @@ import { color, font, fontSize } from "../../../design-system/tokens";
 import type { QuietLineProps } from "./QuietLine";
 
 export type WithQuietLineProps = Omit<QuietLineProps, "computedStyle"> & {
+  /** `ok` colours the sentence green when quiet is a good result. */
   tone?: "quiet" | "ok";
   style?: CSSProperties;
 };
 
+/** Sets the soft tone of the quiet sentence. */
 export function withQuietLineLogic(Component: ComponentType<QuietLineProps>) {
   const Wrapped = ({ tone = "quiet", style, ...rest }: WithQuietLineProps) => {
     const computedStyle = useMemo<CSSProperties>(

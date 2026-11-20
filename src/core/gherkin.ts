@@ -1,19 +1,25 @@
-import { labelText } from "../i18n/legacy/labels";
-import { remainingText } from "../i18n/legacy/remaining";
-import { localized } from "../i18n/legacy/core/gherkin";
+/**
+ * Gherkin — parser and token highlighting. `*` counts as `And`; `And`/`But`
+ * inherit an existing parent `Given`/`When`/`Then`. Text lines without a
+ * keyword continue the previous step.
+ */
 
+import { ENGLISH_TEXT, type FacetText } from "../facet/i18n/text";
+import { gherkinLabel } from "./labels";
 import type { GherkinKeyword, ScenarioStep } from "./types";
 
+/** English role labels; `gherkinLabel` from `./labels` follows the active language. */
 export const GHERKIN_LABEL: Record<GherkinKeyword, string> = {
-  GIVEN: "AUSGANGSLAGE",
-  WHEN: "AKTION",
-  THEN: labelText.text331,
-  AND: localized.text1,
-  BUT: localized.text2,
+  GIVEN: "GIVEN",
+  WHEN: "WHEN",
+  THEN: "THEN",
+  AND: "AND",
+  BUT: "BUT",
 };
 
 const KEYWORD_RE = /^(Given|When|Then|And|But|\*)\s+(.*)$/i;
 
+/** Splits a `statement` into steps. Empty input yields an empty list. */
 export function parseGherkin(statement: string | null | undefined): ScenarioStep[] {
   const steps: ScenarioStep[] = [];
   let lastKind: GherkinKeyword | "" = "";
@@ -52,7 +58,9 @@ export type GherkinToken = {
   text: string;
 };
 
-const TOKEN_RE = localized.tokenPattern;
+// Units in English and in German: statements are record content, written in the project's language.
+const TOKEN_RE =
+  /("[^"]*"|'[^']*'|<[^>]+>|\b\d+(?:[.,]\d+)?\s*(?:%|px|ms|s|min|h|d|days?|months?|seconds?|minutes?|hours?|characters?|Tage?|Monate?|Sekunden?|Minuten?|Stunden?|Zeichen)?\b|\b[a-z_]+(?:_[a-z]+)+\b|\btrue\b|\bfalse\b|\bnull\b)/g;
 
 function oneLine(text: string): string {
   return String(text ?? "")
@@ -60,6 +68,10 @@ function oneLine(text: string): string {
     .trim();
 }
 
+/**
+ * Splits a step text into tokens for highlighting:
+ * quoted values, `<placeholders>`, `snake_case`, literals, numbers with a unit, prose.
+ */
 export function tokenizeGherkin(text: string | null | undefined): GherkinToken[] {
   const src = oneLine(text ?? "");
   const out: GherkinToken[] = [];
@@ -85,10 +97,18 @@ export function tokenizeGherkin(text: string | null | undefined): GherkinToken[]
   return out;
 }
 
-export function scenarioPreview(steps: ScenarioStep[]): { label: string; text: string } | null {
+/**
+ * A readable preview line for lists: the OUTCOME with its role in front.
+ * If there is no `Then`, the last step is used under the label "PROMISE"
+ * (`core.gherkin.promise`).
+ */
+export function scenarioPreview(
+  steps: ScenarioStep[],
+  text: FacetText = ENGLISH_TEXT,
+): { label: string; text: string } | null {
   if (!steps.length) return null;
   const then = steps.find((s) => s.keyword === "THEN" || s.parent === "THEN");
-  if (then) return { label: GHERKIN_LABEL.THEN, text: oneLine(then.text) };
+  if (then) return { label: gherkinLabel("THEN", text), text: oneLine(then.text) };
   const last = steps[steps.length - 1];
-  return { label: remainingText.text52, text: oneLine(last.text) };
+  return { label: text.t("core.gherkin.promise"), text: oneLine(last.text) };
 }

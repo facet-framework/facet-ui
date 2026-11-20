@@ -1,23 +1,36 @@
 import { render, screen } from "@testing-library/react";
-import { de, en, FacetTextProvider, useText, type TextKey } from ".";
+import { de, en, TextProvider, useText, type TextKey } from ".";
 import { Pagination } from "../primitives/collection";
 import { BootScreen, HistoryMenu, TopBar } from "../shell/Shell";
 import { HISTORY } from "../fixtures/shell";
 
+/**
+ * Keys whose German text may equal the English one, because the word is a
+ * technical term or a product name that German keeps as it is.
+ */
 const SAME_IN_GERMAN: ReadonlySet<TextKey> = new Set<TextKey>([
   "shell.history.kind.plugin", // "Plugin" — technical term
   "shell.nav.plugin", // "Plugin" — technical term
   "shell.role.agent.name", // "Agent" — same word in both languages
-  "c.hub.k.tests.label", // "Tests" — technical term
-  "c.hub.k.anchors.view.treemap", // "Treemap" — technical term
-  "c.hub.k.glossary.view.az", // "A–Z"
   "shell.nav.item.records", // "Records" — FACET term
   "shell.boot.records", // "Records" — FACET term, used untranslated in German
-  "c.fixed.hash", // "Hash" — technical term
-  "c.fixed.records", // "Records" — FACET term
-  "c.fixed.ticket", // "Ticket" — same word
+  "core.label.testKind.integration", // "Integration" — same word
+  "core.focus.label.record", // "Record" — FACET term
+  "core.focus.label.test", // "Test" — same word
+  "core.roles.gov.tag", // "COMPLIANCE" — same word
+  "core.roles.gov.title", // "Compliance" — same word
+  "core.companion.fact.team", // "TEAM" — same word
+  "core.companion.fact.code", // "CODE" — same word
+  "core.companion.fact.teams", // "TEAMS" — same word
+  "elements.anchorMap.head", // only placeholders around "in"
+  "elements.groupTiles.caption", // only placeholders around "in"
+  "elements.indexProgress.registry", // "Registry {{name}}" — FACET term
+  "elements.seal.stripe", // only placeholders
+  "elements.signalStack.slos.one", // "SLO" — same word
+  "elements.signalStack.slos.other", // "SLOs" — same word
 ]);
 
+/** Fewer keys than this means the guard read the wrong thing, not that all is well. */
 const MIN_KEYS = 60;
 
 describe("dictionaries", () => {
@@ -33,7 +46,7 @@ describe("dictionaries", () => {
     expect(deKeys).toEqual(enKeys);
   });
 
-  it("translate every German value unless it is an allowed technical term", () => {
+  it("translate every German value unless it is an allowed technical term under the German locale", () => {
     const untranslated = (enKeys as TextKey[]).filter(
       (k) => de[k] === en[k] && !SAME_IN_GERMAN.has(k),
     );
@@ -74,19 +87,19 @@ describe("useText", () => {
     expect(screen.getByTestId("number")).toHaveTextContent("12,345");
   });
 
-  it("speaks German inside a de provider, with plural forms and German numbers", () => {
+  it("speaks German inside a de provider, with plural forms and German numbers under the German locale", () => {
     const { rerender } = render(
-      <FacetTextProvider locale="de">
+      <TextProvider locale="de">
         <Probe count={1} />
-      </FacetTextProvider>,
+      </TextProvider>,
     );
     expect(screen.getByTestId("text")).toHaveTextContent("Rolle: Agent");
     expect(screen.getByTestId("plural")).toHaveTextContent("1 älterer");
     expect(screen.getByTestId("number")).toHaveTextContent("12.345");
     rerender(
-      <FacetTextProvider locale="de">
+      <TextProvider locale="de">
         <Probe count={1234} />
-      </FacetTextProvider>,
+      </TextProvider>,
     );
     expect(screen.getByTestId("plural")).toHaveTextContent("1.234 ältere");
   });
@@ -98,9 +111,9 @@ describe("useText", () => {
 
   it("lets the app replace single texts and falls back to English text for other locales", () => {
     render(
-      <FacetTextProvider locale="fr-FR" dictionary={{ "shell.more.role": "Rôle : {{name}}" }}>
+      <TextProvider locale="fr-FR" dictionary={{ "shell.more.role": "Rôle : {{name}}" }}>
         <Probe count={2} />
-      </FacetTextProvider>,
+      </TextProvider>,
     );
     expect(screen.getByTestId("locale")).toHaveTextContent("fr-FR");
     expect(screen.getByTestId("text")).toHaveTextContent("Rôle : Agent");
@@ -116,9 +129,9 @@ describe("components reach the dictionary", () => {
     expect(screen.getByRole("button", { name: "Page 48" })).toBeInTheDocument();
   });
 
-  it("switch the shell to German through the provider", () => {
+  it("switch the shell to German through the provider under the German locale", () => {
     render(
-      <FacetTextProvider locale="de">
+      <TextProvider locale="de">
         <TopBar
           canBack={false}
           canForward
@@ -126,7 +139,7 @@ describe("components reach the dictionary", () => {
           theme={{ label: "Hell", icon: "sun" }}
           stats={{ features: 1234, provenPct: 61, drift: null }}
         />
-      </FacetTextProvider>,
+      </TextProvider>,
     );
     expect(screen.getByRole("button", { name: "Zurück — noch kein früherer Ort" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Vor" })).toBeEnabled();
@@ -137,19 +150,19 @@ describe("components reach the dictionary", () => {
 
   it("name history kinds and boot phases from the dictionary, in both languages", () => {
     const { unmount } = render(<HistoryMenu entries={HISTORY} />);
-    expect(screen.getByRole("menuitem", { name: /column/ })).toHaveTextContent("Record");
+    expect(screen.getByRole("menuitem", { name: /adr-plugin/ })).toHaveTextContent("Record");
     unmount();
     render(
-      <FacetTextProvider locale="de">
+      <TextProvider locale="de">
         <HistoryMenu entries={HISTORY} />
         <BootScreen
           phase="index"
           progress={null}
           counts={{ records: 3, files: null, anchors: null }}
         />
-      </FacetTextProvider>,
+      </TextProvider>,
     );
-    expect(screen.getByRole("menuitem", { name: /column/ })).toHaveTextContent("Akte");
+    expect(screen.getByRole("menuitem", { name: /adr-plugin/ })).toHaveTextContent("Akte");
     expect(screen.getByText("Anker indizieren")).toBeInTheDocument();
     expect(screen.getByRole("progressbar", { name: "Fortschritt" })).toHaveAttribute(
       "aria-valuetext",

@@ -1,3 +1,5 @@
+/** Shared coercion of unvalidated YAML values used by record normalization and registry aggregation. */
+
 import type { YamlValue } from "./yaml";
 
 export function asRecord(value: YamlValue | undefined): Record<string, YamlValue> {
@@ -14,6 +16,7 @@ export function asString(value: YamlValue | undefined): string {
   return value == null ? "" : String(value);
 }
 
+/** Turn `quick-add` into `Quick add` without introducing a label absent from the identifier. */
 export function humanize(segment: string): string {
   const s = String(segment ?? "")
     .replace(/[-_]/g, " ")

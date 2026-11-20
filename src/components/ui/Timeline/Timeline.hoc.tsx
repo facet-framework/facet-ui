@@ -1,10 +1,9 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/Timeline/Timeline.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
-import { formatNumber } from "../../../core";
 import { color, font, fontSize, MEANING_COLOR } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { TimelineBucket, TimelineProps } from "./Timeline";
 
+/** A dated event. Anything before the day is enough: `2026-07` counts as July. */
 export type TimelineEvent = { date: string };
 
 export type WithTimelineProps = Omit<
@@ -18,55 +17,61 @@ export type WithTimelineProps = Omit<
   | "emptyText"
 > & {
   events: TimelineEvent[];
-
+  /** What is counted: "records", "evidence". */
   unit?: string;
-
+  /** `auto` switches to years as soon as the months become unreadably narrow. */
   bucket?: "month" | "year" | "auto";
-
+  /** Height of the drawing area in pixels. */
   height?: number;
   emptyText?: string;
   style?: CSSProperties;
 };
 
-const MONTHS = [
-  labelText.text459,
-  labelText.text460,
-  localized.text1,
-  "April",
-  labelText.text208,
-  labelText.text461,
-  labelText.text462,
-  "August",
-  "September",
-  labelText.text463,
-  "November",
-  labelText.text464,
-];
-
+/** From here on a month column becomes narrower than its label. */
 const MAX_MONTHS = 60;
-
+/** A section with exactly one event must stay visible. */
 const MIN_BLOCK = 2;
-
+/**
+ * Widest column. Without a cap, an axis with three months draws three
+ * hand-wide blocks across the page — that reads like a statement about the
+ * amount, and that is already in the height.
+ */
 const MAX_COLUMN = 28;
 
+/**
+ * Counts dated events into months or years and builds a
+ * gapless axis from them.
+ *
+ * Gapless means: between the first and the last event every
+ * section gets a column, the empty ones too. A chart that only draws the months
+ * with content claims an evenness that did not exist.
+ */
 export function withTimelineLogic(Component: ComponentType<TimelineProps>) {
   const Wrapped = ({
     events,
-    unit = "Records",
+    unit: unitProp,
     bucket = "auto",
     height = 96,
-    emptyText = localized.text2,
+    emptyText: emptyTextProp,
     style,
     ...rest
   }: WithTimelineProps) => {
+    const { t, locale, number } = useText();
+    const unit = unitProp ?? t("elements.timeline.unit");
+    const emptyText = emptyTextProp ?? t("elements.timeline.empty");
+    // Month names follow the active language; UTC keeps the month independent of the time zone.
+    const monthName = useMemo(() => {
+      const format = new Intl.DateTimeFormat(locale, { month: "long", timeZone: "UTC" });
+      return (month: number) => format.format(new Date(Date.UTC(2000, month - 1, 1)));
+    }, [locale]);
     const counted = useMemo(() => count(events, bucket), [bucket, events]);
 
     const buckets = useMemo<TimelineBucket[]>(() => {
       const max = counted.rows.reduce((n, row) => Math.max(n, row.count), 0);
       return counted.rows.map((row, index) => ({
         key: row.key,
-        label: `${nameOf(row.key, counted.mode)} · ${
-          row.count ? `${formatNumber(row.count)} ${unit}` : "nichts angelegt"
+        label: `${nameOf(row.key, counted.mode, monthName)} · ${
+          row.count ? `${number(row.count)} ${unit}` : t("elements.timeline.nothingCreated")
         }`,
         height: row.count ? Math.max(MIN_BLOCK, Math.round((row.count / max) * height)) : 0,
         tick: tickOf(counted.rows, index, counted.mode),
@@ -74,22 +79,26 @@ export function withTimelineLogic(Component: ComponentType<TimelineProps>) {
         blockStyle: BLOCK_STYLE,
         tickStyle: TICK_STYLE,
       }));
-    }, [counted, height, unit]);
+    }, [counted, height, monthName, t, unit, number]);
 
     const caption = useMemo(() => {
       if (!counted.rows.length) return emptyText;
       const total = counted.rows.reduce((n, row) => n + row.count, 0);
       const peak = counted.rows.reduce((best, row) => (row.count > best.count ? row : best));
-      const first = nameOf(counted.rows[0].key, counted.mode);
-      const last = nameOf(counted.rows[counted.rows.length - 1].key, counted.mode);
-      const range = first === last ? first : `${first}${labelText.text465}${last}`;
-
-      const peakText = `${labelText.text466}${nameOf(peak.key, counted.mode)}${localized.text3}${formatNumber(peak.count)}`;
+      const first = nameOf(counted.rows[0].key, counted.mode, monthName);
+      const last = nameOf(counted.rows[counted.rows.length - 1].key, counted.mode, monthName);
+      const range = first === last ? first : t("elements.timeline.range", { first, last });
+      // The densest section is the only peak one is meant to read off the shape
+      // — so it stands next to it as a number.
+      const peakText = t("elements.timeline.peak", {
+        name: nameOf(peak.key, counted.mode, monthName),
+        count: number(peak.count),
+      });
       const skipped = counted.undated
-        ? ` · ${formatNumber(counted.undated)}${localized.text4}`
+        ? ` · ${t("elements.timeline.undated", { count: number(counted.undated) })}`
         : "";
-      return `${formatNumber(total)} ${unit} · ${range} · ${peakText}${skipped}`;
-    }, [counted, emptyText, unit]);
+      return `${number(total)} ${unit} · ${range} · ${peakText}${skipped}`;
+    }, [counted, emptyText, monthName, t, unit, number]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({ display: "grid", gap: 6, minWidth: 0, ...style }),
@@ -100,12 +109,13 @@ export function withTimelineLogic(Component: ComponentType<TimelineProps>) {
       () => ({
         display: "grid",
         gridTemplateColumns: `repeat(${Math.max(counted.rows.length, 1)}, minmax(0, 1fr))`,
-
+        // Two pixels of paper between the columns, so that two full months do not
+        // merge into one block.
         gap: 2,
         alignItems: "end",
         height,
         maxWidth: counted.rows.length * MAX_COLUMN,
-
+        // The baseline is a hairline, not an axis with ticks.
         borderBottom: `1px solid ${color.line}`,
         listStyle: "none",
         margin: 0,
@@ -146,6 +156,7 @@ export function withTimelineLogic(Component: ComponentType<TimelineProps>) {
 type Mode = "month" | "year";
 type Row = { key: string; count: number };
 
+/** `2026-07-30` → `2026-07`. Anything that is not a date is counted and discarded. */
 function count(events: TimelineEvent[], bucket: "month" | "year" | "auto") {
   const months: Record<string, number> = {};
   let undated = 0;
@@ -196,11 +207,15 @@ function monthKey(index: number): string {
   return `${year}-${String(month).padStart(2, "0")}`;
 }
 
-function nameOf(key: string, mode: Mode): string {
+function nameOf(key: string, mode: Mode, monthName: (month: number) => string): string {
   if (mode === "year") return key;
-  return `${MONTHS[Number(key.slice(5, 7)) - 1]} ${key.slice(0, 4)}`;
+  return `${monthName(Number(key.slice(5, 7)))} ${key.slice(0, 4)}`;
 }
 
+/**
+ * The turn of the year is labelled — and the first section only when
+ * there is room for both numbers before the next turn of the year.
+ */
 function tickOf(rows: Row[], index: number, mode: Mode): string | null {
   if (mode === "year") return rows[index].key;
   const key = rows[index].key;
@@ -219,7 +234,7 @@ const COLUMN_STYLE: CSSProperties = {
 
 const BLOCK_STYLE: CSSProperties = {
   width: "100%",
-
+  // A timeline measures amount, not state: one colour, no palette.
   background: MEANING_COLOR.signal,
 };
 

@@ -1,42 +1,39 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/DepthLadder/DepthLadder.spec.text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import DepthLadderWithLogic, { DepthLadder, withDepthLadderLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
 describe("Unit tests for DepthLadder", () => {
-  it("renders levels as a tab list", () => {
+  it("renders the levels as a tab list", () => {
     render(
       <DepthLadder
         containerStyle={{}}
         hintStyle={{}}
-        label={labelText.text277}
-        hint={germanLabels.text155}
+        label="Depth ladder"
+        hint="→ deeper"
         onKeyDown={jest.fn()}
         steps={[
-          { key: "a", label: remainingText.text83, current: true, style: {}, onSelect: jest.fn() },
-          { key: "b", label: localized.text2, current: false, style: {}, onSelect: jest.fn() },
+          { key: "a", label: "Answer", current: true, style: {}, onSelect: jest.fn() },
+          { key: "b", label: "Evidence", current: false, style: {}, onSelect: jest.fn() },
         ]}
       />,
     );
-    expect(screen.getByRole("tablist", { name: labelText.text277 })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent(remainingText.text83);
+    expect(screen.getByRole("tablist", { name: "Depth ladder" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Answer");
   });
 
-  it("shows the keyboard hint", () => {
+  it("shows the key hint", () => {
     render(
       <DepthLadder
         containerStyle={{}}
         hintStyle={{}}
-        label={labelText.text277}
-        hint={localized.text4}
+        label="Depth ladder"
+        hint="→ deeper · ← back"
         onKeyDown={jest.fn()}
         steps={[]}
       />,
     );
-    expect(screen.getByText(localized.text5)).toBeInTheDocument();
+    expect(screen.getByText("→ deeper · ← back")).toBeInTheDocument();
   });
 });
 
@@ -46,53 +43,60 @@ describe("Unit tests for withDepthLadderLogic", () => {
     expect(screen.getAllByRole("tab")).toHaveLength(3);
   });
 
-  it("marks the current level", () => {
-    render(<DepthLadderWithLogic depth={2} />);
-    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent(localized.text8);
+  it("names the default levels and the hint in German under the German locale", () => {
+    renderInGerman(<DepthLadderWithLogic depth={2} />);
+    expect(screen.getByRole("tablist", { name: "Detailstufen" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Beleg");
+    expect(screen.getByText("→ detaillierter · ← zurück")).toBeInTheDocument();
   });
 
-  it("reports a clicked level", async () => {
+  it("marks the current level", () => {
+    render(<DepthLadderWithLogic depth={2} />);
+    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Evidence");
+  });
+
+  it("reports the level choice on click", async () => {
     const onDepthChange = jest.fn();
     render(<DepthLadderWithLogic depth={1} onDepthChange={onDepthChange} />);
-    await userEvent.click(screen.getByRole("tab", { name: remainingText.text84 }));
+    await userEvent.click(screen.getByRole("tab", { name: "Raw source" }));
     expect(onDepthChange).toHaveBeenCalledWith(3);
   });
 
-  it("moves forward with ArrowRight and back with ArrowLeft", async () => {
+  it("goes deeper with arrow right and back with arrow left", async () => {
     const onDepthChange = jest.fn();
     render(<DepthLadderWithLogic depth={2} onDepthChange={onDepthChange} />);
-    screen.getByRole("tab", { name: localized.text11 }).focus();
+    screen.getByRole("tab", { name: "Evidence" }).focus();
     await userEvent.keyboard("{ArrowRight}");
     expect(onDepthChange).toHaveBeenLastCalledWith(3);
     await userEvent.keyboard("{ArrowLeft}");
     expect(onDepthChange).toHaveBeenLastCalledWith(1);
   });
 
-  it("stops at either end", async () => {
+  it("stops at the ends", async () => {
     const onDepthChange = jest.fn();
     render(<DepthLadderWithLogic depth={3} onDepthChange={onDepthChange} />);
-    screen.getByRole("tab", { name: remainingText.text84 }).focus();
+    screen.getByRole("tab", { name: "Raw source" }).focus();
     await userEvent.keyboard("{ArrowRight}");
     expect(onDepthChange).toHaveBeenCalledWith(3);
   });
 
-  it("accepts custom test levels", () => {
-    render(<DepthLadderWithLogic depth={1} steps={[labelText.text278, "Detail"]} />);
+  it("accepts custom levels", () => {
+    render(<DepthLadderWithLogic depth={1} steps={["Summary", "Detail"]} />);
     expect(screen.getAllByRole("tab")).toHaveLength(2);
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withDepthLadderLogic(DepthLadder).displayName).toBe("withDepthLadderLogic(DepthLadder)");
   });
 });
 
 describe("Snapshot tests for DepthLadder", () => {
-  it("Answer level", () => {
+  it("level answer", () => {
     const { container } = render(<DepthLadderWithLogic depth={1} />);
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("Raw source level", () => {
+  it("level raw source", () => {
     const { container } = render(<DepthLadderWithLogic depth={3} />);
     expect(container.firstChild).toMatchSnapshot();
   });

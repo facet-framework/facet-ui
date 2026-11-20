@@ -1,21 +1,20 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/Companion/Companion";
 import type { CSSProperties } from "react";
+import { useText } from "../../../facet/i18n";
 import Mark from "../Mark";
 import Markdown from "../Markdown";
 
+/** A passage that was read, shown under an answer. */
 export type CompanionSourceView = {
   key: string;
   text: string;
-
+  /** Jump to the detail. Without it the row is only a statement. */
   onOpen?: () => void;
   openLabel: string;
 };
 
 export type CompanionMessage = {
   key: string;
-
+  /** The question stands at a mark, the answer stands free. */
   fromUser: boolean;
   text: string;
   facts: { label: string; value: string; valueStyle: CSSProperties }[];
@@ -62,39 +61,54 @@ export type CompanionProps = {
   footStyle: CSSProperties;
 
   title: string;
-
+  /** What the companion sees — scope, role, open record. */
   scope: string;
   clearLabel: string;
   onClear: () => void;
   onClose: () => void;
-
+  /** Shown instead of the conversation as long as nothing has been asked. */
   intro: string;
   showIntro: boolean;
   messages: CompanionMessage[];
-
+  /** The files being read right now — the last one is the current one. */
   reads: string[];
   busy: boolean;
-
+  /**
+   * What the agent is thinking right now, while it writes it. Empty when it is
+   * not thinking or the model does not reveal its thinking.
+   */
   thinking?: string;
-
+  /** Counted thinking tokens. Measured, not guessed. */
   thinkingTokens?: number;
-
+  /** Expanded it shows the wording, collapsed only that thinking is going on. */
   thinkingOpen?: boolean;
   onThinkingToggle?: () => void;
-
+  /** The tools that ran: what they are and on what. */
   activity?: { key: string; tool: string; target: string }[];
-
+  /** Does the companion take up the whole screen? */
   fullscreen?: boolean;
   onFullscreen?: () => void;
-
+  /** The models that can be chosen from. */
   models?: { id: string; label: string; note?: string }[];
   model?: string;
   onModel?: (id: string) => void;
-
+  /**
+   * A notice that is not an answer: nobody signed in, no agent present.
+   * It carries the sentence that fixes it, because an error message without a
+   * way out only leaves the reader at a loss.
+   */
   notice?: { text: string; hint: string } | null;
-
+  /**
+   * Cancels the running answer. Without it there is nothing to cancel — a
+   * button without effect would be worse than none.
+   */
   onStop?: () => void;
-
+  /**
+   * A question asked during the running answer that is waiting. It does not
+   * appear as a speech bubble right away, because nobody is answering it yet —
+   * first as a notice, then, once the running answer is complete, as a real
+   * question.
+   */
   queued?: string | null;
   onCancelQueued?: () => void;
   suggestions: { key: string; text: string; onAsk: () => void }[];
@@ -103,12 +117,22 @@ export type CompanionProps = {
   onSend: () => void;
   placeholder: string;
   sendLabel: string;
-
+  /** What stands behind the companion. */
   foot: string;
   scrollRef?: (element: HTMLDivElement | null) => void;
   "data-testid"?: string;
 };
 
+/**
+ * The companion — a column on the right that answers questions in prose.
+ *
+ * For every answer it says what it read, and while reading it says so line by
+ * line. That is no decoration: information about a repository is only worth
+ * as much as the statement of where it comes from.
+ *
+ * It changes nothing. That is why what lies behind it stands below the input
+ * field, and not merely a send button.
+ */
 export function Companion({
   containerStyle,
   headStyle,
@@ -177,6 +201,7 @@ export function Companion({
   scrollRef,
   ...rest
 }: CompanionProps) {
+  const { t } = useText();
   return (
     <aside style={containerStyle} aria-label={title} {...rest}>
       <div style={headStyle}>
@@ -189,9 +214,10 @@ export function Companion({
               style={actionStyle}
               value={model ?? ""}
               onChange={(event) => onModel(event.target.value)}
-              aria-label={germanLabels.text36}
+              aria-label={t("elements.companion.model")}
               title={
-                models.find((entry) => entry.id === (model ?? ""))?.note ?? germanLabels.text36
+                models.find((entry) => entry.id === (model ?? ""))?.note ??
+                t("elements.companion.model")
               }
             >
               {models.map((entry) => (
@@ -213,11 +239,11 @@ export function Companion({
               onClick={onFullscreen}
               aria-pressed={Boolean(fullscreen)}
             >
-              {fullscreen ? labelText.text317 : labelText.text318}
+              {fullscreen ? t("elements.companion.shrink") : t("elements.companion.fullscreen")}
             </button>
           ) : null}
           <button type="button" style={actionStyle} onClick={onClose}>
-            {localized.text1}
+            {t("elements.companion.close")}
           </button>
         </div>
         <p style={scopeStyle}>{scope}</p>
@@ -236,7 +262,9 @@ export function Companion({
               <p style={askStyle}>{message.text}</p>
             ) : (
               <>
-                {}
+                {/* Answers come from a model and are written in Markdown —
+                    shown as a paragraph, the asterisks would stand on screen
+                    too. */}
                 <Markdown text={message.text} style={answerStyle} />
 
                 <div style={factsStyle}>
@@ -250,7 +278,7 @@ export function Companion({
 
                 {message.sources.length ? (
                   <>
-                    <p style={readsHeadStyle}>GELESEN</p>
+                    <p style={readsHeadStyle}>{t("elements.companion.read")}</p>
                     {message.sources.map((source) => (
                       <div key={source.key} style={sourceRowStyle}>
                         <span style={sourceStyle}>{source.text}</span>
@@ -268,7 +296,7 @@ export function Companion({
                   <div style={jumpRowStyle}>
                     {message.onOpen ? (
                       <button type="button" style={jumpStyle} onClick={message.onOpen}>
-                        {localized.text2}
+                        {t("elements.companion.openDetail")}
                       </button>
                     ) : null}
                     {message.onSection ? (
@@ -300,7 +328,7 @@ export function Companion({
 
         {notice ? (
           <div style={busyStyle} role="status" data-companion-notice>
-            <p style={readsHeadStyle}>{localized.text3}</p>
+            <p style={readsHeadStyle}>{t("elements.companion.notReady")}</p>
             <p style={answerStyle}>{notice.text}</p>
             {notice.hint ? <p style={introStyle}>{notice.hint}</p> : null}
           </div>
@@ -308,7 +336,16 @@ export function Companion({
 
         {busy ? (
           <div style={busyStyle} aria-live="polite">
-            {}
+            {/*
+              The heartbeat is always there, from the first moment on — not
+              only once the agent has something to show. Between the click on
+              "Ask" and the first line there is a real pause (the process
+              is still starting), and until now that pause showed only a
+              heading with no lines below it: unchanged, so it looked stuck
+              rather than working. `Mark` in the `loading` variant is built
+              exactly for this — it runs without an end state as long as
+              something is not there yet.
+            */}
             <div
               style={{
                 display: "flex",
@@ -317,12 +354,12 @@ export function Companion({
                 marginBottom: thinking || (activity && activity.length) || reads.length ? 10 : 0,
               }}
             >
-              <Mark variant="loading" size={13} label={labelText.text319} />
-              <span style={readsHeadStyle}>{labelText.text320}</span>
+              <Mark variant="loading" size={13} label={t("elements.companion.workingLabel")} />
+              <span style={readsHeadStyle}>{t("elements.companion.working")}</span>
               <span style={{ flex: 1 }} />
               {onStop ? (
                 <button type="button" style={stopStyle} onClick={onStop} data-companion-stop>
-                  {germanLabels.text168}
+                  {t("elements.companion.stop")}
                 </button>
               ) : null}
             </div>
@@ -335,16 +372,17 @@ export function Companion({
                   onClick={onThinkingToggle}
                   aria-expanded={Boolean(thinkingOpen)}
                 >
-                  {`DENKT${thinkingTokens ? ` · ${thinkingTokens}` : ""}`}
+                  {`${t("elements.companion.thinking")}${thinkingTokens ? ` · ${thinkingTokens}` : ""}`}
                 </button>
-                {}
+                {/* Collapsed, the last sentence stays: that thinking is going on
+                    shows in the counter, what is being thought only in the wording. */}
                 <div style={readStyle(true)}>{thinkingOpen ? thinking : thinking.slice(-160)}</div>
               </div>
             ) : null}
 
             {activity && activity.length ? (
               <>
-                <p style={readsHeadStyle}>{labelText.text321}</p>
+                <p style={readsHeadStyle}>{t("elements.companion.tools")}</p>
                 {activity.map((entry, index) => (
                   <div key={entry.key} style={readStyle(index === activity.length - 1)}>
                     {entry.tool}
@@ -354,7 +392,7 @@ export function Companion({
               </>
             ) : reads.length ? (
               <>
-                <p style={readsHeadStyle}>{localized.text4}</p>
+                <p style={readsHeadStyle}>{t("elements.companion.reading")}</p>
                 {reads.map((read, index) => (
                   <div key={`${read}-${index}`} style={readStyle(index === reads.length - 1)}>
                     {read}
@@ -367,11 +405,11 @@ export function Companion({
 
         {queued ? (
           <div style={busyStyle} data-companion-queued>
-            <p style={readsHeadStyle}>WARTET</p>
+            <p style={readsHeadStyle}>{t("elements.companion.waiting")}</p>
             <p style={{ ...readStyle(true), whiteSpace: "normal" }}>{queued}</p>
             {onCancelQueued ? (
               <button type="button" style={stopStyle} onClick={onCancelQueued}>
-                {localized.text5}
+                {t("elements.companion.withdraw")}
               </button>
             ) : null}
           </div>
@@ -406,6 +444,9 @@ export function Companion({
             value={draft}
             onChange={(event) => onDraft(event.target.value)}
             onKeyDown={(event) => {
+              // Esc cancels when there is something to cancel — otherwise it
+              // does nothing instead of clearing the field. The eyes stay on the
+              // keyboard, not on a button somewhere in the history.
               if (event.key === "Escape" && onStop) onStop();
             }}
             placeholder={placeholder}

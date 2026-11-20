@@ -6,7 +6,12 @@ const meta: Meta<typeof FieldSheetWithLogic> = {
   title: "FACET UI/FieldSheet",
   component: FieldSheetWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Fields of a data object with sensitivity and retention. Personal data without a retention period is an open point, not an empty field.",
+      },
+    },
   },
   args: { fields: taskflowRecord("data/tasks/task-item").fields },
   decorators: [

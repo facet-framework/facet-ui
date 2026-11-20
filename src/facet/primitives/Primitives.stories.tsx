@@ -1,7 +1,3 @@
-import { labelText } from "../../i18n/legacy/labels";
-import { remainingText } from "../../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../../i18n/legacy/shared";
-import { localized } from "../../i18n/legacy/facet/primitives/Primitives.stories.text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { Icon, iconNames } from "./Icon";
@@ -45,7 +41,7 @@ export default meta;
 type Story = StoryObj;
 
 export const Colors: Story = {
-  name: "Colors",
+  name: "Foundations · Colors",
   render: () => {
     const tokens = [
       "ground",
@@ -88,28 +84,26 @@ export const Colors: Story = {
 };
 
 export const Typography: Story = {
-  name: "Typography",
+  name: "Foundations · Typography",
   render: () => (
     <div className="t-stack" style={{ gap: 18, maxWidth: 900 }}>
       <span className="t-eyebrow">Overview · facet</span>
       <span className="t-hero-number">94 %</span>
-      <h1 className="t-hero-sentence">{localized.text2}</h1>
-      <p className="t-lead">{localized.text3}</p>
-      <h2 className="t-h1">{localized.text4}</h2>
-      <h3 className="t-h2">{localized.text5}</h3>
-      <h4 className="t-h3">{localized.text6}</h4>
-      <p>
-        {localized.text7}
-        <code className="t-mono">@facet:</code>
-        {germanLabels.text1}
+      <h1 className="t-hero-sentence">1,853 of 1,971 promises are backed.</h1>
+      <p className="t-lead">
+        118 are waiting for a test, 18 files have moved since the last comparison.
       </p>
-      <span className="t-meta">Meta · 12. Nov 2026 · c0abdee4</span>
+      <h2 className="t-h1">Heading 1</h2>
+      <h3 className="t-h2">Heading 2</h3>
+      <h4 className="t-h3">Heading 3</h4>
+      <p>binds the code to it.</p>
+      <span className="t-meta">Meta · 12 Nov 2026 · c0abdee4</span>
     </div>
   ),
 };
 
 export const Icons: Story = {
-  name: "Icons",
+  name: "Foundations · Icons",
   render: () => (
     <div className="t-grid" style={{ ["--t-grid-min" as string]: "120px", gap: 10 }}>
       {iconNames.map((n) => (
@@ -135,16 +129,16 @@ function ControlsDemo() {
     <div className="t-stack" style={{ gap: 24, maxWidth: 900 }}>
       <div className="t-row t-row--wrap">
         <Button variant="primary" icon="plus">
-          Page create
+          Add page
         </Button>
-        <Button icon="edit">{remainingText.text1}</Button>
+        <Button icon="edit">Edit</Button>
         <Button variant="quiet" icon="copy">
-          {germanLabels.text2}
+          Copy
         </Button>
         <Button variant="danger" icon="trash">
-          {localized.text8}
+          Delete
         </Button>
-        <Button size="small">{labelText.text1}</Button>
+        <Button size="small">Small</Button>
         <Button disabled>Disabled</Button>
         <IconButton icon="settings" label="Settings" />
       </div>
@@ -154,10 +148,10 @@ function ControlsDemo() {
         </Chip>
         <Chip count={1}>planned</Chip>
         <Chip onRemove={() => undefined}>atlas</Chip>
-        <Badge tone="ok">proven</Badge>
+        <Badge tone="ok">backed</Badge>
         <Badge tone="warn">Drift</Badge>
         <Badge tone="plan">planned</Badge>
-        <Badge tone="bad">{labelText.text2}</Badge>
+        <Badge tone="bad">red</Badge>
         <Badge tone="signal">new</Badge>
         <Dot tone="ok" />
         <Dot tone="warn" />
@@ -168,7 +162,7 @@ function ControlsDemo() {
       <div className="t-row t-row--wrap" style={{ gap: 24 }}>
         <Switch checked={on} label="Motion" onChange={setOn} />
         <Segment
-          label={localized.text9}
+          label="View"
           value={view}
           onChange={setView}
           options={[
@@ -189,25 +183,25 @@ function ControlsDemo() {
         ]}
       />
       <div className="t-cols-2">
-        <SearchField label="Search" value={q} placeholder="Record, File, Term" onChange={setQ} />
-        <Field label="Title" hint={localized.text11}>
-          {(id) => <input id={id} className="t-input" defaultValue={remainingText.text2} />}
+        <SearchField label="Search" value={q} placeholder="Record, file, term" onChange={setQ} />
+        <Field label="Title" hint="Becomes the heading of the page.">
+          {(id) => <input id={id} className="t-input" defaultValue="First steps" />}
         </Field>
-        <Field label="path" error={localized.text12}>
+        <Field label="Path" error="This path is already taken.">
           {(id) => (
             <input
               id={id}
               className="t-input"
-              defaultValue="entrypoint/getting-started.md"
+              defaultValue="getting-started/first-steps.md"
               aria-invalid="true"
             />
           )}
         </Field>
-        <Field label={"Category"}>
+        <Field label="Capability">
           {(id) => (
-            <select id={id} className="t-select" defaultValue="Entry">
-              <option>EntryPoint</option>
-              <option>{labelText.text3}</option>
+            <select id={id} className="t-select" defaultValue="Getting started">
+              <option>Getting started</option>
+              <option>Guides</option>
             </select>
           )}
         </Field>
@@ -216,48 +210,48 @@ function ControlsDemo() {
   );
 }
 
-export const Bedienelemente: Story = { render: () => <ControlsDemo /> };
+export const Controls: Story = { render: () => <ControlsDemo /> };
 
 export const Display: Story = {
   render: () => (
     <div className="t-stack" style={{ gap: 28, maxWidth: 1000 }}>
       <Finding
         eyebrow="Overview"
-        figure="94%"
+        figure="94 %"
         tone="ok"
-        sentence={localized.text14}
-        lead={localized.text15}
+        sentence="1,853 of 1,971 promises are backed."
+        lead="118 are waiting for a test."
       />
       <div className="t-row t-row--wrap" style={{ gap: 40 }}>
-        <Stat value="217" label={localized.text16} large />
-        <Stat value="18" label={localized.text17} tone="warn" />
-        <Stat value="525" of="1.852" label={localized.text18} />
+        <Stat value="217" label="active features" large />
+        <Stat value="18" label="files with drift" tone="warn" />
+        <Stat value="525" of="1,852" label="files anchored" />
       </div>
       <div className="t-stack" style={{ gap: 10, maxWidth: 420 }}>
-        <Meter value={0.94} label="proven" />
+        <Meter value={0.94} label="backed" />
         <Meter value={0.28} tone="warn" label="Drift" />
-        <Meter value={null} label={localized.text19} />
+        <Meter value={null} label="not measured" />
       </div>
       <Distribution
-        label={localized.text20}
+        label="State of the features"
         parts={[
-          { key: "a", label: "proven", value: 182, tone: "var(--t-ok)" },
+          { key: "a", label: "backed", value: 182, tone: "var(--t-ok)" },
           { key: "b", label: "partial", value: 26, tone: "var(--t-warn)" },
           { key: "c", label: "planned", value: 9, tone: "var(--t-plan)" },
         ]}
       />
-      <Section title="Section" meta={localized.text21} actions={<Button size="small">All</Button>}>
+      <Section title="Section" meta="12 entries" actions={<Button size="small">All</Button>}>
         <Surface pad={false}>
           <ListRow
             lead={<Dot tone="ok" />}
             title="Commit-Gate"
-            sub="lists/permissions/admin"
+            sub="authoring/guardrails/commit-gate"
             trail={<Badge tone="ok">19/19</Badge>}
           />
           <ListRow
             lead={<Dot tone="warn" />}
-            title="Drift-Note"
-            sub="lists/permissions/lock"
+            title="Drift notice"
+            sub="authoring/guardrails/drift-notice"
             trail={<Badge tone="warn">Drift</Badge>}
           />
         </Surface>
@@ -269,11 +263,15 @@ export const Display: Story = {
       <div className="t-cols-2">
         <EmptyState
           icon="decision"
-          title={localized.text22}
-          body={localized.text23}
-          action={<Button icon="plus">ADR create</Button>}
+          title="No decisions yet"
+          body="Add the first ADR under docs/adr."
+          action={<Button icon="plus">Add ADR</Button>}
         />
-        <ErrorState title={localized.text24} reason={localized.text25} onRetry={() => undefined} />
+        <ErrorState
+          title="Records not readable"
+          reason="facet ui does not answer on /api/model."
+          onRetry={() => undefined}
+        />
       </div>
     </div>
   ),
@@ -295,7 +293,7 @@ function CollectionDemo({ state, mobile }: { state: CollectionState; mobile?: bo
         <CollectionToolbar
           query=""
           queryLabel="Search decisions"
-          placeholder={labelText.text4}
+          placeholder="Title, number, person"
           facets={[
             { key: "accepted", label: "accepted", count: 298, active: true },
             { key: "superseded", label: "superseded", count: 77 },
@@ -312,11 +310,11 @@ function CollectionDemo({ state, mobile }: { state: CollectionState; mobile?: bo
           ]}
         />
       }
-      empty={{ title: localized.text28, body: localized.text29, icon: "decision" }}
+      empty={{ title: "No decisions yet", body: "docs/adr is empty.", icon: "decision" }}
       filteredEmpty={{ query: "sidecar 2019" }}
       error={{
-        title: localized.text30,
-        reason: localized.text31,
+        title: "Directory not readable",
+        reason: "repo.list refuses docs/adr: outside the grant.",
         onRetry: () => undefined,
       }}
       pagination={
@@ -342,7 +340,7 @@ function CollectionDemo({ state, mobile }: { state: CollectionState; mobile?: bo
         columns={[
           {
             key: "number",
-            label: "Nr.",
+            label: "No.",
             numeric: true,
             sortable: true,
             width: 64,
@@ -351,7 +349,7 @@ function CollectionDemo({ state, mobile }: { state: CollectionState; mobile?: bo
           { key: "title", label: "Title", sortable: true, render: (r) => r.title },
           {
             key: "status",
-            label: "status",
+            label: "Status",
             render: (r) => (
               <Badge
                 tone={
@@ -371,7 +369,7 @@ function CollectionDemo({ state, mobile }: { state: CollectionState; mobile?: bo
           { key: "area", label: "Area", hideOnMobile: true, render: (r) => r.area },
           {
             key: "refs",
-            label: "records",
+            label: "Records",
             numeric: true,
             sortable: true,
             hideOnMobile: true,
@@ -390,27 +388,27 @@ function CollectionDemo({ state, mobile }: { state: CollectionState; mobile?: bo
 }
 
 export const CollectionReady: Story = {
-  name: "Collection Ready",
+  name: "Collection · 480 entries",
   render: () => <CollectionDemo state="ready" />,
 };
 export const CollectionLoading: Story = {
-  name: "Collection Loading",
+  name: "Collection · loading",
   render: () => <CollectionDemo state="loading" />,
 };
 export const CollectionEmpty: Story = {
-  name: "Collection Empty",
+  name: "Collection · empty",
   render: () => <CollectionDemo state="empty" />,
 };
 export const CollectionNoMatches: Story = {
-  name: "Collection No Matches",
+  name: "Collection · no matches",
   render: () => <CollectionDemo state="filtered-empty" />,
 };
 export const CollectionError: Story = {
-  name: "Collection Error",
+  name: "Collection · error",
   render: () => <CollectionDemo state="error" />,
 };
 export const CollectionMobile: Story = {
-  name: "Collection Mobile",
+  name: "Collection · mobile",
   globals: { viewport: { value: "mobile" } },
   render: () => <CollectionDemo state="ready" mobile />,
 };
@@ -452,10 +450,10 @@ function OverlayDemo() {
               label: "Record",
               items: [
                 { key: "c", label: "Copy id", icon: "copy", meta: "C" },
-                { key: "o", label: localized.text37, icon: "code" },
+                { key: "o", label: "Open in editor", icon: "code" },
               ],
             },
-            { items: [{ key: "a", label: localized.text38, icon: "chat", active: true }] },
+            { items: [{ key: "a", label: "Ask Atlas", icon: "chat", active: true }] },
           ]}
         />
       </div>
@@ -463,17 +461,17 @@ function OverlayDemo() {
         tone="ok"
         action={
           <Button size="small" variant="quiet">
-            {localized.text39}
+            Undo
           </Button>
         }
       >
-        {remainingText.text3}
+        Id copied
       </Toast>
     </div>
   );
 }
 
-export const Overlays: Story = { name: "Overlays", render: () => <OverlayDemo /> };
+export const Overlays: Story = { render: () => <OverlayDemo /> };
 
 export const Drawer: Story = {
   parameters: { layout: "fullscreen" },
@@ -481,30 +479,30 @@ export const Drawer: Story = {
     <Sheet
       open
       title="commit-gate"
-      meta="lists/permissions/admin"
+      meta="authoring/guardrails/commit-gate"
       onClose={() => undefined}
-      footer={<Button variant="primary">{localized.text41}</Button>}
+      footer={<Button variant="primary">Open</Button>}
     >
-      <p className="t-lead">{localized.text42}</p>
+      <p className="t-lead">The commit gate refuses a commit while the lint is red.</p>
     </Sheet>
   ),
 };
 
-export const DialogOverlay: Story = {
+export const DialogWindow: Story = {
   parameters: { layout: "fullscreen" },
   render: () => (
     <Dialog
       open
-      title="History clear?"
+      title="Clear history?"
       onClose={() => undefined}
       footer={
         <>
-          <Button variant="quiet">{germanLabels.text3}</Button>
+          <Button variant="quiet">Cancel</Button>
           <Button variant="danger">Clear</Button>
         </>
       }
     >
-      <p style={{ margin: 0 }}>{localized.text43}</p>
+      <p style={{ margin: 0 }}>The 86 visited places of this browser are removed.</p>
     </Dialog>
   ),
 };

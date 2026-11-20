@@ -6,7 +6,12 @@ const meta: Meta<typeof ClauseSheetWithLogic> = {
   title: "FACET UI/ClauseSheet",
   component: ClauseSheetWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Clauses of a policy with their bindingness and metric. If the metric is missing, the clause cannot be checked — and that is what it says there.",
+      },
+    },
   },
   args: { clauses: taskflowRecord("policy/notifications/quiet-hours").clauses },
   decorators: [
@@ -21,8 +26,8 @@ const meta: Meta<typeof ClauseSheetWithLogic> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Rules: Story = {};
+export const Policy: Story = {};
 
-export const OnlyRequired: Story = { args: { onlyBinding: true } };
+export const OnlyBinding: Story = { args: { onlyBinding: true } };
 
 export const Empty: Story = { args: { clauses: [] } };

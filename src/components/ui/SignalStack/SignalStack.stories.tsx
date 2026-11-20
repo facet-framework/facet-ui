@@ -8,7 +8,12 @@ const meta: Meta<typeof SignalStackWithLogic> = {
   title: "FACET UI/SignalStack",
   component: SignalStackWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "SLOs and alerts in one stack. Alerts without a runbook come first — they are the open item of this compartment.",
+      },
+    },
   },
   args: { slos: model.slos, alerts: model.alerts },
   decorators: [

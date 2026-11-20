@@ -5,17 +5,19 @@ import type { StackProps } from "./Stack";
 export type StackDirection = "row" | "column";
 
 export type WithStackProps = Omit<StackProps, "computedStyle"> & {
+  /** Direction of the track. Default: `column`. */
   direction?: StackDirection;
-
+  /** Gap in pixels or as a token key (`s1`…`s7`). */
   gap?: number | keyof typeof space;
   align?: CSSProperties["alignItems"];
   justify?: CSSProperties["justifyContent"];
   wrap?: boolean;
-
+  /** The track fills the available space and may shrink (`min-width: 0`). */
   grow?: boolean;
   style?: CSSProperties;
 };
 
+/** Translates direction, gap and alignment into a flex style. */
 export function withStackLogic(Component: ComponentType<StackProps>) {
   const Wrapped = ({
     direction = "column",

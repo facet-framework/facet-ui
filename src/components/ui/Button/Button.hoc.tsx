@@ -2,15 +2,17 @@ import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import { color, font, fontSize } from "../../../design-system/tokens";
 import type { ButtonProps } from "./Button";
 
+/** `signal` leads on, `quiet` accompanies, `ghost` is pure type. */
 export type ButtonVariant = "signal" | "quiet" | "ghost";
 
 export type WithButtonProps = Omit<ButtonProps, "computedStyle"> & {
   variant?: ButtonVariant;
-
+  /** Full width in narrow columns. */
   block?: boolean;
   style?: CSSProperties;
 };
 
+/** Translates the variant into surface, type and edge. */
 export function withButtonLogic(Component: ComponentType<ButtonProps>) {
   const Wrapped = ({ variant = "quiet", block, disabled, style, ...rest }: WithButtonProps) => {
     const computedStyle = useMemo<CSSProperties>(() => {

@@ -3,16 +3,18 @@ import { color, MEANING_COLOR, type Meaning } from "../../../design-system/token
 import type { BarProps } from "./Bar";
 
 export type WithBarProps = Omit<BarProps, "trackStyle" | "fillStyle" | "percent"> & {
+  /** Reached value. */
   value: number;
-
+  /** Reference size. `0` yields an empty bar instead of a division by zero. */
   total: number;
   meaning?: Meaning;
   height?: number;
-
+  /** Full coverage is coloured green automatically. */
   autoComplete?: boolean;
   style?: CSSProperties;
 };
 
+/** Converts value and reference size into share, colour and geometry. */
 export function withBarLogic(Component: ComponentType<BarProps>) {
   const Wrapped = ({
     value,

@@ -1,7 +1,8 @@
 import type { Decorator, Preview } from "@storybook/react-vite";
 import "../src/facet/styles/index.css";
-import { FacetTextProvider } from "../src/facet/i18n";
+import { TextProvider } from "../src/facet/i18n";
 
+/** Every story stands in the app ground of the chosen palette. */
 const inApp: Decorator = (Story, ctx) => {
   const theme = (ctx.globals.tTheme as string) ?? "facet";
   const mode = (ctx.globals.tMode as string) ?? "dark";
@@ -18,10 +19,11 @@ const inApp: Decorator = (Story, ctx) => {
   );
 };
 
+/** Every story speaks the language chosen in the toolbar; English is the default. */
 const inLanguage: Decorator = (Story, ctx) => (
-  <FacetTextProvider locale={(ctx.globals.tLang as string) ?? "de"}>
+  <TextProvider locale={(ctx.globals.tLang as string) ?? "en"}>
     <Story />
-  </FacetTextProvider>
+  </TextProvider>
 );
 
 const preview: Preview = {
@@ -45,14 +47,14 @@ const preview: Preview = {
         title: "Language",
         icon: "globe",
         items: [
-          { value: "de", title: "German" },
+          { value: "de", title: "Deutsch" },
           { value: "en", title: "English" },
         ],
         dynamicTitle: true,
       },
     },
   },
-  initialGlobals: { tTheme: "facet", tMode: "dark", tLang: "de" },
+  initialGlobals: { tTheme: "facet", tMode: "dark", tLang: "en" },
   parameters: {
     controls: { matchers: { color: /(background|color)$/i } },
     a11y: { test: "todo" },
@@ -78,7 +80,7 @@ const preview: Preview = {
       },
     },
     options: {
-      storySort: { order: ["Basics", "Blocks", "Frame", "Screens"] },
+      storySort: { order: ["Foundations", "Primitives", "Shell", "Screens"] },
     },
   },
   decorators: [inApp, inLanguage],

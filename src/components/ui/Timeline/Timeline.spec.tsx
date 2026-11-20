@@ -1,8 +1,8 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/Timeline/Timeline.spec.text";
 import { render, screen } from "@testing-library/react";
 import TimelineWithLogic, { Timeline } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
+/** Creates `count` events in the given month. */
 function at(month: string, count: number) {
   return Array.from({ length: count }, () => ({ date: `${month}-15` }));
 }
@@ -12,7 +12,7 @@ function columns(container: HTMLElement) {
 }
 
 describe("Unit tests for Timeline", () => {
-  it("reports when nothing has a date", () => {
+  it("says so when nothing is dated", () => {
     render(
       <Timeline
         containerStyle={{}}
@@ -21,15 +21,15 @@ describe("Unit tests for Timeline", () => {
         captionStyle={{}}
         buckets={[]}
         caption=""
-        emptyText={localized.text2}
+        emptyText="Nothing is dated."
       />,
     );
-    expect(screen.getByText(localized.text3)).toBeInTheDocument();
+    expect(screen.getByText("Nothing is dated.")).toBeInTheDocument();
   });
 });
 
 describe("Unit tests for withTimelineLogic", () => {
-  it("draws months without events", () => {
+  it("also draws the months without an event", () => {
     const { container } = render(
       <TimelineWithLogic events={[...at("2026-01", 2), ...at("2026-04", 1)]} />,
     );
@@ -41,7 +41,7 @@ describe("Unit tests for withTimelineLogic", () => {
     ]);
   });
 
-  it("leaves empty months without blocks", () => {
+  it("leaves an empty month standing without a block", () => {
     const { container } = render(
       <TimelineWithLogic
         events={[...at("2026-01", 2), ...at("2026-02", 0), ...at("2026-03", 1)]}
@@ -51,19 +51,19 @@ describe("Unit tests for withTimelineLogic", () => {
     expect(block).toHaveStyle({ height: "0px" });
   });
 
-  it("names each segment and its count", () => {
+  it("names every section with name and number", () => {
     const { container } = render(<TimelineWithLogic events={at("2026-03", 4)} unit="Records" />);
-    expect(columns(container)[0]).toHaveAttribute("aria-label", localized.text7);
+    expect(columns(container)[0]).toHaveAttribute("aria-label", "March 2026 · 4 Records");
   });
 
-  it("reports no additions for an empty month", () => {
+  it("says for an empty month that nothing was created", () => {
     const { container } = render(
       <TimelineWithLogic events={[...at("2026-01", 1), ...at("2026-03", 1)]} />,
     );
-    expect(columns(container)[1]).toHaveAttribute("aria-label", labelText.text457);
+    expect(columns(container)[1]).toHaveAttribute("aria-label", "February 2026 · nothing created");
   });
 
-  it("gives the busiest month full height", () => {
+  it("gives the largest month the full height", () => {
     const { container } = render(
       <TimelineWithLogic events={[...at("2026-01", 4), ...at("2026-02", 2)]} height={100} />,
     );
@@ -72,7 +72,7 @@ describe("Unit tests for withTimelineLogic", () => {
     expect(blocks[1]).toHaveStyle({ height: "50px" });
   });
 
-  it("keeps a single entry visible instead of rounding to zero", () => {
+  it("keeps a single entry visible instead of rounding it to zero", () => {
     const { container } = render(
       <TimelineWithLogic events={[...at("2026-01", 200), ...at("2026-02", 1)]} height={96} />,
     );
@@ -80,17 +80,19 @@ describe("Unit tests for withTimelineLogic", () => {
     expect(block).toHaveStyle({ height: "2px" });
   });
 
-  it("shows the share beside the bar", () => {
+  it("labels the turn of the year", () => {
     const { container } = render(
       <TimelineWithLogic events={[...at("2025-11", 1), ...at("2026-02", 1)]} />,
     );
-
+    // November, December, January, February — the label sits on January.
+    // The first section stays unlabelled: two columns further on the next
+    // number already stands, and two numbers on two columns overlap.
     expect(
       Array.from(container.querySelectorAll("[data-tick]")).map((tick) => tick.textContent),
     ).toEqual(["", "", "2026", ""]);
   });
 
-  it("labels the start when space remains before the year boundary", () => {
+  it("labels the start as soon as there is room up to the turn of the year", () => {
     const { container } = render(
       <TimelineWithLogic events={[...at("2025-08", 1), ...at("2026-01", 1)]} />,
     );
@@ -99,7 +101,7 @@ describe("Unit tests for withTimelineLogic", () => {
     ).toEqual(["2025", "", "", "", "", "2026"]);
   });
 
-  it("switches automatically to years beyond five years", () => {
+  it("switches to years on its own beyond five years", () => {
     const { container } = render(
       <TimelineWithLogic events={[...at("2020-01", 3), ...at("2026-01", 5)]} />,
     );
@@ -114,24 +116,43 @@ describe("Unit tests for withTimelineLogic", () => {
     ]);
   });
 
-  it("names the span and busiest segment", () => {
+  it("names the span and the densest section", () => {
     const { container } = render(
       <TimelineWithLogic events={[...at("2026-01", 2), ...at("2026-03", 5)]} unit="Records" />,
     );
-    expect(container).toHaveTextContent(localized.text14);
-  });
-
-  it("reports entries without dates", () => {
-    const { container } = render(
-      <TimelineWithLogic
-        events={[...at("2026-01", 2), { date: "" }, { date: labelText.text458 }]}
-      />,
+    expect(container).toHaveTextContent(
+      "7 Records · January 2026 to March 2026 · densest period March 2026 with 5",
     );
-    expect(container).toHaveTextContent(localized.text16);
   });
 
-  it("shows the quiet message when no event is dated", () => {
-    render(<TimelineWithLogic events={[{ date: "" }]} emptyText={localized.text18} />);
-    expect(screen.getByText(localized.text19)).toBeInTheDocument();
+  it("does not hide what has no date", () => {
+    const { container } = render(
+      <TimelineWithLogic events={[...at("2026-01", 2), { date: "" }, { date: "sometime" }]} />,
+    );
+    expect(container).toHaveTextContent("2 without a date, not drawn");
+  });
+
+  it("names the span, the unit and the months in German under the German locale", () => {
+    const { container } = renderInGerman(
+      <TimelineWithLogic events={[...at("2026-01", 2), ...at("2026-03", 5)]} />,
+    );
+    expect(container).toHaveTextContent(
+      "7 Records · Januar 2026 bis März 2026 · dichtester Abschnitt März 2026 mit 5",
+    );
+    expect(columns(container)[1]).toHaveAttribute("aria-label", "Februar 2026 · nichts angelegt");
+  });
+
+  it("falls back to the English unit and month names", () => {
+    const { container } = render(
+      <TimelineWithLogic events={[...at("2026-01", 2), ...at("2026-03", 5)]} />,
+    );
+    expect(container).toHaveTextContent(
+      "7 records · January 2026 to March 2026 · densest period March 2026 with 5",
+    );
+  });
+
+  it("shows the quiet sentence when no event carries a date", () => {
+    render(<TimelineWithLogic events={[{ date: "" }]} emptyText="No creation date." />);
+    expect(screen.getByText("No creation date.")).toBeInTheDocument();
   });
 });

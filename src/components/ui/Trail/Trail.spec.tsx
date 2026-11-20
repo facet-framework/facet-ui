@@ -1,9 +1,7 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/Trail/Trail.spec.text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import TrailWithLogic, { Trail, withTrailLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
 describe("Unit tests for Trail", () => {
   it("renders the trail as navigation", () => {
@@ -11,95 +9,102 @@ describe("Unit tests for Trail", () => {
       <Trail
         containerStyle={{}}
         separatorStyle={{}}
-        label={labelText.text433}
-        steps={[{ key: "a", label: germanLabels.text7, current: true, style: {} }]}
+        label="Track"
+        steps={[{ key: "a", label: "Overview", current: true, style: {} }]}
       />,
     );
-    expect(screen.getByRole("navigation", { name: labelText.text433 })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Track" })).toBeInTheDocument();
   });
 
-  it("marks the current level", () => {
+  it("marks the current step", () => {
     render(
       <Trail
         containerStyle={{}}
         separatorStyle={{}}
-        label={labelText.text433}
+        label="Track"
         steps={[{ key: "a", label: "Quick add", current: true, style: {} }]}
       />,
     );
     expect(screen.getByText("Quick add")).toHaveAttribute("aria-current", "step");
   });
 
-  it("makes earlier levels buttons", () => {
+  it("turns earlier steps into buttons", () => {
     render(
       <Trail
         containerStyle={{}}
         separatorStyle={{}}
-        label={labelText.text433}
+        label="Track"
         steps={[
-          { key: "a", label: germanLabels.text7, current: false, style: {}, onClick: jest.fn() },
+          { key: "a", label: "Overview", current: false, style: {}, onClick: jest.fn() },
           { key: "b", label: "Quick add", current: true, style: {} },
         ]}
       />,
     );
-    expect(screen.getByRole("button", { name: germanLabels.text7 })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Overview" })).toBeInTheDocument();
   });
 });
 
 describe("Unit tests for withTrailLogic", () => {
   const steps = [
-    { key: "overview", label: germanLabels.text7, onSelect: jest.fn() },
+    { key: "overview", label: "Overview", onSelect: jest.fn() },
     { key: "record", label: "Quick add" },
   ];
 
-  it("treats the final level as the current place", () => {
+  it("treats the last step as the location", () => {
     render(<TrailWithLogic steps={steps} />);
     expect(screen.getByText("Quick add")).toHaveAttribute("aria-current", "step");
   });
 
-  it("reports backward navigation", async () => {
+  it("reports the way back", async () => {
     const onSelect = jest.fn();
     render(
       <TrailWithLogic
-        steps={[{ key: "overview", label: germanLabels.text7, onSelect }, ...steps.slice(1)]}
+        steps={[{ key: "overview", label: "Overview", onSelect }, ...steps.slice(1)]}
       />,
     );
-    await userEvent.click(screen.getByRole("button", { name: germanLabels.text7 }));
+    await userEvent.click(screen.getByRole("button", { name: "Overview" }));
     expect(onSelect).toHaveBeenCalledTimes(1);
   });
 
-  it("separates the levels", () => {
+  it("puts separators between the steps", () => {
     render(<TrailWithLogic steps={steps} />);
     expect(screen.getAllByText("·")).toHaveLength(1);
   });
 
-  it("handles a single level", () => {
-    render(<TrailWithLogic steps={[{ key: "overview", label: germanLabels.text7 }]} />);
+  it("copes with a single step", () => {
+    render(<TrailWithLogic steps={[{ key: "overview", label: "Overview" }]} />);
     expect(screen.queryByText("·")).not.toBeInTheDocument();
   });
 
-  it("keeps levels on one line", () => {
+  it("keeps the steps on one line", () => {
     render(<TrailWithLogic steps={steps} />);
     expect(screen.getByText("Quick add")).toHaveStyle({ whiteSpace: "nowrap" });
   });
 
   it("accepts a custom label", () => {
-    render(<TrailWithLogic steps={steps} label={localized.text10} />);
-    expect(screen.getByRole("navigation", { name: localized.text11 })).toBeInTheDocument();
+    render(<TrailWithLogic steps={steps} label="Way back" />);
+    expect(screen.getByRole("navigation", { name: "Way back" })).toBeInTheDocument();
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withTrailLogic(Trail).displayName).toBe("withTrailLogic(Trail)");
   });
 });
 
+describe("Unit tests for the German locale", () => {
+  it("speaks German under the German locale", () => {
+    renderInGerman(<TrailWithLogic steps={[{ key: "overview", label: "Overview" }]} />);
+    expect(screen.getByRole("navigation", { name: "Spur" })).toBeInTheDocument();
+  });
+});
+
 describe("Snapshot tests for Trail", () => {
-  it("three levels", () => {
+  it("three steps", () => {
     const { container } = render(
       <TrailWithLogic
         steps={[
-          { key: "overview", label: germanLabels.text7, onSelect: () => {} },
-          { key: localized.text13, label: localized.text14, onSelect: () => {} },
+          { key: "overview", label: "Overview", onSelect: () => {} },
+          { key: "register", label: "Register", onSelect: () => {} },
           { key: "record", label: "Quick add" },
         ]}
       />,
@@ -107,9 +112,9 @@ describe("Snapshot tests for Trail", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("single level", () => {
+  it("one step", () => {
     const { container } = render(
-      <TrailWithLogic steps={[{ key: "overview", label: germanLabels.text7 }]} />,
+      <TrailWithLogic steps={[{ key: "overview", label: "Overview" }]} />,
     );
     expect(container.firstChild).toMatchSnapshot();
   });

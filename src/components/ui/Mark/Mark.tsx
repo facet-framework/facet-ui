@@ -5,6 +5,7 @@ const BUTTON_RESET: CSSProperties = {
   cursor: "pointer",
 };
 
+/** One bar of the mark - two in the resting state, five during motion. */
 export type MarkBar = {
   key: string;
   x: number;
@@ -12,24 +13,29 @@ export type MarkBar = {
   width: number;
   height: number;
   fill: string;
-
+  /** `data-facet-mark-bar` - the keyframes themselves live centrally in tokens.css. */
   animationKey?: string;
 };
 
 export type MarkProps = {
+  /** Width in pixels; the height follows from `viewBoxWidth`/`viewBoxHeight`. */
   size: number;
   viewBoxWidth: number;
   viewBoxHeight: number;
   bars: MarkBar[];
-
+  /** Plain words for screen readers, e.g. "Facet Atlas". */
   label: string;
-
+  /** `brand` is clickable (replay); the other two are not. */
   interactive: boolean;
   wrapperStyle: CSSProperties;
   onClick?: () => void;
   "data-testid"?: string;
 };
 
+/**
+ * The Facet Atlas mark: two offset blocks. This view draws the bars and field size that
+ * `withMarkLogic` hands it - it does not know which variant that is.
+ */
 export function Mark({
   size,
   viewBoxWidth,

@@ -1,33 +1,31 @@
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/KnowledgeSlots/KnowledgeSlots.spec.text";
 import { render, screen } from "@testing-library/react";
 import KnowledgeSlotsWithLogic, { KnowledgeSlots, withKnowledgeSlotsLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
 const slots = [
   {
     key: "edge_cases",
-    question: localized.text1,
-    answer: localized.text2,
-    derive: [germanLabels.text158],
+    question: "What happens with duplicate entries?",
+    answer: "The second entry is discarded.",
+    derive: ["derived from the unit tests"],
   },
-  { key: "failure_modes", question: germanLabels.text159, answer: "" },
+  { key: "failure_modes", question: "What happens on network loss?", answer: "" },
 ];
 
 describe("Unit tests for KnowledgeSlots", () => {
-  it("renders one row per slot with its question and answer", () => {
+  it("renders one row per slot with question and answer", () => {
     const { container } = render(
       <KnowledgeSlots
         containerStyle={{}}
         captionStyle={{}}
-        caption={germanLabels.text160}
+        caption="1 question"
         slots={[
           {
             key: "a",
             slot: "edge_cases",
-            question: germanLabels.text53,
-            answer: remainingText.text147,
-            derivation: germanLabels.text158,
+            question: "Question?",
+            answer: "Answer.",
+            derivation: "derived from the unit tests",
             filled: true,
             rowStyle: {},
             slotStyle: {},
@@ -39,42 +37,44 @@ describe("Unit tests for KnowledgeSlots", () => {
       />,
     );
     expect(container.querySelectorAll("[data-slot]")).toHaveLength(1);
-    expect(screen.getByText(germanLabels.text53)).toBeInTheDocument();
-    expect(screen.getByText(remainingText.text147)).toBeInTheDocument();
+    expect(screen.getByText("Question?")).toBeInTheDocument();
+    expect(screen.getByText("Answer.")).toBeInTheDocument();
   });
 });
 
 describe("Unit tests for withKnowledgeSlotsLogic", () => {
-  it("shows the answer's derivation", () => {
+  it("shows how the answer was derived", () => {
     render(<KnowledgeSlotsWithLogic slots={slots} />);
-    expect(screen.getByText(germanLabels.text158)).toBeInTheDocument();
+    expect(screen.getByText("derived from the unit tests")).toBeInTheDocument();
   });
 
-  it("reports when no derivation is provided", () => {
+  it("says so when no derivation is given", () => {
     render(<KnowledgeSlotsWithLogic slots={slots} />);
-    expect(screen.getByText(localized.text6)).toBeInTheDocument();
+    expect(screen.getByText("without derivation")).toBeInTheDocument();
   });
 
-  it("combines multiple derivation sources without losing any", () => {
+  it("combines several derivation sources instead of losing them", () => {
+    // Render every derivation source from the list.
     render(<KnowledgeSlotsWithLogic slots={[{ key: "x", derive: ["anchors", "tests"] }]} />);
     expect(screen.getByText("anchors, tests")).toBeInTheDocument();
   });
 
-  it("presents an open question as a statement", () => {
+  it("turns the open question into a statement", () => {
     render(<KnowledgeSlotsWithLogic slots={slots} />);
-    const offen = screen.getByText(localized.text9);
-
-    expect(offen.closest("div")).toHaveStyle({ color: "var(--signal)" });
+    const open = screen.getByText("open — there is no answer to this yet");
+    // The answer now runs through <Markdown>; the colour sits on its container
+    // div, no longer directly on the text node.
+    expect(open.closest("div")).toHaveStyle({ color: "var(--signal)" });
   });
 
-  it("counts questions and open issues", () => {
+  it("counts questions and open points", () => {
     render(<KnowledgeSlotsWithLogic slots={slots} />);
-    expect(screen.getByText(localized.text11)).toBeInTheDocument();
+    expect(screen.getByText("2 questions · 1 open.")).toBeInTheDocument();
   });
 
   it("reports fully answered knowledge", () => {
     render(<KnowledgeSlotsWithLogic slots={[slots[0]]} />);
-    expect(screen.getByText(localized.text13)).toBeInTheDocument();
+    expect(screen.getByText("1 question, answered.")).toBeInTheDocument();
   });
 
   it("filters to open questions", () => {
@@ -82,24 +82,25 @@ describe("Unit tests for withKnowledgeSlotsLogic", () => {
     expect(container.querySelectorAll("[data-slot]")).toHaveLength(1);
   });
 
-  it("reports when no knowledge is recorded", () => {
+  it("says so when no knowledge is recorded", () => {
     render(<KnowledgeSlotsWithLogic slots={[]} />);
-    expect(screen.getByText(localized.text16)).toBeInTheDocument();
+    expect(screen.getByText("No knowledge recorded.")).toBeInTheDocument();
   });
 
   it("names missing questions", () => {
     render(<KnowledgeSlotsWithLogic slots={[{ key: "x", question: "", answer: "" }]} />);
-    expect(screen.getByText(localized.text18)).toBeInTheDocument();
+    expect(screen.getByText("no question formulated")).toBeInTheDocument();
   });
 
-  it("renders answers as Markdown rather than raw text", () => {
+  it("shows the answer as Markdown, not as raw text", () => {
+    // Render Markdown answers as formatted content.
     render(
       <KnowledgeSlotsWithLogic
         slots={[
           {
             key: "x",
-            question: localized.text20,
-            answer: localized.text21,
+            question: "How is the rotation started?",
+            answer: "With `tools/forge/dkim-rotate.sh` and **root** rights.",
           },
         ]}
       />,
@@ -111,10 +112,18 @@ describe("Unit tests for withKnowledgeSlotsLogic", () => {
     expect(screen.getByText("root")).toBeInTheDocument();
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withKnowledgeSlotsLogic(KnowledgeSlots).displayName).toBe(
       "withKnowledgeSlotsLogic(KnowledgeSlots)",
     );
+  });
+});
+
+describe("Unit tests for the German locale", () => {
+  it("speaks German under the German locale", () => {
+    renderInGerman(<KnowledgeSlotsWithLogic slots={slots} />);
+    expect(screen.getByText("2 Fragen · 1 offen.")).toBeInTheDocument();
+    expect(screen.getByText("offen — hierauf gibt es noch keine Antwort")).toBeInTheDocument();
   });
 });
 

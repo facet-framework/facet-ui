@@ -2,10 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import RoleGateWithLogic from ".";
 
 const meta: Meta<typeof RoleGateWithLogic> = {
-  title: "Mechanisms/RoleGate",
+  title: "Mechanics/RoleGate",
   component: RoleGateWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "“What are you here for?” — the gate between reading and the Overview. The choice decides which lead sentence the Overview opens with; it hides nothing and unlocks nothing.",
+      },
+    },
   },
   decorators: [
     (Story) => (
@@ -19,6 +24,8 @@ const meta: Meta<typeof RoleGateWithLogic> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** How it looks on first opening. */
 export const Gate: Story = {};
 
-export const WithAlternativeFallback: Story = { args: { fallback: "eng" } };
+/** Otherwise continuing without a choice lands on management. */
+export const WithOtherFallback: Story = { args: { fallback: "eng" } };

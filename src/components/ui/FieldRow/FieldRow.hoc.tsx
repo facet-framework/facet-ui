@@ -6,12 +6,18 @@ export type WithFieldRowProps = Omit<
   FieldRowProps,
   "containerStyle" | "labelStyle" | "valueStyle"
 > & {
+  /** Highlights the row — for the field that is currently missing or blocking. */
   emphasis?: boolean;
-
-  meaning?: "neutral" | "signal" | "deadline";
-
+  /**
+   * What the number means. `signal` means: something is missing here, `due`:
+   * a deadline has passed. The tone colours the value **in addition** — the
+   * statement is carried by the label and the weight, because colour never
+   * stands alone here.
+   */
+  meaning?: "neutral" | "signal" | "due";
+  /** Width of the label column. */
   labelWidth?: number;
-
+  /** Multi-line values keep their line breaks (e.g. ID lists). */
   preserveLines?: boolean;
   style?: CSSProperties;
 };
@@ -19,9 +25,10 @@ export type WithFieldRowProps = Omit<
 const TONE: Record<string, string | undefined> = {
   neutral: undefined,
   signal: color.signal,
-  frist: color.deadline,
+  due: color.due,
 };
 
+/** Sets the grid, the label column and the emphasis of the field row. */
 export function withFieldRowLogic(Component: ComponentType<FieldRowProps>) {
   const Wrapped = ({
     emphasis,

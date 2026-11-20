@@ -1,34 +1,60 @@
-import { labelText } from "../i18n/legacy/labels";
-import { localized } from "../i18n/legacy/core/glossary.spec.text";
 import { glossaryTermList, linkTerms, lookupTerm, parseGlossary } from "./glossary";
 
-const CONSIGNEE = localized.text1;
+const CONSIGNEE = `schema_version: "1.10"
+terms:
+  - term: Consignee
+    definition: |
+      The party named in the transport document who receives the goods at
+      the destination — not necessarily the buyer.
+  - term: Bill of Lading
+    definition: |
+      The document the carrier issues for the goods taken over.
+    renderings:
+      de: Konnossement
+`;
 
 describe("parseGlossary", () => {
   it("reads terms, definitions and renderings", () => {
     const glossary = parseGlossary(CONSIGNEE);
     expect(glossary?.terms.map((t) => t.term)).toEqual(["Consignee", "Bill of Lading"]);
-    expect(glossary?.terms[0].definition).toContain(labelText.extra16);
-    expect(glossary?.terms[1].renderings).toEqual({ de: labelText.text448 });
+    expect(glossary?.terms[0].definition).toContain("transport document");
+    expect(glossary?.terms[1].renderings).toEqual({ de: "Konnossement" });
     expect(glossary?.schemaVersion).toBe("1.10");
   });
 
-  it("returns null without a file", () => {
+  // "Not declared" and "declared, but empty" are opposite statements. A view
+  // that confuses them claims something about a project without the file that
+  // nobody said — the same rule as for the taxonomy.
+  it("returns null when there is no file", () => {
     expect(parseGlossary(undefined)).toBeNull();
     expect(parseGlossary("")).toBeNull();
     expect(parseGlossary("   \n")).toBeNull();
   });
 
-  it("returns null for an empty list", () => {
+  it("returns null when the list is empty", () => {
     expect(parseGlossary('schema_version: "1.10"\nterms: []\n')).toBeNull();
   });
 
-  it("returns null rather than throwing for invalid YAML", () => {
+  // The linter is the place that makes a broken glossary loud. A reader that
+  // fails to start because of a file a project does not even have to have has
+  // lost every other view along with it.
+  it("returns null instead of throwing when the YAML is broken", () => {
     expect(parseGlossary('schema_version: "1.10"\nterms: [\n')).toBeNull();
   });
 
-  it("skips incomplete entries without discarding the rest", () => {
-    const glossary = parseGlossary(localized.text7);
+  // An entry without a term or without a definition is nothing to the reader:
+  // the first has no text to link, the second nothing to show.
+  it("skips incomplete entries instead of discarding the rest", () => {
+    const glossary = parseGlossary(`schema_version: "1.10"
+terms:
+  - term: Consignee
+    definition: |
+      Die benannte Partei.
+  - term: ""
+    definition: |
+      Without a term.
+  - term: Carrier
+`);
     expect(glossary?.terms.map((t) => t.term)).toEqual(["Consignee"]);
   });
 });
@@ -37,61 +63,70 @@ describe("linkTerms", () => {
   const terms = ["Consignee", "Order", "Order Line"];
 
   it("splits prose into text and terms", () => {
-    expect(linkTerms(localized.text9, terms)).toEqual([
-      { kind: "text", text: localized.text10 },
+    expect(linkTerms("The Consignee is notified.", terms)).toEqual([
+      { kind: "text", text: "The " },
       { kind: "term", text: "Consignee", term: "Consignee" },
-      { kind: "text", text: localized.text11 },
+      { kind: "text", text: " is notified." },
     ]);
   });
 
-  it("does not link terms within longer words", () => {
-    for (const text of [localized.text13, localized.text14]) {
+  // Whole word or not at all. A substring would link half of every sentence,
+  // and no setting rescues that.
+  it("links no term inside a longer word", () => {
+    for (const text of ["Reordering is no Ordering.", "The Consigneelist."]) {
       expect(linkTerms(text, terms)).toEqual([{ kind: "text", text }]);
     }
   });
 
-  it("does not link terms beginning inside a word", () => {
-    expect(linkTerms(localized.text16, terms)).toEqual([
-      { kind: "text", text: localized.text17 },
+  // The boundary must hold at the *start* too, not only at the end: "ReOrder"
+  // carries the term capitalised inside it and ends cleanly, and without the
+  // check on the character before it the second half of the word would match.
+  it("links no term that starts in the middle of a word", () => {
+    expect(linkTerms("A ReOrder is no Order.", terms)).toEqual([
+      { kind: "text", text: "A ReOrder is no " },
       { kind: "term", text: "Order", term: "Order" },
       { kind: "text", text: "." },
     ]);
   });
 
   it("matches case exactly", () => {
-    const text = localized.text19;
+    const text = "The consignee stands in lower case.";
     expect(linkTerms(text, terms)).toEqual([{ kind: "text", text }]);
   });
 
-  it("prefers the longer term at the same position", () => {
-    expect(linkTerms(localized.text21, terms)).toEqual([
-      { kind: "text", text: localized.text22 },
+  // Where two terms start at the same position, the longer one wins: whoever
+  // declared "Order Line" means "Order Line" at that position.
+  it("takes the longer term where two start at the same position", () => {
+    expect(linkTerms("The Order Line is changed.", terms)).toEqual([
+      { kind: "text", text: "The " },
       { kind: "term", text: "Order Line", term: "Order Line" },
-      { kind: "text", text: localized.text23 },
+      { kind: "text", text: " is changed." },
     ]);
   });
 
-  it("finds every occurrence", () => {
-    const parts = linkTerms(localized.text25, terms);
+  it("finds every occurrence, not only the first", () => {
+    const parts = linkTerms("Consignee and Consignee.", terms);
     expect(parts.filter((p) => p.kind === "term")).toHaveLength(2);
   });
 
-  it("recognizes hyphens and punctuation as word boundaries", () => {
-    expect(linkTerms(localized.text27, terms)).toEqual([
+  it("treats hyphens and punctuation as word boundaries", () => {
+    expect(linkTerms("Order-Line, not Order Line.", terms)).toEqual([
       { kind: "term", text: "Order", term: "Order" },
-      { kind: "text", text: localized.text28 },
+      { kind: "text", text: "-Line, not " },
       { kind: "term", text: "Order Line", term: "Order Line" },
       { kind: "text", text: "." },
     ]);
   });
 
-  it("preserves text when there are no terms", () => {
-    expect(linkTerms(localized.text30, [])).toEqual([{ kind: "text", text: localized.text31 }]);
+  // Without a glossary the prose stays the prose. A project without the file
+  // has not failed to define something.
+  it("returns the text unchanged when there are no terms", () => {
+    expect(linkTerms("A sentence.", [])).toEqual([{ kind: "text", text: "A sentence." }]);
     expect(linkTerms("", terms)).toEqual([]);
   });
 
-  it("loses no characters", () => {
-    const text = localized.text33;
+  it("loses no character", () => {
+    const text = "Consignee, Order Line and Order at the end: Consignee";
     const rebuilt = linkTerms(text, terms)
       .map((p) => p.text)
       .join("");
@@ -100,19 +135,19 @@ describe("linkTerms", () => {
 });
 
 describe("glossaryTermList and lookupTerm", () => {
-  it("lists the longest terms first for matching", () => {
+  it("lists the terms longest first, so linking tries them in that order", () => {
     expect(glossaryTermList(parseGlossary(CONSIGNEE))).toEqual(["Bill of Lading", "Consignee"]);
   });
 
-  it("returns an empty list rather than undefined without a glossary", () => {
+  it("is empty rather than undefined when the glossary is missing", () => {
     expect(glossaryTermList(null)).toEqual([]);
     expect(lookupTerm(null, "Consignee")).toBeNull();
   });
 
-  it("looks up terms exactly", () => {
+  it("looks up a term exactly", () => {
     const glossary = parseGlossary(CONSIGNEE);
-    expect(lookupTerm(glossary, "Consignee")?.definition).toContain(labelText.extra16);
-
+    expect(lookupTerm(glossary, "Consignee")?.definition).toContain("transport document");
+    // Case is part of the identifier, not cosmetics.
     expect(lookupTerm(glossary, "consignee")).toBeNull();
   });
 });

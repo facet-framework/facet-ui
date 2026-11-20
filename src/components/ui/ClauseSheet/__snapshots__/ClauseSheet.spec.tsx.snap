@@ -1,0 +1,75 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for ClauseSheet empty 1`] = `
+<div
+  style="display: grid; gap: 2px; min-width: 0;"
+>
+  <p
+    style="margin: 0px 0px 4px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--ink);"
+  >
+    No clause recorded.
+  </p>
+</div>
+`;
+
+exports[`Snapshot tests for ClauseSheet policy 1`] = `
+<div
+  style="display: grid; gap: 2px; min-width: 0;"
+>
+  <p
+    style="margin: 0px 0px 4px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--ink);"
+  >
+    2 clauses · 1 binding. 1 without a measure.
+  </p>
+  <div
+    data-clause="QH-01"
+    style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; padding: 10px 0px; border-top-style: solid; border-top-width: 1px; border-top-color: var(--line); min-width: 0;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-caption); color: var(--dim); white-space: nowrap;"
+    >
+      QH-01
+    </span>
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.14em; color: var(--ink); font-weight: 500; white-space: nowrap;"
+    >
+      MUST
+    </span>
+    <span
+      style="grid-column: 1 / -1; font-family: var(--font-sans); font-size: var(--text-body); line-height: 1.6; color: var(--ink);"
+    >
+      Between 22:00 and 07:00 every notification MUST be held back.
+    </span>
+    <span
+      style="grid-column: 1 / -1; font-family: var(--font-mono); font-size: var(--text-caption); color: var(--soft);"
+    >
+      quiet_hours_violations = 0
+    </span>
+  </div>
+  <div
+    data-clause="QH-02"
+    style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; padding: 10px 0px; border-top-style: solid; border-top-width: 1px; border-top-color: var(--line); min-width: 0;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-caption); color: var(--dim); white-space: nowrap;"
+    >
+      QH-02
+    </span>
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.14em; color: var(--faint); font-weight: 400; white-space: nowrap;"
+    >
+      SHOULD
+    </span>
+    <span
+      style="grid-column: 1 / -1; font-family: var(--font-sans); font-size: var(--text-body); line-height: 1.6; color: var(--ink);"
+    >
+      Urgent alerts SHOULD be let through.
+    </span>
+    <span
+      style="grid-column: 1 / -1; font-family: var(--font-mono); font-size: var(--text-caption); color: var(--signal);"
+    >
+      no measure named — compliance cannot be checked
+    </span>
+  </div>
+</div>
+`;

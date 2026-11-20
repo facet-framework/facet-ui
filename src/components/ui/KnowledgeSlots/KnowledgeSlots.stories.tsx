@@ -6,7 +6,12 @@ const meta: Meta<typeof KnowledgeSlotsWithLogic> = {
   title: "FACET UI/KnowledgeSlots",
   component: KnowledgeSlotsWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "`knowledge.*` as question and answer. Unanswered questions stay visible — they are the purpose of the slot.",
+      },
+    },
   },
   args: { slots: taskflowRecord("sync/queue/offline-queue").knowledge },
   decorators: [

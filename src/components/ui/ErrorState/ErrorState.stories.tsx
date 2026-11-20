@@ -1,4 +1,3 @@
-import { localized } from "../../../i18n/legacy/components/ui/ErrorState/ErrorState.stories.text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { YamlError } from "../../../core";
 import ErrorStateWithLogic from ".";
@@ -7,10 +6,15 @@ const meta: Meta<typeof ErrorStateWithLogic> = {
   title: "FACET UI/ErrorState",
   component: ErrorStateWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Errors need an origin: file, line, reason, way back. A broken record never replaces the whole application.",
+      },
+    },
   },
   args: {
-    error: new YamlError('"key: value" erwartet, found "- lose Row"', 41),
+    error: new YamlError('"key: value" expected, found "- loose line"', 41),
     path: "docs/facets/features/tasks/create/quick-add.yaml",
     onRetry: () => {},
   },
@@ -28,8 +32,10 @@ type Story = StoryObj<typeof meta>;
 
 export const InvalidYaml: Story = {};
 
+/** Without a file, at least the line remains. */
 export const WithoutFile: Story = { args: { path: undefined } };
 
+/** An arbitrary error without a line number. */
 export const HostError: Story = {
-  args: { error: new Error(localized.text2), path: undefined, onRetry: undefined },
+  args: { error: new Error("Repo not reachable"), path: undefined, onRetry: undefined },
 };

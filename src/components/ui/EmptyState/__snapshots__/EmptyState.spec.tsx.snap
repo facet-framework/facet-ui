@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for EmptyState open point 1`] = `
+<div
+  role="status"
+  style="display: grid; gap: 6px; padding: 14px 0px; min-width: 0;"
+>
+  <p
+    style="margin: 0px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--ink);"
+  >
+    No entry point in code.
+  </p>
+</div>
+`;
+
+exports[`Snapshot tests for EmptyState quiet 1`] = `
+<div
+  role="status"
+  style="display: grid; gap: 6px; padding: 14px 0px; min-width: 0;"
+>
+  <p
+    style="margin: 0px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--dim);"
+  >
+    No promise described.
+  </p>
+  <p
+    style="margin: 0px; font-family: var(--font-mono); font-size: var(--text-meta); line-height: 1.6; color: var(--dim);"
+  >
+    Nothing to back.
+  </p>
+</div>
+`;

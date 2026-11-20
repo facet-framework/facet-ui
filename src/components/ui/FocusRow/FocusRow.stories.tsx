@@ -1,4 +1,3 @@
-import { localized } from "../../../i18n/legacy/components/ui/FocusRow/FocusRow.stories.text";
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import FocusRowWithLogic from ".";
@@ -8,13 +7,18 @@ const meta: Meta<typeof FocusRowWithLogic> = {
   title: "FACET UI/FocusRow",
   component: FocusRowWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Mechanic 2 · Solo focus: exactly one open row, neighbours dimmed, position snaps in. Enter opens, arrow right goes deeper, Esc closes.",
+      },
+    },
   },
   args: {
     rank: 1,
     id: "policy/notifications/quiet-hours",
     title: "Quiet hours",
-    why: localized.text2,
+    why: "Check quiet-hours-audit was due on 2026-07-12",
     meta: "platform-notify",
   },
   decorators: [
@@ -31,10 +35,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Closed: Story = {};
 
+/** Overdue — here red carries the reason, not the row. */
 export const Overdue: Story = { args: { overdue: true } };
 
+/** Dimmed because another row is being touched (coupling shadow). */
 export const Muted: Story = { args: { dimmed: true } };
 
+/** A focus list with real solo behaviour. */
 export const FocusList: Story = {
   render: () => {
     const [openId, setOpenId] = useState<string | null>(null);
@@ -42,31 +49,31 @@ export const FocusList: Story = {
       {
         id: "policy/notifications/quiet-hours",
         title: "Quiet hours",
-        why: localized.text3,
+        why: "Check quiet-hours-audit was due on 2026-07-12",
         meta: "platform-notify",
         overdue: true,
         body: [
-          [localized.text4, "quiet-hours-audit"],
-          ["Rhythm", "quarterly"],
-          ["Recent", "2026-04-12"],
+          ["Check", "quiet-hours-audit"],
+          ["Cadence", "quarterly"],
+          ["Last", "2026-04-12"],
         ],
       },
       {
         id: "sync/conflict/last-write-wins",
         title: "Last write wins",
-        why: localized.text5,
+        why: "Promise without a test",
         meta: "core-sync",
         body: [
           ["Record", "sync/conflict/last-write-wins"],
-          ["Test", "keiner benannt"],
+          ["Test", "none named"],
         ],
       },
       {
         id: "search/fulltext/task-search",
         title: "Task search",
-        why: localized.text6,
+        why: "active, but no entry point in code",
         meta: "core-search",
-        body: [["Sequence", localized.text7]],
+        body: [["Consequence", "Changes to the code cannot be traced to this record."]],
       },
     ];
 

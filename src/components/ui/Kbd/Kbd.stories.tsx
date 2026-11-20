@@ -1,4 +1,3 @@
-import { localized } from "../../../i18n/legacy/components/ui/Kbd/Kbd.stories.text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import KbdWithLogic from ".";
 import Text from "../Text";
@@ -7,7 +6,12 @@ const meta: Meta<typeof KbdWithLogic> = {
   title: "Atoms/Kbd",
   component: KbdWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Keyboard shortcut. The whole contract: ⌘K searches, R opens the register, Esc goes back exactly one level.",
+      },
+    },
   },
   args: { keys: "⌘K" },
 };
@@ -21,15 +25,16 @@ export const Register: Story = { args: { keys: "R" } };
 
 export const Sequence: Story = { args: { keys: ["→", "←"] } };
 
+/** The complete keyboard contract. */
 export const Contract: Story = {
   render: () => (
     <div style={{ display: "grid", gap: 8 }}>
       {(
         [
-          ["⌘K", localized.text2],
-          ["R", localized.text3],
-          ["→", localized.text4],
-          ["Esc", localized.text5],
+          ["⌘K", "Search records, promises, tests and code paths"],
+          ["R", "Open register"],
+          ["→", "one level deeper"],
+          ["Esc", "exactly one level back"],
         ] as const
       ).map(([keys, what]) => (
         <div key={keys} style={{ display: "flex", gap: 10, alignItems: "center" }}>

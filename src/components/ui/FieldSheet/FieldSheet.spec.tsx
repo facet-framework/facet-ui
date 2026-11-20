@@ -1,11 +1,10 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/FieldSheet/FieldSheet.spec.text";
 import { render, screen } from "@testing-library/react";
 import FieldSheetWithLogic, { FieldSheet, withFieldSheetLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
 const fields = [
   { name: "id", type: "uuid", sensitivity: "internal", retention: "" },
-  { name: "title", type: "string", sensitivity: "pii", retention: localized.text1 },
+  { name: "title", type: "string", sensitivity: "pii", retention: "30d after deletion" },
   { name: "note", type: "string", sensitivity: "pii", retention: "" },
 ];
 
@@ -15,13 +14,13 @@ describe("Unit tests for FieldSheet", () => {
       <FieldSheet
         containerStyle={{}}
         captionStyle={{}}
-        caption={labelText.text296}
+        caption="1 field"
         fields={[
           {
             key: "a",
             name: "id",
             type: "uuid",
-            sensitivity: labelText.extra26,
+            sensitivity: "internal",
             retention: "—",
             open: false,
             rowStyle: {},
@@ -39,64 +38,77 @@ describe("Unit tests for FieldSheet", () => {
 });
 
 describe("Unit tests for withFieldSheetLogic", () => {
-  it("translates sensitivity into German", () => {
+  it("translates the sensitivity into plain words", () => {
     render(<FieldSheetWithLogic fields={fields} />);
-    expect(screen.getAllByText(labelText.text297)).toHaveLength(2);
-    expect(screen.getByText(labelText.extra26)).toBeInTheDocument();
+    expect(screen.getAllByText("personal data")).toHaveLength(2);
+    expect(screen.getByText("internal")).toBeInTheDocument();
   });
 
-  it("reports missing retention for personal data", () => {
+  it("turns missing retention on personal data into a finding", () => {
     render(<FieldSheetWithLogic fields={fields} />);
-    expect(screen.getByText(localized.text5)).toHaveStyle({
+    expect(screen.getByText("no retention set")).toHaveStyle({
       color: "var(--signal)",
     });
   });
 
-  it("keeps internal fields quiet without retention", () => {
+  it("keeps internal fields without retention quiet", () => {
     const { container } = render(<FieldSheetWithLogic fields={[fields[0]]} />);
     expect(container.querySelector('[data-field="id"]')).toHaveTextContent("—");
   });
 
   it("counts fields, personal data and gaps", () => {
     render(<FieldSheetWithLogic fields={fields} />);
-    expect(screen.getByText(localized.text8)).toBeInTheDocument();
+    expect(
+      screen.getByText("3 fields · 2 with personal data. 1 of them without retention."),
+    ).toBeInTheDocument();
   });
 
   it("reports complete retention", () => {
     render(<FieldSheetWithLogic fields={[fields[1]]} />);
-    expect(screen.getByText(localized.text10)).toBeInTheDocument();
+    expect(screen.getByText(/Each of them has a retention/)).toBeInTheDocument();
   });
 
-  it("reports when no field contains personal data", () => {
+  it("says so when no field holds personal data", () => {
     render(<FieldSheetWithLogic fields={[fields[0]]} />);
-    expect(screen.getByText(localized.text12)).toBeInTheDocument();
+    expect(screen.getByText("1 fields, none with personal data.")).toBeInTheDocument();
   });
 
-  it("filtert auf Personenbezug", () => {
+  it("filters to personal data", () => {
     const { container } = render(<FieldSheetWithLogic fields={fields} onlyPii />);
     expect(container.querySelectorAll("[data-field]")).toHaveLength(2);
   });
 
-  it("also emphasizes personal data with font weight", () => {
+  it("additionally emphasises personal data through weight", () => {
     render(<FieldSheetWithLogic fields={fields} />);
-    expect(screen.getAllByText(labelText.text297)[0]).toHaveStyle({ fontWeight: 500 });
+    expect(screen.getAllByText("personal data")[0]).toHaveStyle({ fontWeight: 500 });
   });
 
-  it("handles missing names and types", () => {
+  it("copes without name and type", () => {
     render(
       <FieldSheetWithLogic fields={[{ name: "", type: "", sensitivity: "", retention: "" }]} />,
     );
-    expect(screen.getByText(labelText.text298)).toBeInTheDocument();
-    expect(screen.getByText(localized.text15)).toBeInTheDocument();
+    expect(screen.getByText("Field 1")).toBeInTheDocument();
+    expect(screen.getByText("no type")).toBeInTheDocument();
   });
 
-  it("reports when no fields are described", () => {
+  it("says so when no fields are described", () => {
     render(<FieldSheetWithLogic fields={[]} />);
-    expect(screen.getByText(localized.text17)).toBeInTheDocument();
+    expect(screen.getByText("No fields described.")).toBeInTheDocument();
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withFieldSheetLogic(FieldSheet).displayName).toBe("withFieldSheetLogic(FieldSheet)");
+  });
+});
+
+describe("Unit tests for the German locale", () => {
+  it("speaks German under the German locale", () => {
+    renderInGerman(<FieldSheetWithLogic fields={fields} />);
+    expect(screen.getAllByText("personenbezogen")).toHaveLength(2);
+    expect(screen.getByText("keine Aufbewahrung festgelegt")).toBeInTheDocument();
+    expect(
+      screen.getByText("3 Felder · 2 mit Personenbezug. 1 davon ohne Aufbewahrung."),
+    ).toBeInTheDocument();
   });
 });
 

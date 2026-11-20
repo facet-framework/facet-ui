@@ -1,7 +1,3 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/EmptyState/EmptyState.spec.text";
 import { render, screen } from "@testing-library/react";
 import EmptyStateWithLogic, { EmptyState, withEmptyStateLogic } from ".";
 
@@ -9,49 +5,43 @@ const styles = { containerStyle: {}, headlineStyle: {}, bodyStyle: {} };
 
 describe("Unit tests for EmptyState", () => {
   it("names what is missing", () => {
-    render(<EmptyState {...styles} headline={localized.text2} />);
-    expect(screen.getByRole("status")).toHaveTextContent(localized.text3);
+    render(<EmptyState {...styles} headline="No promise described." />);
+    expect(screen.getByRole("status")).toHaveTextContent("No promise described.");
   });
 
-  it("optionally explains the consequence", () => {
-    render(<EmptyState {...styles} headline={localized.text5} body={germanLabels.text156} />);
-    expect(screen.getByText(germanLabels.text156)).toBeInTheDocument();
+  it("explains the consequence on request", () => {
+    render(<EmptyState {...styles} headline="No promise." body="Nothing to back." />);
+    expect(screen.getByText("Nothing to back.")).toBeInTheDocument();
   });
 
-  it("handles a missing consequence", () => {
-    const { container } = render(<EmptyState {...styles} headline={labelText.text344} />);
+  it("copes without a consequence sentence", () => {
+    const { container } = render(<EmptyState {...styles} headline="Empty." />);
     expect(container.querySelectorAll("p")).toHaveLength(1);
   });
 
-  it("accepts a next action", () => {
-    render(
-      <EmptyState
-        {...styles}
-        headline={labelText.text344}
-        action={<button>{remainingText.text161}</button>}
-      />,
-    );
-    expect(screen.getByRole("button", { name: remainingText.text161 })).toBeInTheDocument();
+  it("accepts a way forward", () => {
+    render(<EmptyState {...styles} headline="Empty." action={<button>create</button>} />);
+    expect(screen.getByRole("button", { name: "create" })).toBeInTheDocument();
   });
 });
 
 describe("Unit tests for withEmptyStateLogic", () => {
   it("is muted by default", () => {
-    render(<EmptyStateWithLogic headline={localized.text9} />);
-    expect(screen.getByText(localized.text10)).toHaveStyle({ color: "var(--dim)" });
+    render(<EmptyStateWithLogic headline="Nothing open." />);
+    expect(screen.getByText("Nothing open.")).toHaveStyle({ color: "var(--dim)" });
   });
 
-  it("highlights open issues", () => {
-    render(<EmptyStateWithLogic tone="open" headline={localized.text12} />);
-    expect(screen.getByText(localized.text13)).toHaveStyle({ color: "var(--ink)" });
+  it("gives open points ink", () => {
+    render(<EmptyStateWithLogic tone="open" headline="No entry point in code." />);
+    expect(screen.getByText("No entry point in code.")).toHaveStyle({ color: "var(--ink)" });
   });
 
-  it("uses monospace for the consequence", () => {
-    render(<EmptyStateWithLogic headline={labelText.text344} body={labelText.text345} />);
-    expect(screen.getByText(labelText.text345)).toHaveStyle({ fontFamily: "var(--font-mono)" });
+  it("sets the consequence sentence in mono", () => {
+    render(<EmptyStateWithLogic headline="Empty." body="Consequence." />);
+    expect(screen.getByText("Consequence.")).toHaveStyle({ fontFamily: "var(--font-mono)" });
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withEmptyStateLogic(EmptyState).displayName).toBe("withEmptyStateLogic(EmptyState)");
   });
 });
@@ -59,13 +49,15 @@ describe("Unit tests for withEmptyStateLogic", () => {
 describe("Snapshot tests for EmptyState", () => {
   it("quiet", () => {
     const { container } = render(
-      <EmptyStateWithLogic headline={localized.text17} body={germanLabels.text156} />,
+      <EmptyStateWithLogic headline="No promise described." body="Nothing to back." />,
     );
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("offener Punkt", () => {
-    const { container } = render(<EmptyStateWithLogic tone="open" headline={localized.text18} />);
+  it("open point", () => {
+    const { container } = render(
+      <EmptyStateWithLogic tone="open" headline="No entry point in code." />,
+    );
     expect(container.firstChild).toMatchSnapshot();
   });
 });

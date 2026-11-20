@@ -1,7 +1,7 @@
 {
   "name": "@facet-tools/ui",
-  "version": "0.1.0-rc.1",
-  "description": "React components, design tokens, custom elements and FACET record data models.",
+  "version": "0.1.0-rc.2",
+  "description": "FACET UI \u2014 the FACET design system: React components, data layer and custom elements",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -67,40 +67,8 @@
       }
     },
     "./elements/standalone": "./dist/facet-ui.standalone.js",
-    "./facet": {
-      "import": {
-        "types": "./dist/facet.d.ts",
-        "default": "./dist/facet.js"
-      },
-      "require": {
-        "types": "./dist/facet.d.cts",
-        "default": "./dist/facet.cjs"
-      }
-    },
-    "./facet/atlas": {
-      "import": {
-        "types": "./dist/facet/atlas.d.ts",
-        "default": "./dist/facet/atlas.js"
-      },
-      "require": {
-        "types": "./dist/facet/atlas.d.cts",
-        "default": "./dist/facet/atlas.cjs"
-      }
-    },
-    "./facet.css": "./dist/facet.css",
-    "./classic": {
-      "import": {
-        "types": "./dist/classic.d.ts",
-        "default": "./dist/classic.js"
-      },
-      "require": {
-        "types": "./dist/classic.d.cts",
-        "default": "./dist/classic.cjs"
-      }
-    },
-    "./classic.css": "./dist/classic.css",
     "./tokens.css": "./dist/tokens.css",
-    "./styles.css": "./dist/tokens.css",
+    "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
   "files": [
@@ -115,7 +83,7 @@
   },
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "build": "tsup && node scripts/deprecate-aliases.mjs && tsup --config tsup.standalone.config.ts && pnpm run licenses:generate",
+    "build": "tsup && tsup --config tsup.standalone.config.ts && pnpm run licenses:generate",
     "dev": "tsup --watch",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -125,7 +93,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "verify": "pnpm typecheck && pnpm lint && pnpm build && pnpm test:coverage --runInBand && npm pack --dry-run",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm build && pnpm test:coverage --runInBand",
     "storybook:facet": "storybook dev -p 6007 -c .storybook-facet",
     "build-storybook:facet": "storybook build -c .storybook-facet -o storybook-facet-static",
     "licenses:generate": "node scripts/licenses.mjs"

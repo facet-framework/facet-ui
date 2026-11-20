@@ -1,10 +1,13 @@
+import { deElements } from "./catalog/elements";
+import { deCore } from "./catalog/core";
 import type { Dictionary } from "./en";
-import { deA } from "./screens/a";
-import { deB } from "./screens/b";
-import { deC } from "./screens/c";
-import { deD } from "./screens/d";
 
+/**
+ * The German dictionary. It must carry exactly the keys of `en`; the type makes
+ * a missing or an extra key a compile error, `i18n.spec.ts` checks it at runtime.
+ */
 export const de: Dictionary = {
+  /* Primitives */
   "primitives.chip.remove": "Entfernen",
   "primitives.meter.unmeasured": "nicht gemessen",
   "primitives.state.retry": "Erneut versuchen",
@@ -29,6 +32,7 @@ export const de: Dictionary = {
   "primitives.collection.noMatchesHint": "Weniger Filter, ein anderes Wort — oder Atlas fragen.",
   "primitives.collection.resetFilters": "Filter zurücksetzen",
 
+  /* Shell */
   "shell.percent": "{{value}} %",
   "shell.history.label": "Besuchte Orte",
   "shell.history.heading": "Besuchte Orte · {{count}}",
@@ -37,9 +41,9 @@ export const de: Dictionary = {
   "shell.history.older.one": "{{count}} älterer",
   "shell.history.older.other": "{{count}} ältere",
   "shell.history.clear": "Verlauf leeren",
-  "shell.history.kind.situation": "Lage",
+  "shell.history.kind.overviewPage": "Lage",
   "shell.history.kind.area": "Bereich",
-  "shell.history.kind.dossier": "Akte",
+  "shell.history.kind.record": "Akte",
   "shell.history.kind.plugin": "Plugin",
   "shell.history.kind.overview": "Übersicht",
   "shell.history.kind.content": "Inhalt",
@@ -50,7 +54,7 @@ export const de: Dictionary = {
   "shell.top.forwardNone": "Vor — kein späterer Ort",
   "shell.top.home": "FACET Atlas, zur Lage",
   "shell.top.features": "Merkmale",
-  "shell.top.proven": "Bewiesen",
+  "shell.top.proven": "Test genannt",
   "shell.top.drift": "Versatz",
   "shell.mark.drift": "Versatz: {{value}} der Records",
   "shell.mark.level": "Kein Versatz",
@@ -60,20 +64,21 @@ export const de: Dictionary = {
   "shell.top.command": "Gehe zu, Record, Rolle oder Befehl",
   "shell.top.ctrl": "Strg",
   "shell.top.settings": "Einstellungen",
+  "shell.top.settingsNew": "neue Einstellungsseite",
   "shell.role.label": "Leserolle",
   "shell.role.who": "Wer liest?",
   "shell.role.leadership.name": "Leitung",
-  "shell.role.leadership.purpose": "Wie weit das Produkt bewiesen ist und wo es klemmt.",
-  "shell.role.developer.name": "Entwicklung",
-  "shell.role.developer.purpose": "Welche Dateien sich von ihrem Record entfernt haben.",
-  "shell.role.test.name": "Test & Review",
-  "shell.role.test.purpose": "Welche Zusagen ein Test trägt und welche nicht.",
+  "shell.role.leadership.purpose": "Wie viel des Produkts ein Test nennt und wo es klemmt.",
+  "shell.role.dev.name": "Entwicklung",
+  "shell.role.dev.purpose": "Welche Dateien sich von ihrem Record entfernt haben.",
+  "shell.role.review.name": "Test & Review",
+  "shell.role.review.purpose": "Welche Zusagen ein Test trägt und welche nicht.",
   "shell.role.author.name": "Record-Autor",
   "shell.role.author.purpose": "Wo Wissen fehlt und welche Records aus dem Band fallen.",
-  "shell.role.ownership.name": "Eigentum",
-  "shell.role.ownership.purpose": "Wem welcher Bereich gehört und was niemandem gehört.",
-  "shell.role.new.name": "Neu hier",
-  "shell.role.new.purpose": "Wie das Produkt aufgebaut ist und wo man anfängt.",
+  "shell.role.owner.name": "Eigentum",
+  "shell.role.owner.purpose": "Wem welcher Bereich gehört und was niemandem gehört.",
+  "shell.role.newcomer.name": "Neu hier",
+  "shell.role.newcomer.purpose": "Wie das Produkt aufgebaut ist und wo man anfängt.",
   "shell.role.agent.name": "Agent",
   "shell.role.agent.purpose": "Registry-Zustand, Werkzeuge und Prüfungen vor dem Commit.",
   "shell.nav.item.overview": "Lage",
@@ -108,9 +113,7 @@ export const de: Dictionary = {
   "shell.boot.files": "Dateien",
   "shell.boot.anchors": "Anker",
   "shell.boot.noShare": "noch kein Anteil",
-
-  ...deA,
-  ...deB,
-  ...deC,
-  ...deD,
+  /* Catalogs outside the design system. */
+  ...deCore,
+  ...deElements,
 };

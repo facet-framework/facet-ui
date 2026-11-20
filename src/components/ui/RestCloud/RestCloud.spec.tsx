@@ -1,13 +1,12 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/RestCloud/RestCloud.spec.text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RestCloudWithLogic, { RestCloud, withRestCloudLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
 const items = Array.from({ length: 87 }, (_, index) => ({ id: `rest-${index}` }));
 
 describe("Unit tests for RestCloud", () => {
-  it("renders one mark per entry", () => {
+  it("renders one stroke per entry", () => {
     const { container } = render(
       <RestCloud
         containerStyle={{}}
@@ -17,7 +16,7 @@ describe("Unit tests for RestCloud", () => {
           { key: "a", background: "var(--ink)", flexGrow: 1 },
           { key: "b", background: "var(--signal)", flexGrow: 1 },
         ]}
-        label={labelText.text427}
+        label="2 more lines — expand"
         expanded={false}
         onToggle={jest.fn()}
         onKeyDown={jest.fn()}
@@ -26,72 +25,70 @@ describe("Unit tests for RestCloud", () => {
     expect(container.querySelectorAll("[data-tick]")).toHaveLength(2);
   });
 
-  it("describes the state in plain language", () => {
+  it("reports the state in plain text", () => {
     render(
       <RestCloud
         containerStyle={{}}
         stripStyle={{}}
         labelStyle={{}}
         ticks={[]}
-        label={labelText.text428}
+        label="87 more lines — expand"
         expanded={false}
         onToggle={jest.fn()}
         onKeyDown={jest.fn()}
       />,
     );
-    const node = screen.getByRole("button", { name: labelText.text428 });
+    const node = screen.getByRole("button", { name: "87 more lines — expand" });
     expect(node).toHaveAttribute("aria-expanded", "false");
   });
 });
 
 describe("Unit tests for withRestCloudLogic", () => {
-  it("draws individual marks for small collections", () => {
+  it("draws one stroke per entry as long as the set stays small", () => {
     const { container } = render(<RestCloudWithLogic items={items.slice(0, 40)} />);
     expect(container.querySelectorAll("[data-tick]")).toHaveLength(40);
   });
 
-  it("groups very large collections", () => {
+  it("bundles very large sets", () => {
     const many = Array.from({ length: 480 }, (_, index) => ({ id: `r-${index}` }));
     const { container } = render(<RestCloudWithLogic items={many} maxTicks={60} />);
     expect(container.querySelectorAll("[data-tick]")).toHaveLength(60);
   });
 
-  it("colors marks by meaning", () => {
+  it("colours strokes by meaning", () => {
     const { container } = render(
-      <RestCloudWithLogic items={[{ id: "a", meaning: "deadline" }, { id: "b" }]} />,
+      <RestCloudWithLogic items={[{ id: "a", meaning: "due" }, { id: "b" }]} />,
     );
-    expect(container.querySelector('[data-tick="a"]')).toHaveStyle({
-      background: "var(--deadline)",
-    });
+    expect(container.querySelector('[data-tick="a"]')).toHaveStyle({ background: "var(--due)" });
   });
 
-  it("gives the spoken name", () => {
+  it("uses the right grammatical number", () => {
     const { rerender } = render(<RestCloudWithLogic items={[{ id: "a" }]} />);
-    expect(screen.getByRole("button", { name: localized.text6 })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /1 further entry/ })).toBeInTheDocument();
     rerender(<RestCloudWithLogic items={items} />);
-    expect(screen.getByRole("button", { name: localized.text7 })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /87 further entries/ })).toBeInTheDocument();
   });
 
-  it("accepts custom wording", () => {
-    render(<RestCloudWithLogic items={items} noun={[labelText.text429, labelText.text430]} />);
-    expect(screen.getByRole("button", { name: labelText.text431 })).toBeInTheDocument();
+  it("accepts custom words", () => {
+    render(<RestCloudWithLogic items={items} noun={["further line", "further lines"]} />);
+    expect(screen.getByRole("button", { name: /87 further lines/ })).toBeInTheDocument();
   });
 
-  it("reports expansion", async () => {
+  it("reports expanding", async () => {
     const onToggle = jest.fn();
     render(<RestCloudWithLogic items={items} onToggle={onToggle} />);
     await userEvent.click(screen.getByRole("button"));
     expect(onToggle).toHaveBeenCalledWith(true);
   });
 
-  it("reports collapse", async () => {
+  it("reports collapsing", async () => {
     const onToggle = jest.fn();
     render(<RestCloudWithLogic items={items} expanded onToggle={onToggle} />);
     await userEvent.click(screen.getByRole("button"));
     expect(onToggle).toHaveBeenCalledWith(false);
   });
 
-  it("supports keyboard interaction", async () => {
+  it("is operable by keyboard", async () => {
     const onToggle = jest.fn();
     render(<RestCloudWithLogic items={items} onToggle={onToggle} />);
     await userEvent.tab();
@@ -99,7 +96,7 @@ describe("Unit tests for withRestCloudLogic", () => {
     expect(onToggle).toHaveBeenCalledWith(true);
   });
 
-  it("flattens the strip while expanded", () => {
+  it("flattens the strip when expanding", () => {
     const { container, rerender } = render(<RestCloudWithLogic items={items} />);
     const strip = () => (container.firstChild as HTMLElement).firstChild;
     expect(strip()).toHaveStyle({ height: "9px" });
@@ -107,8 +104,21 @@ describe("Unit tests for withRestCloudLogic", () => {
     expect(strip()).toHaveStyle({ height: "3px" });
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withRestCloudLogic(RestCloud).displayName).toBe("withRestCloudLogic(RestCloud)");
+  });
+});
+
+describe("Unit tests for the German locale", () => {
+  it("speaks German under the German locale", () => {
+    const { rerender } = renderInGerman(<RestCloudWithLogic items={[{ id: "a" }]} />);
+    expect(
+      screen.getByRole("button", { name: "1 weiterer Eintrag — aufklappen" }),
+    ).toBeInTheDocument();
+    rerender(<RestCloudWithLogic items={items} expanded />);
+    expect(
+      screen.getByRole("button", { name: "87 weitere Einträge — einklappen" }),
+    ).toBeInTheDocument();
   });
 });
 

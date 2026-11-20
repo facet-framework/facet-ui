@@ -6,16 +6,18 @@ export type WithProbeNumberProps = Omit<
   ProbeNumberProps,
   "computedStyle" | "expanded" | "label" | "onClick"
 > & {
+  /** Key of the probe, e.g. `"open"`. */
   probeKey: string;
-
+  /** Which probe is open right now? */
   activeProbe?: string | null;
-
+  /** Plain text for screen readers — what does the probe show? */
   label: string;
-
+  /** Called with the key; clicking again closes it (`null`). */
   onToggle?: (probeKey: string | null) => void;
   style?: CSSProperties;
 };
 
+/** Manages the open/close toggle and the emphasis of the active probe. */
 export function withProbeNumberLogic(Component: ComponentType<ProbeNumberProps>) {
   const Wrapped = ({
     probeKey,

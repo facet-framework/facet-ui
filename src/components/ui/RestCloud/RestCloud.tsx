@@ -6,9 +6,9 @@ export type RestCloudProps = {
   containerStyle: CSSProperties;
   stripStyle: CSSProperties;
   labelStyle: CSSProperties;
-
+  /** Proportional strokes, one per remaining entry. */
   ticks: RestTick[];
-
+  /** Plain text, e.g. "87 more lines — expand". */
   label: string;
   expanded: boolean;
   onToggle: () => void;
@@ -16,6 +16,11 @@ export type RestCloudProps = {
   "data-testid"?: string;
 };
 
+/**
+ * Mechanic 6 · rest cloud: after the first rows comes a strip that holds the
+ * remaining entries in proportion. One grasps the quantity before reading it —
+ * and on expanding, the same strip unfolds into rows.
+ */
 export function RestCloud({
   containerStyle,
   stripStyle,

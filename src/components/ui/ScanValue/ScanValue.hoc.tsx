@@ -1,25 +1,28 @@
-import { localized } from "../../../i18n/legacy/components/ui/ScanValue/ScanValue.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import { color, font } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { ScanValueProps } from "./ScanValue";
 
 export type ScanOrigin = "scan" | "host";
 
 export type WithScanValueProps = Omit<ScanValueProps, "computedStyle" | "originLabel"> & {
+  /** `scan` = repo scan, `host` = connected measurement source. */
   origin?: ScanOrigin;
-
+  /** Exact origin, e.g. "Repo scan of 2026-07-28". */
   originLabel?: string;
   style?: CSSProperties;
 };
 
-const DEFAULT_LABEL: Record<ScanOrigin, string> = {
-  scan: localized.text1,
-  host: localized.text2,
-};
+const DEFAULT_LABEL = {
+  scan: "elements.scanValue.fromScan",
+  host: "elements.scanValue.fromHost",
+} as const;
 
+/** Sets the dotted origin marking and phrases the plain text. */
 export function withScanValueLogic(Component: ComponentType<ScanValueProps>) {
   const Wrapped = ({ origin = "scan", originLabel, style, ...rest }: WithScanValueProps) => {
-    const label = originLabel ?? DEFAULT_LABEL[origin];
+    const { t } = useText();
+    const label = originLabel ?? t(DEFAULT_LABEL[origin]);
 
     const computedStyle = useMemo<CSSProperties>(
       () => ({

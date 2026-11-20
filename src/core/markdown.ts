@@ -1,3 +1,18 @@
+/**
+ * A small Markdown reader for the companion's answers.
+ *
+ * It handles what a model writes into an answer about a repository:
+ * paragraphs, headings, lists, quotes, rules, code blocks as well as bold,
+ * italic, code and links in running text.
+ *
+ * It deliberately does **not** handle: tables, nested lists, images,
+ * footnotes, reference links, embedded HTML. What it does not know stays as
+ * text — a reader that silently swallows the unknown is worse than one that
+ * shows it unchanged. This limit lives here instead of in a dependency
+ * because the library has none, and a complete Markdown implementation would
+ * weigh more than everything else together.
+ */
+
 export type MdInline =
   | { kind: "text"; text: string }
   | { kind: "strong"; text: string }
@@ -20,6 +35,7 @@ const ORDERED = /^\s{0,3}\d+[.)]\s+(.*)$/;
 const QUOTE = /^\s{0,3}>\s?(.*)$/;
 const RULE = /^\s{0,3}(?:-{3,}|\*{3,}|_{3,})\s*$/;
 
+/** Splits Markdown into blocks. Empty text yields no blocks. */
 export function parseMarkdown(text: string): MdBlock[] {
   const lines = String(text ?? "")
     .replace(/\r\n?/g, "\n")
@@ -40,7 +56,8 @@ export function parseMarkdown(text: string): MdBlock[] {
       const marker = fence[1][0];
       const body: string[] = [];
       i++;
-
+      // A fence nobody closed ends at the end of the text. The alternative
+      // would be to show the rest of the answer as prose although it is code.
       while (i < lines.length && !isClosing(lines[i], marker)) {
         body.push(lines[i]);
         i++;
@@ -83,7 +100,7 @@ export function parseMarkdown(text: string): MdBlock[] {
       while (i < lines.length) {
         const item = ordered ? ORDERED.exec(lines[i]) : BULLET.exec(lines[i]);
         if (!item) break;
-
+        // Continuation lines belong to the item before, not to a new one.
         const parts = [item[1]];
         i++;
         while (i < lines.length && lines[i].trim() && !isBlockStart(lines[i])) {
@@ -125,6 +142,13 @@ function isBlockStart(line: string): boolean {
   );
 }
 
+/**
+ * Splits a line into text pieces.
+ *
+ * Code first, because inside a code piece `**` is not bold but two stars.
+ * Then links, then bold before italic — `**x**` must not end up as two
+ * italic stars.
+ */
 export function parseInline(text: string): MdInline[] {
   const out: MdInline[] = [];
   let rest = String(text ?? "");
@@ -151,6 +175,13 @@ export function parseInline(text: string): MdInline[] {
   return out.length ? out : [{ kind: "text", text: "" }];
 }
 
+/**
+ * Whether a link may be clickable.
+ *
+ * The text comes from a model, and a model must not conjure up an address
+ * the reader visits with one click. `http` and `https` become links,
+ * everything else — `javascript:`, `data:`, `file:` — stays readable text.
+ */
 export function isSafeHref(href: string): boolean {
   return /^https?:\/\//i.test(String(href ?? "").trim());
 }

@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for Stack horizontal, wrapping track 1`] = `
+<div
+  style="display: flex; flex-direction: row; gap: 8px; flex-wrap: wrap; min-width: 0; min-height: 0;"
+/>
+`;
+
+exports[`Snapshot tests for Stack vertical track 1`] = `
+<div
+  style="display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; min-height: 0;"
+>
+  <span>
+    a
+  </span>
+  <span>
+    b
+  </span>
+</div>
+`;

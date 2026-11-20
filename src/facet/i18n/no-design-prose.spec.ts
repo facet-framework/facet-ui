@@ -1,5 +1,11 @@
 import { de, en, type TextKey } from ".";
 
+/**
+ * Visible text states a value, label, state or available action. It must not
+ * justify how the UI is drawn or why data is absent. This guard checks both
+ * dictionaries for characteristic connectives; it cannot judge tone. Allowlist
+ * another meaning only with that meaning documented beside the key.
+ */
 const REASONING: readonly RegExp[] = [
   /\bbecause\b/i,
   /\btherefore\b/i,
@@ -23,14 +29,14 @@ const REASONING: readonly RegExp[] = [
   /\bnicht angezeigt\b/i,
 ];
 
-const ALLOWED: ReadonlyMap<TextKey, string> = new Map<TextKey, string>([
-  ["b.knowledge.discoverability.question", "„damit“ = with it: „Wo beginnt man damit im Produkt?“"],
-]);
+/** Keys whose text uses a listed word in a sense that is not a reason. */
+const ALLOWED: ReadonlyMap<TextKey, string> = new Map<TextKey, string>([]);
 
 const reasoning = (text: string) => REASONING.find((re) => re.test(text));
 
-describe("no design prose in the FACET design system dictionaries", () => {
-  it("catches explanatory prose in both languages", () => {
+describe("no design prose in the FACET dictionaries", () => {
+  it("detects explanatory prose in both languages", () => {
+    // The instrument first: a guard that matches nothing would pass forever.
     expect(
       reasoning(
         "Ob der Host sammelt, wie lange er aufbewahrt und wohin er schreibt, meldet er Atlas nicht — deshalb steht es hier nicht.",
@@ -42,7 +48,7 @@ describe("no design prose in the FACET design system dictionaries", () => {
       ),
     ).toBeDefined();
     expect(reasoning("Every promise is therefore open.")).toBeDefined();
-
+    // And it lets ordinary labels and states through.
     expect(reasoning("Nothing open.")).toBeUndefined();
     expect(reasoning("Noch kein früherer Ort.")).toBeUndefined();
     expect(reasoning("Install and grant in the terminal.")).toBeUndefined();

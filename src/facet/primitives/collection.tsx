@@ -4,17 +4,19 @@ import { Icon, type IconName } from "./Icon";
 import { Button, Chip, SearchField, Segment } from "./controls";
 import { EmptyState, Skeleton } from "./display";
 
+/* Data table ------------------------------------------------------------ */
+
 export type SortDir = "asc" | "desc";
 
 export type Column<R> = {
   key: string;
   label: string;
-
+  /** Right-aligned, tabular figures. */
   numeric?: boolean;
   sortable?: boolean;
   width?: number | string;
   render: (row: R) => ReactNode;
-
+  /** Hidden below 768 px; the mobile card shows only the remaining columns. */
   hideOnMobile?: boolean;
 };
 
@@ -29,6 +31,11 @@ export type DataTableProps<R> = {
   dense?: boolean;
 };
 
+/**
+ * A sortable table. Sorting is a click on the column header that toggles
+ * ascending and descending; the state is announced through `aria-sort`.
+ * Below 768 px the table becomes a list of cards (`.t-table-cards`).
+ */
 export function DataTable<R>({
   label,
   columns,
@@ -105,8 +112,14 @@ export function DataTable<R>({
   );
 }
 
+/** A sortable value; `null` or `undefined` means the value was not measured. */
 export type SortValue = string | number | null | undefined;
 
+/**
+ * Sorts rows by one value without touching the input. Unmeasured values sort last in both
+ * directions: a missing value is not the smallest or the largest one, and flipping the
+ * direction must not move it to the top. Equal values keep their given order (stable sort).
+ */
 export function sortRows<R>(rows: readonly R[], value: (row: R) => SortValue, dir: SortDir): R[] {
   return [...rows].sort((a, b) => {
     const x = value(a);
@@ -119,6 +132,9 @@ export function sortRows<R>(rows: readonly R[], value: (row: R) => SortValue, di
   });
 }
 
+/* Pagination ------------------------------------------------------------ */
+
+/** Page numbers with gaps: 1 … 4 5 [6] 7 8 … 48. */
 export function pageWindow(page: number, pages: number): (number | "gap")[] {
   if (pages <= 7) return Array.from({ length: pages }, (_, i) => i + 1);
   const out: (number | "gap")[] = [1];
@@ -138,7 +154,7 @@ export type PaginationProps = {
   pageSizes?: number[];
   onPage?: (page: number) => void;
   onPageSize?: (size: number) => void;
-
+  /** Mobile form: a "load more" button with the range instead of numbers. */
   compact?: boolean;
 };
 
@@ -228,6 +244,8 @@ export function Pagination({
     </nav>
   );
 }
+
+/* Toolbar --------------------------------------------------------------- */
 
 export type ViewOption<V extends string> = { value: V; label: string; icon: IconName };
 
@@ -325,6 +343,8 @@ export function CollectionToolbar<V extends string>({
   );
 }
 
+/* Collection frame ------------------------------------------------------- */
+
 export type CollectionState = "ready" | "loading" | "empty" | "filtered-empty" | "error";
 
 export type CollectionProps = {
@@ -336,10 +356,14 @@ export type CollectionProps = {
   empty?: { title: ReactNode; body?: ReactNode; icon?: IconName; action?: ReactNode };
   filteredEmpty?: { query?: string; onReset?: () => void; suggestions?: ReactNode };
   error?: { title: ReactNode; reason?: ReactNode; onRetry?: () => void };
-
+  /** Number of skeleton rows while loading. */
   skeletonRows?: number;
 };
 
+/**
+ * The frame every list in Atlas stands in: toolbar, optional distribution
+ * band, body, pagination — and one defined form for each state.
+ */
 export function Collection({
   state,
   toolbar,

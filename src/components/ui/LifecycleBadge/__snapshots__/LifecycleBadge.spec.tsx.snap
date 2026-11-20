@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for LifecycleBadge active with age 1`] = `
+<span
+  style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"
+  title="active · for 197 days"
+>
+  <span
+    aria-hidden="true"
+    style="width: 7px; height: 7px; flex: 0 0 auto; background: var(--ink);"
+  />
+  <span
+    style="font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink);"
+  >
+    active
+  </span>
+  <span
+    style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint);"
+  >
+    197 d
+  </span>
+</span>
+`;
+
+exports[`Snapshot tests for LifecycleBadge planned 1`] = `
+<span
+  style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"
+  title="planned"
+>
+  <span
+    aria-hidden="true"
+    style="width: 7px; height: 7px; flex: 0 0 auto; background: transparent; box-shadow: inset 0 0 0 1px var(--plan);"
+  />
+  <span
+    style="font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0.12em; text-transform: uppercase; color: var(--plan);"
+  >
+    planned
+  </span>
+</span>
+`;

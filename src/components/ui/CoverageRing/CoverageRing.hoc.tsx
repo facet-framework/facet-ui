@@ -1,7 +1,6 @@
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/CoverageRing/CoverageRing.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { CoverageRingProps } from "./CoverageRing";
 
 export type WithCoverageRingProps = Omit<
@@ -17,16 +16,18 @@ export type WithCoverageRingProps = Omit<
   | "size"
   | "strokeWidth"
 > & {
+  /** Promises with a test mapping. */
   value: number;
-
+  /** Promises made, in total. */
   total: number;
   size?: number;
   strokeWidth?: number;
-
+  /** Custom plain text; otherwise "x of y promises with a mapped test". */
   label?: string;
   style?: CSSProperties;
 };
 
+/** Computes share, arc length and colour from value and reference total. */
 export function withCoverageRingLogic(Component: ComponentType<CoverageRingProps>) {
   const Wrapped = ({
     value,
@@ -37,6 +38,7 @@ export function withCoverageRingLogic(Component: ComponentType<CoverageRingProps
     style,
     ...rest
   }: WithCoverageRingProps) => {
+    const { t } = useText();
     const percent = total > 0 ? Math.round((Math.min(value, total) / total) * 100) : 0;
     const circumference = useMemo(() => Math.PI * (size - strokeWidth), [size, strokeWidth]);
     const dash = useMemo(
@@ -76,7 +78,7 @@ export function withCoverageRingLogic(Component: ComponentType<CoverageRingProps
         trackColor={color.line}
         fillColor={total > 0 && value >= total ? color.ok : color.signal}
         display={total > 0 ? `${percent} %` : "—"}
-        label={label ?? `${value}${germanLabels.text109}${total}${localized.text1}`}
+        label={label ?? t("elements.coverageRing.label", { value, total })}
         labelStyle={labelStyle}
         containerStyle={containerStyle}
         {...rest}

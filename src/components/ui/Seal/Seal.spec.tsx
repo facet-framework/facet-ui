@@ -1,19 +1,18 @@
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/Seal/Seal.spec.text";
 import { render, screen } from "@testing-library/react";
 import SealWithLogic, { Seal, withSealLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
 describe("Unit tests for Seal", () => {
-  it("renders one strip per facet", () => {
+  it("renders one stripe per facet", () => {
     const { container } = render(
       <Seal
         containerStyle={{}}
         countStyle={{}}
         count="2/7"
-        label={localized.text2}
+        label="2 of 7 facets filled"
         stripes={[
-          { key: "intent", label: localized.text3, filled: true, style: {} },
-          { key: "contract", label: germanLabels.text166, filled: false, style: {} },
+          { key: "intent", label: "Purpose — filled", filled: true, style: {} },
+          { key: "contract", label: "Promise — empty", filled: false, style: {} },
         ]}
       />,
     );
@@ -21,36 +20,36 @@ describe("Unit tests for Seal", () => {
     expect(screen.getByText("2/7")).toBeInTheDocument();
   });
 
-  it("draws open issues as a ring", () => {
+  it("states the status in plain text", () => {
     render(
-      <Seal containerStyle={{}} countStyle={{}} count="0/7" label={localized.text4} stripes={[]} />,
+      <Seal containerStyle={{}} countStyle={{}} count="0/7" label="no facet filled" stripes={[]} />,
     );
-    expect(screen.getByRole("img", { name: localized.text5 })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "no facet filled" })).toBeInTheDocument();
   });
 });
 
 describe("Unit tests for withSealLogic", () => {
-  it("always shows seven strips", () => {
+  it("always shows seven stripes", () => {
     const { container } = render(<SealWithLogic present={{}} />);
     expect(container.querySelectorAll("[data-facet]")).toHaveLength(7);
   });
 
-  it("counts filled facets", () => {
+  it("counts the filled facets", () => {
     render(<SealWithLogic present={{ intent: true, contract: true, lineage: true }} />);
     expect(screen.getByText("3/7")).toBeInTheDocument();
   });
 
-  it("names filled facets in plain language", () => {
+  it("names the filled facets in plain text", () => {
     render(<SealWithLogic present={{ intent: true }} />);
-    expect(screen.getByRole("img", { name: localized.text9 })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "1 of 7 facets filled: Purpose" })).toBeInTheDocument();
   });
 
-  it("reports when no facet is filled", () => {
+  it("says so when no facet is filled", () => {
     render(<SealWithLogic present={{}} />);
-    expect(screen.getByRole("img", { name: localized.text11 })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "no facet filled" })).toBeInTheDocument();
   });
 
-  it("filled", () => {
+  it("draws empty facets as an outline", () => {
     const { container } = render(<SealWithLogic present={{ intent: true }} />);
     expect(container.querySelector('[data-facet="contract"]')).toHaveStyle({
       background: "transparent",
@@ -60,18 +59,28 @@ describe("Unit tests for withSealLogic", () => {
     });
   });
 
-  it("reads filled facets from a record", () => {
+  it("reads the filling from a record", () => {
     render(<SealWithLogic record={{ present: { intent: true, contract: true } }} />);
     expect(screen.getByText("2/7")).toBeInTheDocument();
   });
 
-  it("hides counts in rows", () => {
+  it("hides the count for rows", () => {
     render(<SealWithLogic present={{ intent: true }} hideCount />);
     expect(screen.getByText("1/7")).toHaveStyle({ display: "none" });
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withSealLogic(Seal).displayName).toBe("withSealLogic(Seal)");
+  });
+});
+
+describe("Unit tests for the German locale", () => {
+  it("speaks German under the German locale", () => {
+    renderInGerman(<SealWithLogic present={{ intent: true }} />);
+    expect(
+      screen.getByRole("img", { name: "1 von 7 Facetten befüllt: Zweck" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTitle("Zweck — befüllt")).toBeInTheDocument();
   });
 });
 
@@ -83,7 +92,7 @@ describe("Snapshot tests for Seal", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("describes the state transition", () => {
+  it("empty", () => {
     const { container } = render(<SealWithLogic present={{}} />);
     expect(container.firstChild).toMatchSnapshot();
   });

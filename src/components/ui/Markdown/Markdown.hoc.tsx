@@ -4,12 +4,14 @@ import { color, font, fontSize } from "../../../design-system/tokens";
 import type { MarkdownBlockView, MarkdownPiece, MarkdownProps } from "./Markdown";
 
 export type WithMarkdownProps = Omit<MarkdownProps, "containerStyle" | "blocks"> & {
+  /** The text as it arrives. */
   text: string;
-
+  /** Spacing between the blocks. */
   gap?: number;
   style?: CSSProperties;
 };
 
+/** Reads the text and renders each block in the design language. */
 export function withMarkdownLogic(Component: ComponentType<MarkdownProps>) {
   const Wrapped = ({ text, gap = 10, style, ...rest }: WithMarkdownProps) => {
     const blocks = useMemo<MarkdownBlockView[]>(
@@ -91,6 +93,8 @@ function piecesOf(inline: MdInline[], prefix: string): MarkdownPiece[] {
       case "code":
         return { key, text: piece.text, style: INLINE_CODE_STYLE };
       case "link":
+        // A target that may not be visited becomes text with its address
+        // behind it: hiding it would be worse than showing it.
         return isSafeHref(piece.href)
           ? { key, text: piece.text, href: piece.href, style: LINK_STYLE }
           : { key, text: `${piece.text} (${piece.href})`, style: TEXT_STYLE };
@@ -124,7 +128,7 @@ function headingStyle(level: number): CSSProperties {
   return {
     margin: 0,
     fontFamily: font.sans,
-
+    // Three levels are enough: an answer in a conversation is not a document.
     fontSize: level <= 2 ? fontSize.lead : fontSize.base,
     fontWeight: 500,
     color: color.ink,

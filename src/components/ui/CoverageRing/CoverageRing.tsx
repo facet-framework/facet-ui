@@ -2,22 +2,26 @@ import type { CSSProperties } from "react";
 
 export type CoverageRingProps = {
   size: number;
-
+  /** Circumference of the ring — basis for the dash-pattern share. */
   circumference: number;
-
+  /** Length of the filled arc. */
   dash: number;
   strokeWidth: number;
   trackColor: string;
   fillColor: string;
-
+  /** Share as ready-formatted text, e.g. "82 %". */
   display: string;
-
+  /** Plain words, e.g. "31 of 38 promises with a mapped test". */
   label: string;
   labelStyle: CSSProperties;
   containerStyle: CSSProperties;
   "data-testid"?: string;
 };
 
+/**
+ * Ring chart for test coverage. The percentage stands in the middle — the
+ * shape alone is not a statement.
+ */
 export function CoverageRing({
   size,
   circumference,

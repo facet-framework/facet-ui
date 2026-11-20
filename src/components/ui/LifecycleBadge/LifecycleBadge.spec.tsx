@@ -1,32 +1,19 @@
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { localized } from "../../../i18n/legacy/components/ui/LifecycleBadge/LifecycleBadge.spec.text";
 import { render, screen } from "@testing-library/react";
 import LifecycleBadgeWithLogic, { LifecycleBadge, withLifecycleBadgeLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
 const styles = { containerStyle: {}, markStyle: {}, labelStyle: {}, ageStyle: {} };
 
 describe("Unit tests for LifecycleBadge", () => {
-  it("shows the lifecycle and its age", () => {
-    render(
-      <LifecycleBadge
-        {...styles}
-        label={remainingText.text7}
-        age="197 T"
-        title={remainingText.text119}
-      />,
-    );
-    expect(screen.getByText(remainingText.text7)).toBeInTheDocument();
-    expect(screen.getByText("197 T")).toBeInTheDocument();
+  it("shows state and age", () => {
+    render(<LifecycleBadge {...styles} label="active" age="197 d" title="active · for 197 days" />);
+    expect(screen.getByText("active")).toBeInTheDocument();
+    expect(screen.getByText("197 d")).toBeInTheDocument();
   });
 
-  it("omits age when unavailable", () => {
+  it("leaves out the age when there is none", () => {
     const { container } = render(
-      <LifecycleBadge
-        {...styles}
-        label={remainingText.text23}
-        age=""
-        title={remainingText.text23}
-      />,
+      <LifecycleBadge {...styles} label="planned" age="" title="planned" />,
     );
     expect(container.querySelectorAll("span")).toHaveLength(3);
   });
@@ -35,33 +22,27 @@ describe("Unit tests for LifecycleBadge", () => {
 describe("Unit tests for withLifecycleBadgeLogic", () => {
   const today = new Date("2026-07-30");
 
-  it("translates lifecycle labels into German", () => {
+  it("translates the state into German under the German locale", () => {
     render(<LifecycleBadgeWithLogic lifecycle="deprecated" />);
-    expect(screen.getByText(localized.text4)).toBeInTheDocument();
+    expect(screen.getByText("deprecated")).toBeInTheDocument();
   });
 
-  it("calculates days in the current lifecycle", () => {
+  it("computes the days in the state", () => {
     render(<LifecycleBadgeWithLogic lifecycle="active" createdAt="2026-07-01" today={today} />);
-    expect(screen.getByText("29 T")).toBeInTheDocument();
+    expect(screen.getByText("29 d")).toBeInTheDocument();
   });
 
-  it("handles a missing date", () => {
+  it("works without a date", () => {
     render(<LifecycleBadgeWithLogic lifecycle="active" data-testid="badge" />);
-    expect(screen.getByTestId("badge")).toHaveAttribute("title", remainingText.text7);
+    expect(screen.getByTestId("badge")).toHaveAttribute("title", "active");
   });
 
-  it("ignores unreadable dates", () => {
-    render(
-      <LifecycleBadgeWithLogic
-        lifecycle="active"
-        createdAt={localized.text8}
-        data-testid="badge"
-      />,
-    );
-    expect(screen.getByTestId("badge")).toHaveAttribute("title", remainingText.text7);
+  it("ignores an unreadable date", () => {
+    render(<LifecycleBadgeWithLogic lifecycle="active" createdAt="no date" data-testid="badge" />);
+    expect(screen.getByTestId("badge")).toHaveAttribute("title", "active");
   });
 
-  it("names the superseding record", () => {
+  it("names the replacement in plain text", () => {
     render(
       <LifecycleBadgeWithLogic
         lifecycle="deprecated"
@@ -69,10 +50,13 @@ describe("Unit tests for withLifecycleBadgeLogic", () => {
         data-testid="badge"
       />,
     );
-    expect(screen.getByTestId("badge")).toHaveAttribute("title", localized.text10);
+    expect(screen.getByTestId("badge")).toHaveAttribute(
+      "title",
+      "deprecated · superseded by sync/conflict/crdt-merge",
+    );
   });
 
-  it("also encodes lifecycle through shape", () => {
+  it("additionally encodes the state through the shape", () => {
     const { container, rerender } = render(<LifecycleBadgeWithLogic lifecycle="planned" />);
     expect((container.firstChild as HTMLElement).firstChild).toHaveStyle({
       background: "transparent",
@@ -81,14 +65,35 @@ describe("Unit tests for withLifecycleBadgeLogic", () => {
     expect((container.firstChild as HTMLElement).firstChild).toHaveStyle({ height: "2px" });
   });
 
-  it("preserves unknown lifecycle labels", () => {
+  it("returns unknown states unchanged", () => {
     render(<LifecycleBadgeWithLogic lifecycle="experimental" />);
     expect(screen.getByText("experimental")).toBeInTheDocument();
   });
 
-  it("sets a descriptive displayName", () => {
+  it("gives a meaningful displayName", () => {
     expect(withLifecycleBadgeLogic(LifecycleBadge).displayName).toBe(
       "withLifecycleBadgeLogic(LifecycleBadge)",
+    );
+  });
+});
+
+describe("Unit tests for the German locale", () => {
+  it("speaks German under the German locale", () => {
+    const today = new Date("2026-07-30");
+    renderInGerman(
+      <LifecycleBadgeWithLogic
+        lifecycle="deprecated"
+        createdAt="2026-07-01"
+        today={today}
+        supersededBy="sync/conflict/crdt-merge"
+        data-testid="badge"
+      />,
+    );
+    expect(screen.getByText("abgelöst")).toBeInTheDocument();
+    expect(screen.getByText("29 T")).toBeInTheDocument();
+    expect(screen.getByTestId("badge")).toHaveAttribute(
+      "title",
+      "abgelöst · seit 29 Tagen · abgelöst von sync/conflict/crdt-merge",
     );
   });
 });
@@ -105,7 +110,7 @@ describe("Snapshot tests for LifecycleBadge", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("formats the rank with two digits", () => {
+  it("planned", () => {
     const { container } = render(<LifecycleBadgeWithLogic lifecycle="planned" />);
     expect(container.firstChild).toMatchSnapshot();
   });

@@ -1,4 +1,3 @@
-import { localized } from "../../../i18n/legacy/components/ui/ProbeNumber/ProbeNumber.stories.text";
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import ProbeNumberWithLogic from ".";
@@ -8,9 +7,14 @@ const meta: Meta<typeof ProbeNumberWithLogic> = {
   title: "Atoms/ProbeNumber",
   component: ProbeNumberWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Mechanic 1 · Lead sentence with probes: a number in the sentence is the shortest way into its derivation.",
+      },
+    },
   },
-  args: { probeKey: "open", label: "16 open Punkte show", children: "16" },
+  args: { probeKey: "open", label: "Show 16 open points", children: "16" },
 };
 
 export default meta;
@@ -18,35 +22,36 @@ type Story = StoryObj<typeof meta>;
 
 export const Closed: Story = {};
 
-export const Open: Story = { args: { activeProbe: "open" } };
+export const Opened: Story = { args: { activeProbe: "open" } };
 
-export const InLeadSentence: Story = {
+/** In a sentence, as on the stage — with working toggling. */
+export const InTheLeadSentence: Story = {
   render: () => {
     const [probe, setProbe] = useState<string | null>(null);
     return (
       <div style={{ maxWidth: 560 }}>
         <Text as="p" variant="hero">
           <ProbeNumberWithLogic
-            probeKey={"open"}
+            probeKey="open"
             activeProbe={probe}
             onToggle={setProbe}
-            label="16 open Punkte show"
+            label="Show 16 open points"
           >
             16
           </ProbeNumberWithLogic>{" "}
-          Punkte brauchen dich, davon{" "}
+          points need you, of which{" "}
           <ProbeNumberWithLogic
-            probeKey="deadline"
+            probeKey="due"
             activeProbe={probe}
             onToggle={setProbe}
-            label={localized.text5}
+            label="Show 2 overdue deadlines"
           >
             2
           </ProbeNumberWithLogic>{" "}
-          {localized.text6}
+          with an expired deadline.
         </Text>
         <Text variant="meta" tone="dim" style={{ marginTop: 12, display: "block" }}>
-          open Sonde: {probe ?? "none"}
+          open probe: {probe ?? "none"}
         </Text>
       </div>
     );

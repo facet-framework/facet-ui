@@ -1,4 +1,3 @@
-import { localized } from "../../../i18n/legacy/components/ui/EmptyState/EmptyState.stories.text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import EmptyStateWithLogic from ".";
 import Button from "../Button";
@@ -7,11 +6,16 @@ const meta: Meta<typeof EmptyStateWithLogic> = {
   title: "FACET UI/EmptyState",
   component: EmptyStateWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "One of the four mandatory states. It names the missing facet and says what depends on it — instead of showing an empty surface.",
+      },
+    },
   },
   args: {
-    headline: localized.text2,
-    body: localized.text3,
+    headline: "No promise described.",
+    body: "Without contract.scenarios[] there is nothing a test could back.",
   },
   decorators: [
     (Story) => (
@@ -27,14 +31,16 @@ type Story = StoryObj<typeof meta>;
 
 export const Quiet: Story = {};
 
+/** Open task — the sentence gets ink instead of grey. */
 export const OpenPoint: Story = {
   args: {
     tone: "open",
-    headline: localized.text4,
-    body: localized.text5,
+    headline: "Active, but no entry point in code.",
+    body: "Changes to the code cannot be traced to this record.",
   },
 };
 
-export const WithPath: Story = {
-  args: { action: <Button variant="ghost">{localized.text6}</Button> },
+/** With a way forward. */
+export const WithWayForward: Story = {
+  args: { action: <Button variant="ghost">check the register →</Button> },
 };

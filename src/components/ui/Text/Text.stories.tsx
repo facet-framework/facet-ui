@@ -1,5 +1,3 @@
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { localized } from "../../../i18n/legacy/components/ui/Text/Text.stories.text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import TextWithLogic from ".";
 
@@ -7,32 +5,43 @@ const meta: Meta<typeof TextWithLogic> = {
   title: "Primitives/Text",
   component: TextWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Text primitive of the design system. At most five levels per view; mono is reserved for field values, IDs, paths and numbers.",
+      },
+    },
   },
-  args: { children: remainingText.text155 },
+  args: { children: "This software has 10 features in 6 areas." },
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Body text, the default case. */
 export const Body: Story = {};
 
+/** The lead sentence on the stage — lightest weight, largest area. */
 export const LeadSentence: Story = {
   args: { as: "p", variant: "hero", tone: "ink" },
 };
 
-export const Label: Story = {
-  args: { variant: "label", tone: "dim", children: "EntryPoints in Code" },
+/** Subject label above a block. Capitals, letter-spaced, never longer than three words. */
+export const FactualLabel: Story = {
+  args: { variant: "label", tone: "dim", children: "Entry points in code" },
 };
 
+/** Field values are set in mono — here a record id. */
 export const FieldValue: Story = {
   args: { variant: "meta", tone: "soft", mono: true, children: "tasks/create/quick-add" },
 };
 
+/** An overdue deadline is the only case in which red carries. */
 export const Deadline: Story = {
-  args: { variant: "meta", tone: "deadline", mono: true, nowrap: true, children: localized.text2 },
+  args: { variant: "meta", tone: "due", mono: true, nowrap: true, children: "due 2026-07-12" },
 };
 
+/** Paths and dates never wrap — they truncate with an ellipsis. */
 export const SingleLine: Story = {
   args: {
     variant: "meta",
@@ -43,20 +52,24 @@ export const SingleLine: Story = {
   },
 };
 
+/** Descriptions are limited to two lines. */
 export const Description: Story = {
   args: {
     as: "p",
     clamp: 2,
     tone: "dim",
-    children: localized.text3,
+    children:
+      "Creates a task from a single input line. Recognises due date, list and priority while typing and works offline with a local queue.",
     style: { maxWidth: 320 },
   },
 };
 
+/** Columns of numbers get tabular figures. */
 export const TabularFigures: Story = {
-  args: { variant: "display", tabular: true, mono: true, children: "77%" },
+  args: { variant: "display", tabular: true, mono: true, children: "77 %" },
 };
 
+/** All steps of the scale one below the other. */
 export const Scale: Story = {
   render: () => (
     <div style={{ display: "grid", gap: 12 }}>
@@ -64,7 +77,7 @@ export const Scale: Story = {
         ["hero", "display", "title", "lead", "body", "meta", "label", "caption", "micro"] as const
       ).map((variant) => (
         <TextWithLogic key={variant} as="div" variant={variant}>
-          {variant} {remainingText.text156}
+          {variant} · This software has 10 features
         </TextWithLogic>
       ))}
     </div>

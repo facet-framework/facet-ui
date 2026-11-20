@@ -1,3 +1,8 @@
+/**
+ * Type scale of the design system — at most five steps per view.
+ * Mono is reserved exclusively for field values, IDs, paths and numbers.
+ */
+
 import type { CSSProperties } from "react";
 import { color, font, fontSize } from "./tokens";
 
@@ -5,7 +10,7 @@ export type TextVariant =
   "hero" | "display" | "title" | "lead" | "body" | "meta" | "label" | "caption" | "micro";
 
 export type TextTone =
-  "ink" | "soft" | "dim" | "faint" | "signal" | "ok" | "plan" | "deadline" | "inherit";
+  "ink" | "soft" | "dim" | "faint" | "signal" | "ok" | "plan" | "due" | "inherit";
 
 export const TONE_COLOR: Record<TextTone, string> = {
   ink: color.ink,
@@ -15,10 +20,14 @@ export const TONE_COLOR: Record<TextTone, string> = {
   signal: color.signal,
   ok: color.ok,
   plan: color.plan,
-  deadline: color.deadline,
+  due: color.due,
   inherit: "inherit",
 };
 
+/**
+ * Base style per variant. `label`, `caption` and `micro` are letter-spaced capitals —
+ * they carry subject terms, not decoration.
+ */
 export const VARIANT_STYLE: Record<TextVariant, CSSProperties> = {
   hero: { fontSize: fontSize.hero, lineHeight: 1.18, fontWeight: 300, letterSpacing: "-0.015em" },
   display: { fontSize: fontSize.display, lineHeight: 1.25, fontWeight: 300 },
@@ -52,19 +61,20 @@ export const VARIANT_STYLE: Record<TextVariant, CSSProperties> = {
 export type TextStyleOptions = {
   variant: TextVariant;
   tone: TextTone;
-
+  /** Mono for field values, IDs, paths and numbers. */
   mono?: boolean;
-
+  /** Single line with ellipsis — mandatory for answer lines, paths and dates. */
   truncate?: boolean;
-
+  /** Truncate after n lines (descriptions). */
   clamp?: number;
   align?: CSSProperties["textAlign"];
   weight?: CSSProperties["fontWeight"];
   nowrap?: boolean;
-
+  /** Tabular figures for number columns. */
   tabular?: boolean;
 };
 
+/** Builds the complete text style from variant, tone and typeface. */
 export function textStyle(options: TextStyleOptions): CSSProperties {
   const { variant, tone, mono, truncate, clamp, align, weight, nowrap, tabular } = options;
 

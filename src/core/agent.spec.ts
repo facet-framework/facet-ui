@@ -1,7 +1,7 @@
-import { germanText as germanLabels } from "../i18n/legacy/shared";
-import { localized } from "../i18n/legacy/core/agent.spec.text";
+import { createText } from "../facet/i18n/text";
 import { AGENT_PATH, agentState, askAgent, type AgentStream } from "./agent";
 
+/** A stream the test feeds by hand — no network, no agent. */
 function fakeStream() {
   const listeners: Record<string, ((event: MessageEvent) => void)[]> = {};
   let closed = false;
@@ -33,7 +33,7 @@ describe("Unit tests for askAgent", () => {
     const order: string[] = [];
 
     askAgent(
-      localized.text1,
+      "wo steht das",
       {
         onRead: (target) => order.push(`read:${target}`),
         onText: (text) => order.push(`text:${text}`),
@@ -53,7 +53,7 @@ describe("Unit tests for askAgent", () => {
     const fake = fakeStream();
     const onDone = jest.fn();
 
-    askAgent(germanLabels.text114, { onDone }, { open: () => fake.stream });
+    askAgent("erste Frage", { onDone }, { open: () => fake.stream });
     fake.emit("done", { kind: "done", session: "session-7", cost: 0.5 });
 
     expect(onDone).toHaveBeenCalledWith("session-7", 0.5);
@@ -110,7 +110,17 @@ describe("Unit tests for askAgent", () => {
     fake.emit("error", "");
 
     expect(onError).toHaveBeenCalled();
-    expect(onError.mock.calls[0][0].message).toContain(localized.text2);
+    expect(onError.mock.calls[0][0].message).toBe("No agent reachable.");
+  });
+
+  it("reports its errors in German under the German text", () => {
+    const fake = fakeStream();
+    const onError = jest.fn();
+
+    askAgent("question", { onError }, { open: () => fake.stream, text: createText("de") });
+    fake.emit("error", "");
+
+    expect(onError.mock.calls[0][0].message).toBe("Kein Agent erreichbar.");
   });
 
   it("reports only once, even if something still arrives after the abort", () => {
@@ -119,8 +129,8 @@ describe("Unit tests for askAgent", () => {
     const onText = jest.fn();
 
     askAgent("question", { onError, onText }, { open: () => fake.stream });
-    fake.emit("failed", { kind: "failed", text: germanLabels.text115 });
-    fake.emit("failed", { kind: "failed", text: germanLabels.text116 });
+    fake.emit("failed", { kind: "failed", text: "aus" });
+    fake.emit("failed", { kind: "failed", text: "nochmal aus" });
 
     expect(onError).toHaveBeenCalledTimes(1);
   });
@@ -130,7 +140,7 @@ describe("Unit tests for askAgent", () => {
     const onError = jest.fn();
 
     askAgent("question", { onError }, { open: () => fake.stream });
-    fake.emit("text", localized.text3);
+    fake.emit("text", "{no json");
 
     expect(onError).toHaveBeenCalled();
     expect(onError.mock.calls[0][0].message).toContain("Unreadable answer");
@@ -191,12 +201,12 @@ describe("Unit tests for the agent's steps", () => {
     fake.emit("signin", {
       kind: "signin",
       text: "Nobody is signed in to Claude Code.",
-      hint: localized.text4,
+      hint: "Melde dich in einem Terminal an: `claude auth login`.",
     });
 
     expect(onSignIn).toHaveBeenCalled();
     expect(onSignIn.mock.calls[0][1]).toContain("claude auth login");
-
+    // No error channel: the reader should see the command, not a breakdown.
     expect(onError).not.toHaveBeenCalled();
     expect(fake.closed).toBe(true);
   });
@@ -228,12 +238,12 @@ describe("Unit tests for the agent's steps", () => {
       return fake.stream;
     };
 
-    askAgent("q", {}, { open, context: ["record:a/b/c", "page:contents"], mode: "ask" });
+    askAgent("q", {}, { open, context: ["record:a/b/c", "page:contents"], mode: "book" });
     askAgent("q", {}, { open, context: [] });
 
     const sent = new URL(asked[0], "http://host").searchParams;
     expect(sent.getAll("context")).toEqual(["record:a/b/c", "page:contents"]);
-    expect(sent.get("mode")).toBe("ask");
+    expect(sent.get("mode")).toBe("book");
     const bare = new URL(asked[1], "http://host").searchParams;
     expect(bare.has("context")).toBe(false);
     expect(bare.has("mode")).toBe(false);
@@ -265,6 +275,7 @@ describe("Unit tests for agentState", () => {
     expect(state?.models).toHaveLength(1);
   });
 
+  // Without a host this is not an error: Atlas also runs as a bundle without anything.
   it("returns nothing without a host instead of failing", async () => {
     const state = await agentState((async () => {
       throw new Error("no host");
@@ -273,6 +284,8 @@ describe("Unit tests for agentState", () => {
     expect(state).toBeNull();
   });
 
+  // Missing required fields and error objects are an absent host (null),
+  // even when the transport succeeds; callers must never get partial state.
   it.each([
     ["without auth — an older host that did not know it yet", { models: [], model: "" }],
     ["an error object with 200", { error: "not found" }],
@@ -289,6 +302,9 @@ describe("Unit tests for agentState", () => {
     expect(state).toBeNull();
   });
 
+  // The counter-check to the table above: without it, a check that rejects
+  // *every* answer would pass — and the surface would never have a sign-in
+  // state.
   it("accepts an answer that only lacks optional fields", async () => {
     const state = await agentState((async () => ({
       ok: true,
@@ -299,6 +315,8 @@ describe("Unit tests for agentState", () => {
     expect(state?.models).toEqual([]);
   });
 
+  // A host without fetch should get nothing, not crash: the same handling as
+  // for a missing EventSource.
   it("copes without fetch", async () => {
     const original = globalThis.fetch;
     // @ts-expect-error -- simulate an environment without fetch

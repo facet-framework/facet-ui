@@ -5,6 +5,7 @@ import { Button } from "./controls";
 
 const cx = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(" ");
 
+/** A share between 0 and 1 drawn as a bar. `null` means not measured, never zero. */
 export function Meter({
   value,
   tone = "ok",
@@ -67,6 +68,10 @@ export function Stat({
   );
 }
 
+/**
+ * The opening of every overview: one figure, one sentence, then a quieter line.
+ * The figure may be absent when the finding is a sentence on its own.
+ */
 export function Finding({
   eyebrow,
   figure,
@@ -78,7 +83,7 @@ export function Finding({
   mark,
 }: {
   eyebrow?: ReactNode;
-
+  /** A figure-sized mark beside the number, e.g. the drift mark. */
   mark?: ReactNode;
   figure?: ReactNode;
   of?: ReactNode;
@@ -215,6 +220,7 @@ export function Skeleton({
   );
 }
 
+/** Line art for empty states: a stack of sheets, nothing on them. */
 function EmptyArt({ icon }: { icon: IconName }) {
   return (
     <svg
@@ -305,6 +311,7 @@ export function ErrorState({
   );
 }
 
+/** Proportions of a whole as one band; each segment can act as a filter. */
 export function Distribution({
   label,
   parts,
@@ -355,6 +362,7 @@ export function Distribution({
   );
 }
 
+/** A stack where the focused card is sharp and its neighbours recede by distance. */
 export function DepthDeck<T>({
   items,
   focus,

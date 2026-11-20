@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 
 export type ProofCell = {
   key: string;
-
+  /** Number of tests that back this promise at this level. */
   count: number;
   style: CSSProperties;
   title: string;
@@ -10,7 +10,7 @@ export type ProofCell = {
 
 export type ProofRow = {
   key: string;
-
+  /** Id of the promise from `contract.scenarios[].id`. */
   scenario: string;
   proven: boolean;
   cells: ProofCell[];
@@ -25,11 +25,15 @@ export type ProofMatrixProps = {
   captionStyle: CSSProperties;
   columns: string[];
   rows: ProofRow[];
-
+  /** Answer line above the matrix, e.g. "31 of 38 promises have a mapped test". */
   caption: string;
   "data-testid"?: string;
 };
 
+/**
+ * Promise × test kind. Every cell counts the tests from `verification.*_tests[].proves`
+ * that back exactly this promise. Empty cells are the statement.
+ */
 export function ProofMatrix({
   containerStyle,
   headerStyle,

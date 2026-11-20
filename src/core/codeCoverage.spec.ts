@@ -1,15 +1,18 @@
-import { localized } from "../i18n/legacy/core/codeCoverage.spec.text";
 import { buildModel } from "./model";
 import { codeCoverageOf } from "./codeCoverage";
 import type { RawRecord, RepoScan } from "./types";
 
+/**
+ * A record with exactly one anchor in `src/tasks/quick_add.ts` — the anchor
+ * count per file comes from `model.anchorPairs`, not from the scan.
+ */
 const raw = (path: string, summary: string): RawRecord => ({
   path,
   raw: "",
   doc: { id: path, intent: { summary } },
 });
 
-const raws = [raw("tasks/create/quick-add", localized.text1)];
+const raws = [raw("tasks/create/quick-add", "Der Schnellanleger.")];
 
 function modelWithScan(scan: RepoScan) {
   return buildModel(
@@ -21,17 +24,17 @@ function modelWithScan(scan: RepoScan) {
 }
 
 describe("Unit tests for codeCoverageOf", () => {
-  it("returns null when the scan has no file breakdown", () => {
+  it("returns null when the scan does not know the split", () => {
     const model = modelWithScan({ totalLoc: 100 });
     expect(codeCoverageOf(model)).toBeNull();
   });
 
-  it("returns null when either file list is missing", () => {
+  it("returns null when only one of the two lists is missing", () => {
     const model = modelWithScan({ anchoredFiles: [] } as RepoScan);
     expect(codeCoverageOf(model)).toBeNull();
   });
 
-  it("treats an empty breakdown as zero files rather than missing data", () => {
+  it("counts an empty split as actually zero files, not as missing", () => {
     const model = modelWithScan({ anchoredFiles: [], unanchoredFiles: [] });
     const coverage = codeCoverageOf(model);
     expect(coverage).not.toBeNull();
@@ -40,7 +43,7 @@ describe("Unit tests for codeCoverageOf", () => {
     expect(coverage!.dirs).toEqual([]);
   });
 
-  it("sums corpus files and lines with separate anchored and total counts", () => {
+  it("sums files and lines across the corpus, anchored and total separately", () => {
     const model = modelWithScan({
       anchoredFiles: [
         { path: "src/tasks/quick_add.ts", loc: 60 },
@@ -58,7 +61,7 @@ describe("Unit tests for codeCoverageOf", () => {
     expect(coverage.locAnchored).toBe(100);
   });
 
-  it("lists every data entity", () => {
+  it("rolls up by the first path segment, sorted alphabetically", () => {
     const model = modelWithScan({
       anchoredFiles: [{ path: "apps/mobile/src/quick_add.ts", loc: 60 }],
       unanchoredFiles: [
@@ -80,7 +83,7 @@ describe("Unit tests for codeCoverageOf", () => {
     expect(crates.filesAnchored).toBe(0);
   });
 
-  it("groups a file without slashes under the current directory", () => {
+  it("puts a file without '/' under the directory '.'", () => {
     const model = modelWithScan({
       anchoredFiles: [],
       unanchoredFiles: [{ path: "README.md", loc: 12 }],
@@ -90,7 +93,7 @@ describe("Unit tests for codeCoverageOf", () => {
     expect(coverage.dirs[0].dir).toBe(".");
   });
 
-  it("lists unanchored files alphabetically within each directory", () => {
+  it("lists the unanchored files per directory, alphabetically", () => {
     const model = modelWithScan({
       anchoredFiles: [],
       unanchoredFiles: [
@@ -102,7 +105,7 @@ describe("Unit tests for codeCoverageOf", () => {
     expect(coverage.dirs[0].unanchored.map((f) => f.path)).toEqual(["apps/a.ts", "apps/z.ts"]);
   });
 
-  it("calculates lines per anchor from model.anchorPairs", () => {
+  it("computes lines per anchor for anchored files from model.anchorPairs", () => {
     const model = modelWithScan({
       anchoredFiles: [{ path: "src/tasks/quick_add.ts", loc: 100 }],
       unanchoredFiles: [],
@@ -116,7 +119,11 @@ describe("Unit tests for codeCoverageOf", () => {
     expect(file.locPerAnchor).toBe(100);
   });
 
-  it("divides line counts by all anchors pointing to the file", () => {
+  it("divides the line count by the number of anchors when several point at the same file", () => {
+    // `anchorPairs` counts anchor entries regardless of whether their ID
+    // belongs to a parsed record — the same file can be claimed by two
+    // records, played through here deliberately with a second, otherwise
+    // unused ID.
     const model = modelWithScan({
       anchoredFiles: [{ path: "src/tasks/quick_add.ts", loc: 100 }],
       unanchoredFiles: [],
@@ -133,7 +140,10 @@ describe("Unit tests for codeCoverageOf", () => {
     expect(file.locPerAnchor).toBe(50);
   });
 
-  it("keeps locPerAnchor null when the scan did not count an anchor", () => {
+  it("leaves locPerAnchor at null if a file without an anchor counted in the scan is considered anchored", () => {
+    // Edge case: should not occur in real data (anchoredFiles and
+    // anchorPairs come from the same host run), but the calculation must
+    // not divide by zero.
     const model = modelWithScan({
       anchoredFiles: [{ path: "src/orphaned.ts", loc: 30 }],
       unanchoredFiles: [],

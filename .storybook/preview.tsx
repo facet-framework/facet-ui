@@ -1,6 +1,7 @@
 import type { Decorator, Preview } from "@storybook/react-vite";
 import "../src/design-system/tokens.css";
 
+/** Every story stands on paper — the surface is part of the design language. */
 const onPaper: Decorator = (Story) => (
   <div
     style={{

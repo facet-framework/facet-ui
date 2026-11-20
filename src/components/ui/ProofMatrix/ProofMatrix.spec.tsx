@@ -1,9 +1,7 @@
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/ProofMatrix/ProofMatrix.spec.text";
 import { render, screen } from "@testing-library/react";
 import ProofMatrixWithLogic, { ProofMatrix, withProofMatrixLogic } from ".";
 import type { Scenario } from "../../../core";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
 const backed = { state: "backed", reason: "", unblockedBy: "" } as const;
 
@@ -41,15 +39,15 @@ const scenarios: Scenario[] = [
 ];
 
 describe("Unit tests for ProofMatrix", () => {
-  it("renders the heading, summary and one row per promise", () => {
+  it("renders the header, the answer line and one row per promise", () => {
     const { container } = render(
       <ProofMatrix
         containerStyle={{}}
         headerStyle={{}}
         headCellStyle={{}}
         captionStyle={{}}
-        columns={[remainingText.text18]}
-        caption={localized.text2}
+        columns={["Unit"]}
+        caption="1 of 2 with a mapped test"
         rows={[
           {
             key: "a",
@@ -57,12 +55,12 @@ describe("Unit tests for ProofMatrix", () => {
             proven: true,
             rowStyle: {},
             labelStyle: {},
-            cells: [{ key: "a:unit", count: 2, style: {}, title: remainingText.text152 }],
+            cells: [{ key: "a:unit", count: 2, style: {}, title: "task-added · Unit: 2 tests" }],
           },
         ]}
       />,
     );
-    expect(screen.getByText(localized.text3)).toBeInTheDocument();
+    expect(screen.getByText("1 of 2 with a mapped test")).toBeInTheDocument();
     expect(container.querySelectorAll("[data-scenario]")).toHaveLength(1);
     expect(screen.getByText("2")).toBeInTheDocument();
   });
@@ -75,24 +73,26 @@ describe("Unit tests for withProofMatrixLogic", () => {
     expect(container.querySelector('[data-cell="task-added:e2e"]')).toHaveTextContent("1");
   });
 
-  it("leaves cells empty without evidence", () => {
+  it("leaves cells without evidence empty", () => {
     const { container } = render(<ProofMatrixWithLogic scenarios={scenarios} />);
     expect(container.querySelector('[data-cell="offline-added:unit"]')).toHaveTextContent("");
   });
 
-  it("builds the summary from counts", () => {
+  it("phrases the answer line from counts", () => {
     render(<ProofMatrixWithLogic scenarios={scenarios} />);
-    expect(screen.getByText(localized.text7)).toBeInTheDocument();
+    expect(
+      screen.getByText("1 of 2 promises have a mapped test — one without a test."),
+    ).toBeInTheDocument();
   });
 
   it("reports full coverage", () => {
     render(<ProofMatrixWithLogic scenarios={[scenarios[0]]} />);
-    expect(screen.getByText(localized.text9)).toBeInTheDocument();
+    expect(screen.getByText("All 1 promises have a mapped test.")).toBeInTheDocument();
   });
 
-  it("reports when no promise is described", () => {
+  it("says so when no promise is described", () => {
     render(<ProofMatrixWithLogic scenarios={[]} />);
-    expect(screen.getByText(localized.text11)).toBeInTheDocument();
+    expect(screen.getByText("No promise described.")).toBeInTheDocument();
   });
 
   it("filters to promises without evidence", () => {
@@ -104,27 +104,41 @@ describe("Unit tests for withProofMatrixLogic", () => {
     );
   });
 
-  it("labels year boundaries", () => {
+  it("names the evidence state of every cell in plain text", () => {
     const { container } = render(<ProofMatrixWithLogic scenarios={scenarios} />);
     expect(container.querySelector('[data-cell="offline-added:unit"]')).toHaveAttribute(
       "title",
-      localized.text13,
+      "offline-added · Unit: no test mapped",
     );
   });
 
-  it("also emphasizes unproven promises with font weight", () => {
+  it("additionally emphasises unbacked promises through weight", () => {
     render(<ProofMatrixWithLogic scenarios={scenarios} />);
     expect(screen.getByText("offline-added")).toHaveStyle({ fontWeight: 500 });
   });
 
-  it("describes each cell's evidence", () => {
+  it("accepts custom test levels", () => {
     render(<ProofMatrixWithLogic scenarios={scenarios} kinds={["unit"]} />);
-    expect(screen.getByText(remainingText.text18)).toBeInTheDocument();
-    expect(screen.queryByText(germanLabels.text113)).not.toBeInTheDocument();
+    expect(screen.getByText("Unit")).toBeInTheDocument();
+    expect(screen.queryByText("End-to-end")).not.toBeInTheDocument();
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withProofMatrixLogic(ProofMatrix).displayName).toBe("withProofMatrixLogic(ProofMatrix)");
+  });
+});
+
+describe("Unit tests for the German locale", () => {
+  it("speaks German under the German locale", () => {
+    const { container } = renderInGerman(<ProofMatrixWithLogic scenarios={scenarios} />);
+    expect(
+      screen.getByText("1 von 2 Zusagen haben eine Testzuordnung — eine ohne Test."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Modul")).toBeInTheDocument();
+    expect(container.querySelector('[data-cell="offline-added:unit"]')).toHaveAttribute(
+      "title",
+      "offline-added · Modul: kein Test zugeordnet",
+    );
   });
 });
 

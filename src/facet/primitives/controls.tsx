@@ -10,13 +10,18 @@ export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type"> 
   icon?: IconName;
   iconAfter?: IconName;
   pressed?: boolean;
-
+  /** Renders a link that looks like a button. */
   href?: string;
   type?: "button" | "submit" | "reset";
-
+  /**
+   * Why the action is unavailable. The button stays visible and focusable but is marked
+   * `aria-disabled` and ignores clicks; the reason is shown next to it and is its accessible
+   * description, so it never lives in a tooltip only.
+   */
   disabledReason?: string;
 };
 
+/** Copies the attributes without any React event handler (`onClick`, `onKeyDown`, ...). */
 function withoutEventHandlers<T extends object>(attrs: T): Partial<T> {
   return Object.fromEntries(
     Object.entries(attrs).filter(([key]) => !/^on[A-Z]/.test(key)),
@@ -52,6 +57,9 @@ export function Button({
     </>
   );
   if (disabledReason) {
+    // A disabled action must not act. Dropping onClick alone is not enough: a submit or reset
+    // button still submits or resets its form, and onKeyDown/onPointerDown/onMouseDown still
+    // fire. So every type becomes "button" and every on* handler is dropped, not styled away.
     const attrs = withoutEventHandlers(rest);
     const describedBy = attrs["aria-describedby"];
     return (
@@ -91,6 +99,7 @@ export type IconButtonProps = Omit<ButtonProps, "children" | "icon"> & {
   label: string;
 };
 
+/** A square button with only an icon; the label is required and becomes its name. */
 export function IconButton({ icon, label, ...rest }: IconButtonProps) {
   return <Button icon={icon} aria-label={label} title={label} variant="quiet" {...rest} />;
 }
@@ -99,24 +108,58 @@ export type SwitchProps = {
   checked: boolean;
   label: string;
   disabled?: boolean;
+  /**
+   * What the setting does. It stands beside the switch, outside the button,
+   * and is its accessible description — inside, it would become part of the
+   * name and a screen reader would announce the explanation as what the
+   * switch is called.
+   */
+  hint?: ReactNode;
+  /**
+   * Why the switch cannot be moved. The switch is locked (`aria-disabled`,
+   * presses change nothing) and the reason stands beside it as its
+   * description: a control that is simply dead reads as a broken surface.
+   */
+  disabledReason?: string;
   onChange?: (next: boolean) => void;
 };
 
-export function Switch({ checked, label, disabled, onChange }: SwitchProps) {
-  return (
+export function Switch({ checked, label, disabled, hint, disabledReason, onChange }: SwitchProps) {
+  const hintId = useId();
+  const reasonId = useId();
+  const locked = disabled || !!disabledReason;
+  const describedBy = cx(hint != null && hintId, disabledReason && reasonId) || undefined;
+  const button = (
     <button
       type="button"
       role="switch"
       className="t-switch"
       aria-checked={checked}
       aria-label={label}
-      aria-disabled={disabled || undefined}
-      onClick={() => !disabled && onChange?.(!checked)}
+      aria-disabled={locked || undefined}
+      aria-describedby={describedBy}
+      onClick={() => !locked && onChange?.(!checked)}
     >
       <span className="t-switch__track">
         <span className="t-switch__thumb" />
       </span>
     </button>
+  );
+  if (hint == null && !disabledReason) return button;
+  return (
+    <span className="t-switch-field">
+      {button}
+      {hint != null ? (
+        <span id={hintId} className="t-switch-field__hint">
+          {hint}
+        </span>
+      ) : null}
+      {disabledReason ? (
+        <span id={reasonId} className="t-switch-field__reason">
+          {disabledReason}
+        </span>
+      ) : null}
+    </span>
   );
 }
 
@@ -188,6 +231,7 @@ export type ChipProps = {
   mono?: boolean;
 };
 
+/** A chip is a button when it does something, otherwise a plain label. */
 export function Chip({ children, count, pressed, icon, onClick, onRemove, mono }: ChipProps) {
   const { t } = useText();
   const inner = (
@@ -261,10 +305,11 @@ export type FieldProps = {
   hint?: ReactNode;
   error?: ReactNode;
   children: (id: string) => ReactNode;
-
+  /** Defaults to a generated id. */
   id?: string;
 };
 
+/** A labelled form field. The children render the control with the given id. */
 export function Field({ label, hint, error, children, id: given }: FieldProps) {
   const auto = useId();
   const id = given ?? auto;

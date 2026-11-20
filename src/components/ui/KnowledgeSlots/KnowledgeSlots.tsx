@@ -3,11 +3,11 @@ import Markdown from "../Markdown";
 
 export type KnowledgeSlotView = {
   key: string;
-
+  /** Slot name from `knowledge.*`, e.g. "edge_cases". */
   slot: string;
   question: string;
   answer: string;
-
+  /** Derivation of the answer from `knowledge.*.derive` — or "without derivation". */
   derivation: string;
   filled: boolean;
   rowStyle: CSSProperties;
@@ -25,6 +25,10 @@ export type KnowledgeSlotsProps = {
   "data-testid"?: string;
 };
 
+/**
+ * Knowledge as question and answer. Empty slots stay in place — the open question
+ * is the statement, not its absence.
+ */
 export function KnowledgeSlots({
   containerStyle,
   captionStyle,
@@ -40,7 +44,9 @@ export function KnowledgeSlots({
           <span style={slot.slotStyle}>{slot.slot}</span>
           <span style={slot.derivationStyle}>{slot.derivation}</span>
           <span style={slot.questionStyle}>{slot.question}</span>
-          {}
+          {/* The answer often comes with Markdown markup (inline code,
+              bold) — shown as plain text, backticks and
+              asterisks would stand unchanged on the screen. */}
           <Markdown text={slot.answer} style={slot.answerStyle} />
         </div>
       ))}

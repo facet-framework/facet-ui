@@ -1,4 +1,3 @@
-import { localized } from "../../../i18n/legacy/components/ui/Bar/Bar.stories.text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import BarWithLogic from ".";
 import Text from "../Text";
@@ -7,9 +6,14 @@ const meta: Meta<typeof BarWithLogic> = {
   title: "Atoms/Bar",
   component: BarWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Share bar for test coverage and domain comparisons. Full coverage turns green automatically.",
+      },
+    },
   },
-  args: { value: 31, total: 38, label: localized.text2 },
+  args: { value: 31, total: 38, label: "31 of 38 promises with a mapped test" },
   decorators: [
     (Story) => (
       <div style={{ width: 280 }}>
@@ -22,18 +26,23 @@ const meta: Meta<typeof BarWithLogic> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Partially mapped — signal blue. */
 export const Partial: Story = {};
 
+/** Fully mapped — green, without the caller setting the colour. */
 export const Complete: Story = {
-  args: { value: 4, total: 4, label: localized.text3 },
+  args: { value: 4, total: 4, label: "4 of 4 promises with a mapped test" },
 };
 
+/** No test mapping. */
 export const Empty: Story = {
-  args: { value: 0, total: 6, label: localized.text4 },
+  args: { value: 0, total: 6, label: "0 of 6 promises with a mapped test" },
 };
 
-export const WithoutReference: Story = { args: { value: 0, total: 0, label: localized.text5 } };
+/** Without a reference total the bar stays empty instead of computing. */
+export const WithoutReference: Story = { args: { value: 0, total: 0, label: "no promises" } };
 
+/** Domain comparison — proximity makes the comparison readable. */
 export const Areas: Story = {
   render: () => (
     <div style={{ display: "grid", gap: 10, width: 280 }}>

@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for SegmentBand empty set 1`] = `
+<div
+  aria-label="no entries"
+  role="img"
+  style="display: flex; width: 100%; height: 4px; background: var(--line); min-width: 0;"
+/>
+`;
+
+exports[`Snapshot tests for SegmentBand lifecycle 1`] = `
+<div
+  aria-label="active 11 · planned 4 · deprecated 5"
+  role="img"
+  style="display: flex; width: 100%; height: 4px; background: var(--line); min-width: 0;"
+>
+  <div
+    data-segment="active"
+    style="width: 55%; background: var(--ink); height: 100%;"
+    title="active · 11"
+  />
+  <div
+    data-segment="planned"
+    style="width: 20%; background: var(--plan); height: 100%;"
+    title="planned · 4"
+  />
+  <div
+    data-segment="deprecated"
+    style="width: 25%; background: var(--line-2); height: 100%;"
+    title="deprecated · 5"
+  />
+</div>
+`;

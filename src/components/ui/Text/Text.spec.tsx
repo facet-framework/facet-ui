@@ -1,65 +1,57 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/Text/Text.spec.text";
 import { render, screen } from "@testing-library/react";
 import TextWithLogic, { Text, withTextLogic } from ".";
 
 describe("Unit tests for Text", () => {
-  it("renders children in a span by default", () => {
-    render(<Text computedStyle={{ color: "red" }}>{germanLabels.text7}</Text>);
-    expect(screen.getByText(germanLabels.text7).tagName).toBe("SPAN");
+  it("renders children in a span when no element is given", () => {
+    render(<Text computedStyle={{ color: "red" }}>Overview</Text>);
+    expect(screen.getByText("Overview").tagName).toBe("SPAN");
   });
 
   it("renders the requested element", () => {
     render(
       <Text as="h2" computedStyle={{}}>
-        {localized.text3}
+        Register
       </Text>,
     );
-    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(localized.text4);
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Register");
   });
 
-  it("preserves the computed style", () => {
-    render(
-      <Text computedStyle={{ fontWeight: 500, color: "rgb(17, 19, 24)" }}>
-        {germanLabels.text173}
-      </Text>,
-    );
-    expect(screen.getByText(germanLabels.text173)).toHaveStyle({ fontWeight: 500 });
+  it("takes over the computed style unchanged", () => {
+    render(<Text computedStyle={{ fontWeight: 500, color: "rgb(17, 19, 24)" }}>Value</Text>);
+    expect(screen.getByText("Value")).toHaveStyle({ fontWeight: 500 });
   });
 
-  it("forwards additional attributes to the element", () => {
+  it("passes further attributes through to the element", () => {
     render(
-      <Text computedStyle={{}} title={remainingText.text17} data-testid="value">
+      <Text computedStyle={{}} title="Origin" data-testid="value">
         4
       </Text>,
     );
-    expect(screen.getByTestId("value")).toHaveAttribute("title", remainingText.text17);
+    expect(screen.getByTestId("value")).toHaveAttribute("title", "Origin");
   });
 
   it("renders without children", () => {
-    const { container } = render(<Text computedStyle={{}} data-testid={"empty"} />);
+    const { container } = render(<Text computedStyle={{}} data-testid="empty" />);
     expect(container.firstChild).toBeEmptyDOMElement();
   });
 });
 
 describe("Unit tests for withTextLogic", () => {
-  it("uses body text by default", () => {
-    render(<TextWithLogic>Standard</TextWithLogic>);
-    expect(screen.getByText("Standard")).toHaveStyle({ fontFamily: "var(--font-sans)" });
+  it("sets body text as the default variant", () => {
+    render(<TextWithLogic>Default</TextWithLogic>);
+    expect(screen.getByText("Default")).toHaveStyle({ fontFamily: "var(--font-sans)" });
   });
 
-  it("uses monospace for field values", () => {
+  it("switches to mono for field values", () => {
     render(<TextWithLogic mono>tasks/create/quick-add</TextWithLogic>);
     expect(screen.getByText("tasks/create/quick-add")).toHaveStyle({
       fontFamily: "var(--font-mono)",
     });
   });
 
-  it("maps tone to its semantic color", () => {
-    render(<TextWithLogic tone="deadline">{localized.text11}</TextWithLogic>);
-    expect(screen.getByText(localized.text12)).toHaveStyle({ color: "var(--deadline)" });
+  it("translates the tone into the semantic colour", () => {
+    render(<TextWithLogic tone="due">due 2026-07-12</TextWithLogic>);
+    expect(screen.getByText("due 2026-07-12")).toHaveStyle({ color: "var(--due)" });
   });
 
   it("truncates on one line instead of wrapping", () => {
@@ -70,57 +62,57 @@ describe("Unit tests for withTextLogic", () => {
     });
   });
 
-  it("limits descriptions to the requested line count", () => {
-    render(<TextWithLogic clamp={2}>{labelText.text453}</TextWithLogic>);
-    expect(screen.getByText(labelText.text453)).toHaveStyle({ WebkitLineClamp: "2" });
+  it("limits descriptions to the given number of lines", () => {
+    render(<TextWithLogic clamp={2}>Long description</TextWithLogic>);
+    expect(screen.getByText("Long description")).toHaveStyle({ WebkitLineClamp: "2" });
   });
 
-  it("lets custom styles override computed styles", () => {
-    render(<TextWithLogic style={{ color: "rgb(0, 0, 0)" }}>{labelText.text454}</TextWithLogic>);
-    expect(screen.getByText(labelText.text454)).toHaveStyle({ color: "rgb(0, 0, 0)" });
+  it("lets own styles override the computed ones", () => {
+    render(<TextWithLogic style={{ color: "rgb(0, 0, 0)" }}>Special case</TextWithLogic>);
+    expect(screen.getByText("Special case")).toHaveStyle({ color: "rgb(0, 0, 0)" });
   });
 
-  it("forwards props to the presentation component", () => {
+  it("passes props through to the pure component", () => {
     render(
-      <TextWithLogic as="p" id={"lead"} variant="hero">
-        {labelText.text456}
+      <TextWithLogic as="p" id="lead-sentence" variant="hero">
+        Lead sentence
       </TextWithLogic>,
     );
-    const node = screen.getByText(labelText.text456);
+    const node = screen.getByText("Lead sentence");
     expect(node.tagName).toBe("P");
-    expect(node).toHaveAttribute("id", "lead");
+    expect(node).toHaveAttribute("id", "lead-sentence");
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withTextLogic(Text).displayName).toBe("withTextLogic(Text)");
   });
 });
 
 describe("Snapshot tests for Text", () => {
   it("body text", () => {
-    const { container } = render(<TextWithLogic>{localized.text19}</TextWithLogic>);
+    const { container } = render(<TextWithLogic>Body text</TextWithLogic>);
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("Lead sentence as a hero", () => {
+  it("lead sentence as hero", () => {
     const { container } = render(
       <TextWithLogic as="p" variant="hero">
-        16 Punkte brauchen dich
+        16 points need you
       </TextWithLogic>,
     );
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("Uppercase factual label", () => {
+  it("factual label in capitals", () => {
     const { container } = render(
       <TextWithLogic variant="label" tone="dim">
-        {germanLabels.text175}
+        Entry points in code
       </TextWithLogic>,
     );
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("Single-line monospace field value", () => {
+  it("field value in mono, single line", () => {
     const { container } = render(
       <TextWithLogic variant="meta" mono truncate>
         docs/facets/features/tasks/create/quick-add.yaml

@@ -4,13 +4,18 @@ export type FieldRowProps = {
   containerStyle: CSSProperties;
   labelStyle: CSSProperties;
   valueStyle: CSSProperties;
-
+  /** Factual label in capitals, e.g. "CADENCE". */
   label: string;
-
+  /** Value — text or a composite node. */
   value: ReactNode;
   "data-testid"?: string;
 };
 
+/**
+ * Field row: on the left the subject label, on the right the value from the
+ * record. The basic form of every detail — one field, one row, no
+ * interpretation.
+ */
 export function FieldRow({
   containerStyle,
   labelStyle,

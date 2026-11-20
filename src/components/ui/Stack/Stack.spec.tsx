@@ -1,11 +1,10 @@
-import { localized } from "../../../i18n/legacy/components/ui/Stack/Stack.spec.text";
 import { render, screen } from "@testing-library/react";
 import StackWithLogic, { Stack, withStackLogic } from ".";
 
 describe("Unit tests for Stack", () => {
-  it("forwards props", () => {
-    render(<Stack computedStyle={{}}>{localized.text1}</Stack>);
-    expect(screen.getByText(localized.text2)).toBeInTheDocument();
+  it("renders its children", () => {
+    render(<Stack computedStyle={{}}>Content</Stack>);
+    expect(screen.getByText("Content")).toBeInTheDocument();
   });
 
   it("applies the computed style", () => {
@@ -13,9 +12,9 @@ describe("Unit tests for Stack", () => {
     expect(container.firstChild).toHaveStyle({ display: "flex", gap: "12px" });
   });
 
-  it("highlights placeholders as gaps", () => {
-    render(<Stack computedStyle={{}} data-testid={"track"} aria-label="Index" />);
-    expect(screen.getByTestId("track")).toHaveAttribute("aria-label", "Index");
+  it("passes attributes through", () => {
+    render(<Stack computedStyle={{}} data-testid="stack" aria-label="Index" />);
+    expect(screen.getByTestId("stack")).toHaveAttribute("aria-label", "Index");
   });
 });
 
@@ -25,17 +24,17 @@ describe("Unit tests for withStackLogic", () => {
     expect(container.firstChild).toHaveStyle({ flexDirection: "column" });
   });
 
-  it("supports a horizontal row", () => {
+  it("switches to a horizontal track", () => {
     const { container } = render(<StackWithLogic direction="row" />);
     expect(container.firstChild).toHaveStyle({ flexDirection: "row" });
   });
 
-  it("accepts parsed steps", () => {
+  it("takes the gap as a number", () => {
     const { container } = render(<StackWithLogic gap={12} />);
     expect(container.firstChild).toHaveStyle({ gap: "12px" });
   });
 
-  it("resolves spacing tokens", () => {
+  it("resolves token gaps", () => {
     const { container } = render(<StackWithLogic gap="s4" />);
     expect(container.firstChild).toHaveStyle({ gap: "var(--space-4)" });
   });
@@ -49,18 +48,18 @@ describe("Unit tests for withStackLogic", () => {
     });
   });
 
-  it("allows the row to grow and shrink", () => {
+  it("lets the track grow and shrink", () => {
     const { container } = render(<StackWithLogic grow />);
     expect(container.firstChild).toHaveStyle({ flex: "1 1 auto", minWidth: "0" });
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withStackLogic(Stack).displayName).toBe("withStackLogic(Stack)");
   });
 });
 
 describe("Snapshot tests for Stack", () => {
-  it("vertical trail", () => {
+  it("vertical track", () => {
     const { container } = render(
       <StackWithLogic gap="s2">
         <span>a</span>
@@ -70,7 +69,7 @@ describe("Snapshot tests for Stack", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("horizontal wrapping trail", () => {
+  it("horizontal, wrapping track", () => {
     const { container } = render(<StackWithLogic direction="row" gap={8} wrap />);
     expect(container.firstChild).toMatchSnapshot();
   });

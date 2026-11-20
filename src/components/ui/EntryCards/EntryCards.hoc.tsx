@@ -1,8 +1,9 @@
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
 import { memo, useMemo, type ComponentType, type CSSProperties, type ReactNode } from "react";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { EntryCard, EntryCardsProps } from "./EntryCards";
 
+/** An entry point, as the caller knows it. */
 export type EntryInput = {
   key: string;
   tag: string;
@@ -10,10 +11,10 @@ export type EntryInput = {
   value: string;
   valueMeta: string;
   lead: string;
-
+  /** Where it leads. If not given, the tile stays a piece of information. */
   action?: string;
   figure?: ReactNode;
-
+  /** Something is outstanding here. Open entry points come first. */
   open?: boolean;
 };
 
@@ -24,20 +25,29 @@ export type WithEntryCardsProps = Omit<
   entries: EntryInput[];
   onOpen?: (key: string) => void;
   emptyText?: string;
-
+  /** Minimum width of a tile; the grid fills the rest itself. */
   cardWidth?: number;
   style?: CSSProperties;
 };
 
+/**
+ * Passes the entry points through and puts the open ones first.
+ *
+ * The sort is stable: whatever was already at the top stays there as long as
+ * its state does not change. A tile field that reshuffles with every data
+ * update forces the reader to read it again.
+ */
 export function withEntryCardsLogic(Component: ComponentType<EntryCardsProps>) {
   const Wrapped = ({
     entries,
     onOpen,
-    emptyText = germanLabels.text153,
+    emptyText: emptyTextProp,
     cardWidth = 260,
     style,
     ...rest
   }: WithEntryCardsProps) => {
+    const { t } = useText();
+    const emptyText = emptyTextProp ?? t("elements.entryCards.empty");
     const cards = useMemo<EntryCard[]>(() => {
       const sorted = entries
         .map((entry, index) => ({ entry, index }))
@@ -78,7 +88,8 @@ export function withEntryCardsLogic(Component: ComponentType<EntryCardsProps>) {
       () => ({
         display: "grid",
         gridTemplateColumns: `repeat(auto-fill, minmax(${cardWidth}px, 1fr))`,
-
+        // Two pixels of paper between the tiles: the separation comes from the
+        // background, not from a border around every tile.
         gap: 2,
         listStyle: "none",
         margin: 0,
@@ -108,7 +119,8 @@ function cardStyle(clickable: boolean, open: boolean): CSSProperties {
     appearance: "none",
     border: "none",
     borderRadius: 0,
-
+    // The open tile carries a hairline at the top — rank that can be seen
+    // even without colour.
     borderTop: open ? `2px solid ${color.signal}` : `2px solid transparent`,
     width: "100%",
     height: "100%",

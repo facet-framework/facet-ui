@@ -12,14 +12,18 @@ export type DepthLadderProps = {
   containerStyle: CSSProperties;
   hintStyle: CSSProperties;
   steps: DepthStepView[];
-
+  /** Label of the ladder for screen readers. */
   label: string;
-
+  /** Hint about the keyboard controls. */
   hint: string;
   onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void;
   "data-testid"?: string;
 };
 
+/**
+ * Mechanic 3 · depth ladder: answer → evidence → raw source.
+ * One direction, one key, the same everywhere — instead of six tabs kept in stock.
+ */
 export function DepthLadder({
   containerStyle,
   hintStyle,

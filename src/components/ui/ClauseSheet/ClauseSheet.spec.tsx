@@ -1,15 +1,14 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/ClauseSheet/ClauseSheet.spec.text";
 import { render, screen } from "@testing-library/react";
 import ClauseSheetWithLogic, { ClauseSheet, withClauseSheetLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
 const clauses = [
   {
     id: "QH-01",
-    requirement: localized.text1,
+    requirement: "Between 22:00 and 07:00 every notification MUST be held back.",
     measure: "quiet_hours_violations = 0",
   },
-  { id: "QH-02", requirement: localized.text2, measure: "" },
+  { id: "QH-02", requirement: "Urgent alerts SHOULD be let through.", measure: "" },
 ];
 
 describe("Unit tests for ClauseSheet", () => {
@@ -18,14 +17,14 @@ describe("Unit tests for ClauseSheet", () => {
       <ClauseSheet
         containerStyle={{}}
         captionStyle={{}}
-        caption={labelText.text308}
+        caption="1 clause"
         clauses={[
           {
             key: "a",
             id: "QH-01",
-            obligation: "MUSS",
-            requirement: labelText.text309,
-            measure: localized.text4,
+            obligation: "MUST",
+            requirement: "Wording",
+            measure: "Measure",
             binding: true,
             rowStyle: {},
             idStyle: {},
@@ -37,72 +36,95 @@ describe("Unit tests for ClauseSheet", () => {
       />,
     );
     expect(container.querySelectorAll("[data-clause]")).toHaveLength(1);
-    expect(screen.getByText("MUSS")).toBeInTheDocument();
+    expect(screen.getByText("MUST")).toBeInTheDocument();
   });
 });
 
 describe("Unit tests for withClauseSheetLogic", () => {
-  it("reads obligation from the wording", () => {
+  it("reads the obligation level from the wording", () => {
     render(<ClauseSheetWithLogic clauses={clauses} />);
-    expect(screen.getByText("MUSS")).toBeInTheDocument();
-    expect(screen.getByText("SOLL")).toBeInTheDocument();
+    expect(screen.getByText("MUST")).toBeInTheDocument();
+    expect(screen.getByText("SHOULD")).toBeInTheDocument();
   });
 
-  it("defaults to MAY without a keyword", () => {
-    render(
-      <ClauseSheetWithLogic clauses={[{ id: "X", requirement: labelText.text41, measure: "m" }]} />,
-    );
-    expect(screen.getByText(localized.text7)).toBeInTheDocument();
+  it("falls back to MAY without a keyword", () => {
+    render(<ClauseSheetWithLogic clauses={[{ id: "X", requirement: "Note", measure: "m" }]} />);
+    expect(screen.getByText("MAY")).toBeInTheDocument();
   });
 
-  it("emphasizes required clauses with font weight", () => {
+  it("emphasises mandatory clauses through weight", () => {
     render(<ClauseSheetWithLogic clauses={clauses} />);
-    expect(screen.getByText("MUSS")).toHaveStyle({ fontWeight: 500 });
+    expect(screen.getByText("MUST")).toHaveStyle({ fontWeight: 500 });
   });
 
-  it("reports missing measurements", () => {
+  it("reports missing metrics as a finding", () => {
     render(<ClauseSheetWithLogic clauses={clauses} />);
-    expect(screen.getByText(localized.text10)).toHaveStyle({ color: "var(--signal)" });
+    expect(screen.getByText("no measure named — compliance cannot be checked")).toHaveStyle({
+      color: "var(--signal)",
+    });
   });
 
-  it("counts clauses, obligations and gaps", () => {
+  it("counts clauses, obligation levels and gaps", () => {
     render(<ClauseSheetWithLogic clauses={clauses} />);
-    expect(screen.getByText(localized.text12)).toBeInTheDocument();
+    expect(screen.getByText("2 clauses · 1 binding. 1 without a measure.")).toBeInTheDocument();
   });
 
-  it("states when measurements are complete", () => {
+  it("does not praise complete metrics but states them", () => {
     render(<ClauseSheetWithLogic clauses={[clauses[0]]} />);
-    expect(screen.getByText(localized.text14)).toBeInTheDocument();
+    expect(screen.getByText(/Each has a measure/)).toBeInTheDocument();
   });
 
-  it("filters for mandatory clauses", () => {
+  it("filters to mandatory clauses", () => {
     const { container } = render(<ClauseSheetWithLogic clauses={clauses} onlyBinding />);
     expect(container.querySelectorAll("[data-clause]")).toHaveLength(1);
   });
 
-  it("reports when no clause is recorded", () => {
+  it("says so when no clause is recorded", () => {
     render(<ClauseSheetWithLogic clauses={[]} />);
-    expect(screen.getByText(localized.text16)).toBeInTheDocument();
+    expect(screen.getByText("No clause recorded.")).toBeInTheDocument();
   });
 
-  it("handles missing identifiers and wording", () => {
+  it("works without id and wording", () => {
     render(<ClauseSheetWithLogic clauses={[{ id: "", requirement: "", measure: "" }]} />);
-    expect(screen.getByText(labelText.text310)).toBeInTheDocument();
-    expect(screen.getByText(localized.text18)).toBeInTheDocument();
+    expect(screen.getByText("Clause 1")).toBeInTheDocument();
+    expect(screen.getByText("no wording")).toBeInTheDocument();
   });
 
-  it("sets a descriptive displayName", () => {
+  it("reads German obligation wording and speaks German under the German locale", () => {
+    renderInGerman(
+      <ClauseSheetWithLogic
+        clauses={[
+          { id: "DE-1", requirement: "Jede Meldung MUSS protokolliert werden.", measure: "" },
+          { id: "DE-2", requirement: "Das Protokoll SOLL kurz sein.", measure: "laenge" },
+        ]}
+      />,
+    );
+    expect(screen.getByText("MUSS")).toBeInTheDocument();
+    expect(screen.getByText("SOLL")).toBeInTheDocument();
+    expect(screen.getByText("2 Klauseln · 1 verpflichtend. 1 ohne Messgröße.")).toBeInTheDocument();
+  });
+
+  it("reads German obligation wording as binding under the English default", () => {
+    render(
+      <ClauseSheetWithLogic
+        clauses={[{ id: "DE-1", requirement: "Jede Meldung MUSS protokolliert werden." }]}
+      />,
+    );
+    expect(screen.getByText("MUST")).toBeInTheDocument();
+  });
+
+  it("gives a meaningful displayName", () => {
     expect(withClauseSheetLogic(ClauseSheet).displayName).toBe("withClauseSheetLogic(ClauseSheet)");
   });
 });
 
 describe("Snapshot tests for ClauseSheet", () => {
-  it("Policy", () => {
+  it("policy", () => {
     const { container } = render(<ClauseSheetWithLogic clauses={clauses} />);
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("describes the state transition", () => {
+  it("empty", () => {
     const { container } = render(<ClauseSheetWithLogic clauses={[]} />);
     expect(container.firstChild).toMatchSnapshot();
   });

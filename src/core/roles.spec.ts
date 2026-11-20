@@ -1,13 +1,13 @@
-import { remainingText } from "../i18n/legacy/remaining";
-import { ROLES, nextRole, roleByKey } from "./roles";
+import { createText } from "../facet/i18n/text";
+import { ROLES, nextRole, roleByKey, rolesIn } from "./roles";
 
 describe("Unit tests for roles", () => {
-  it("recognizes all eight role-gate roles", () => {
+  it("knows the eight roles from the role gate", () => {
     expect(ROLES).toHaveLength(8);
     expect(ROLES.map((role) => role.key)).toContain("gov");
   });
 
-  it("provides a term and hint for every role", () => {
+  it("returns every role with its factual term and hint", () => {
     ROLES.forEach((role) => {
       expect(role.tag).not.toBe("");
       expect(role.title).not.toBe("");
@@ -15,7 +15,7 @@ describe("Unit tests for roles", () => {
     });
   });
 
-  it("preserves numbered role order", () => {
+  it("keeps the order of the numbered roles in the gate", () => {
     expect(ROLES.map((role) => role.key)).toEqual([
       "c",
       "arch",
@@ -28,21 +28,29 @@ describe("Unit tests for roles", () => {
     ]);
   });
 
-  it("finds roles by key", () => {
-    expect(roleByKey("ops").title).toBe(remainingText.text15);
+  it("finds a role by its key", () => {
+    expect(roleByKey("ops").title).toBe("Operations");
   });
 
-  it("falls back to the first role without a selection", () => {
+  it("names the roles in German under the German text", () => {
+    const de = createText("de");
+    expect(roleByKey("ops", de).title).toBe("Betrieb");
+    expect(roleByKey(null, de).tag).toBe("GESCHÄFTSFÜHRUNG");
+    expect(rolesIn(de).map((role) => role.key)).toEqual(ROLES.map((role) => role.key));
+  });
+
+  it("falls back to the first role without a choice", () => {
     expect(roleByKey(null).key).toBe("c");
     expect(roleByKey(undefined).key).toBe("c");
   });
 
-  it("cycles through choices", () => {
+  it("cycles round", () => {
     expect(nextRole("c")).toBe("arch");
     expect(nextRole("ops")).toBe("c");
   });
 
-  it("starts with the first role without a selection", () => {
+  it("starts at the first role without a choice", () => {
+    // findIndex gives -1, and -1 + 1 is the start — not the last role.
     expect(nextRole(null)).toBe("c");
   });
 });

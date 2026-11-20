@@ -1,3 +1,8 @@
+/*
+ * FACET — base and primitives. Every class starts with `t-` so the library can
+ * live beside other stylesheets without collisions.
+ */
+
 .t-app {
   font-family: var(--t-font);
   font-size: var(--t-fs-14);
@@ -72,12 +77,15 @@
   white-space: nowrap;
   min-width: 0;
 }
-
+/* Names, ids, paths and titles never truncate: they wrap, breaking long
+   unspaced ids anywhere, and min-width: 0 lets a grid or flex column shrink.
+   .t-ellipsis above stays for text that is an excerpt anyway. */
 .t-wrap {
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
+/* Typography ----------------------------------------------------------- */
 .t-eyebrow {
   font-family: var(--t-mono);
   font-size: var(--t-fs-11);
@@ -155,6 +163,7 @@
   }
 }
 
+/* Surfaces ------------------------------------------------------------- */
 .t-surface {
   background: var(--t-surface);
   border-radius: var(--t-r-panel);
@@ -211,6 +220,7 @@
     var(--t-shadow-2);
 }
 
+/* Layout helpers -------------------------------------------------------- */
 .t-stack {
   display: flex;
   flex-direction: column;
@@ -265,6 +275,8 @@
   padding: var(--t-s-5) var(--t-s-6) 120px;
 }
 @media (max-width: 767px) {
+  /* The tab bar keeps its own place in the flow (shell.css); the page only
+     keeps room for the chat button above it. */
   .t-page {
     padding: var(--t-s-4) var(--t-s-4) 88px;
   }
@@ -285,6 +297,7 @@
   flex-wrap: wrap;
 }
 
+/* Buttons --------------------------------------------------------------- */
 .t-btn {
   display: inline-flex;
   align-items: center;
@@ -361,6 +374,7 @@
   box-shadow: inset 0 0 0 1px var(--t-signal);
 }
 
+/* Chips, badges ---------------------------------------------------------- */
 .t-chip {
   display: inline-flex;
   align-items: center;
@@ -479,6 +493,7 @@ button.t-chip:hover {
   box-shadow: inset 0 0 0 1.5px var(--t-warn);
 }
 
+/* Meter ---------------------------------------------------------------- */
 .t-meter {
   position: relative;
   height: 6px;
@@ -511,6 +526,7 @@ button.t-chip:hover {
   background: repeating-linear-gradient(90deg, var(--t-sunken) 0 6px, transparent 6px 10px);
 }
 
+/* Forms ---------------------------------------------------------------- */
 .t-field {
   display: flex;
   flex-direction: column;
@@ -646,6 +662,20 @@ button.t-chip:hover {
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* A switch with its hint or the reason it is locked, both outside the button. */
+.t-switch-field {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  max-width: 100%;
+}
+.t-switch-field__hint,
+.t-switch-field__reason {
+  color: var(--t-muted);
+  font-size: var(--t-fs-12);
+  line-height: 1.35;
+}
 .t-segment {
   display: inline-flex;
   gap: 2px;
@@ -684,6 +714,7 @@ button.t-chip:hover {
   box-shadow: var(--t-shadow-1);
 }
 
+/* Tabs ----------------------------------------------------------------- */
 .t-tabs {
   display: flex;
   gap: 4px;
@@ -719,6 +750,7 @@ button.t-chip:hover {
   background: var(--t-signal);
 }
 
+/* Lists ---------------------------------------------------------------- */
 .t-list {
   list-style: none;
   margin: 0;
@@ -757,7 +789,7 @@ button.t-chip:hover {
   font-size: var(--t-fs-14);
   overflow-wrap: anywhere;
 }
-
+/* The sub line is often a description excerpt: it wraps, but at most two lines. */
 .t-list-row__sub {
   font-family: var(--t-mono);
   font-size: var(--t-fs-11);
@@ -769,6 +801,7 @@ button.t-chip:hover {
   overflow-wrap: anywhere;
 }
 
+/* Table ---------------------------------------------------------------- */
 .t-table-wrap {
   overflow: auto;
   border-radius: var(--t-r-panel);
@@ -837,6 +870,7 @@ button.t-chip:hover {
   padding: 6px 14px;
 }
 
+/* Skeleton ------------------------------------------------------------- */
 .t-skel {
   display: block;
   border-radius: var(--t-r-ctl);
@@ -853,6 +887,7 @@ button.t-chip:hover {
   }
 }
 
+/* Motion primitives ------------------------------------------------------ */
 @keyframes t-rise {
   from {
     opacity: 0;
@@ -950,6 +985,7 @@ button.t-chip:hover {
   animation-delay: 168ms;
 }
 
+/* Depth (focus vs. background) ------------------------------------------ */
 .t-depth {
   transition:
     opacity var(--t-dur-sheet) var(--t-ease-out),
@@ -974,6 +1010,7 @@ button.t-chip:hover {
   transform: none;
 }
 
+/* Overlays ------------------------------------------------------------- */
 .t-scrim {
   position: fixed;
   inset: 0;
@@ -1090,6 +1127,33 @@ button.t-chip:hover {
   pointer-events: none;
   animation: t-pop var(--t-dur-enter) var(--t-ease-out) both;
 }
+/* The document's tooltip (TooltipLayer): placed in window coordinates, above every overlay. */
+.t-tooltip--layer {
+  position: fixed;
+  z-index: 200;
+  max-width: min(320px, calc(100vw - 12px));
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+.t-tooltip--layer[data-ready="no"] {
+  animation: none;
+}
+.t-tooltip--layer::after {
+  content: "";
+  position: absolute;
+  left: var(--t-tip-arrow, 50%);
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  transform: translateX(-50%) rotate(45deg);
+}
+.t-tooltip--layer[data-pos="top"]::after {
+  bottom: -4px;
+}
+.t-tooltip--layer[data-pos="bottom"]::after {
+  top: -4px;
+}
 .t-toast {
   display: flex;
   align-items: center;
@@ -1101,6 +1165,7 @@ button.t-chip:hover {
   animation: t-rise var(--t-dur-enter) var(--t-ease-out) both;
 }
 
+/* Stat ----------------------------------------------------------------- */
 .t-stat {
   display: flex;
   flex-direction: column;
@@ -1126,6 +1191,7 @@ button.t-chip:hover {
   color: var(--t-muted);
 }
 
+/* Empty / error -------------------------------------------------------- */
 .t-empty {
   display: flex;
   flex-direction: column;
@@ -1160,6 +1226,7 @@ button.t-chip:hover {
   color: var(--t-bad);
 }
 
+/* A disabled action with its reason beside it (Button `disabledReason`). */
 .t-btn-reason {
   display: inline-flex;
   flex-wrap: wrap;

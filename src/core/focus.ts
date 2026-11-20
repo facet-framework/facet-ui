@@ -1,76 +1,84 @@
-import { labelText } from "../i18n/legacy/labels";
-import { remainingText } from "../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../i18n/legacy/shared";
-import { localized } from "../i18n/legacy/core/focus";
+import { deCore } from "../facet/i18n/catalog/core";
+/**
+ * Focus list from the loaded corpus: expired deadlines before missing
+ * evidence and missing details. Every entry names the affected record or
+ * reference, a reason and the related evidence as field values.
+ */
 
-import { GHERKIN_LABEL } from "./gherkin";
+import { ENGLISH_TEXT, type FacetText } from "../facet/i18n/text";
+import { gherkinLabel, recordKindLabel } from "./labels";
 import type { AtlasModel, FacetRecord, ScenarioStep } from "./types";
 
+/** 0 = deadline expired, 1 = evidence missing, 2 = detail missing. */
 export type FocusSeverity = 0 | 1 | 2;
 
 export type FocusBodyRow = { label: string; value: string };
 
 export type FocusItem = {
+  /** Id of the affected record (or of the reference without a record). */
   id: string;
   severity: FocusSeverity;
-
+  /** Register section in which the item stands in full. */
   section: string;
   title: string;
-
+  /** A reason in plain words. */
   why: string;
   meta: string;
   body: FocusBodyRow[];
 };
 
-const KIND_WORD: Record<string, string> = {
-  feature: remainingText.text20,
-  policy: remainingText.text21,
-  assumption: germanLabels.text19,
-  entity: remainingText.text22,
-};
-
-function gherkinLine(step: ScenarioStep): string {
-  const label = step.keyword ? GHERKIN_LABEL[step.keyword] : "";
+function gherkinLine(step: ScenarioStep, text: FacetText): string {
+  const label = step.keyword ? gherkinLabel(step.keyword, text) : "";
   return label ? `${label} · ${step.text}` : step.text;
 }
 
-function teamOf(record: FacetRecord): string {
-  return record.team || localized.text1;
-}
-
-function stateOf(scenario: { pre: unknown; post: unknown }): string {
+function stateOf(scenario: { pre: unknown; post: unknown }, text: FacetText): string {
   const describe = (value: unknown, word: string) => {
     if (!value || typeof value !== "object") return "";
     const entries = Object.entries(value as Record<string, unknown>);
     return entries.length ? `${word}: ${entries.map(([k, v]) => `${k} ${v}`).join(", ")}` : "";
   };
   const lines = [
-    describe(scenario.pre, labelText.text279),
-    describe(scenario.post, labelText.text280),
+    describe(scenario.pre, text.t("core.focus.before")),
+    describe(scenario.post, text.t("core.focus.after")),
   ].filter(Boolean);
-  return lines.length ? lines.join("\n") : localized.text2;
+  return lines.length ? lines.join("\n") : text.t("core.focus.noStateChange");
 }
 
-export function focusItems(model: AtlasModel): FocusItem[] {
+/**
+ * Builds the focus list. Order: deadlines first — they are the only items
+ * with a date that has already passed.
+ */
+export function focusItems(model: AtlasModel, text: FacetText = ENGLISH_TEXT): FocusItem[] {
+  const { t } = text;
   const items: FocusItem[] = [];
+  const teamOf = (record: FacetRecord) => record.team || t("core.focus.noTeam");
+  const kindOf = (record: FacetRecord) => recordKindLabel(record.kind, text);
 
   model.overdueList.forEach(({ rec, check }) => {
     const must = rec.clauses.filter((clause) =>
-      localized.text3.test(String(clause.requirement)),
+      // Accept German requirement keywords alongside English MUST.
+      new RegExp(deCore["core.requirement.bindingPattern"]).test(String(clause.requirement)),
     ).length;
     items.push({
       severity: 0,
       id: rec.id,
       section: "rules",
       title: rec.label,
-      why: `${localized.text4}${check.id} war am ${check.next_due}${localized.text5}`,
+      why: t("core.focus.overdueWhy", { id: String(check.id), date: String(check.next_due) }),
       meta: teamOf(rec),
       body: [
-        { label: localized.text6, value: String(check.id ?? "—") },
-        { label: labelText.text293, value: String(check.frequency ?? "—") },
-        { label: labelText.text417, value: String(check.last_established ?? "—") },
-        { label: labelText.text418, value: rec.artifacts.join("\n") || localized.text7 },
-        { label: labelText.text419, value: `${rec.clauses.length} · davon verpflichtend ${must}` },
+        { label: t("core.focus.label.review"), value: String(check.id ?? "—") },
+        { label: t("core.focus.label.frequency"), value: String(check.frequency ?? "—") },
+        { label: t("core.focus.label.last"), value: String(check.last_established ?? "—") },
+        {
+          label: t("core.focus.label.artifacts"),
+          value: rec.artifacts.join("\n") || t("core.focus.none"),
+        },
+        {
+          label: t("core.focus.label.clauses"),
+          value: t("core.focus.clauseCount", { count: rec.clauses.length, must }),
+        },
       ],
     });
   });
@@ -83,22 +91,28 @@ export function focusItems(model: AtlasModel): FocusItem[] {
         id: assumption.id,
         section: "rules",
         title: assumption.label,
-        why: `${labelText.text332}${assumption.ageMonths}${localized.text8}`,
+        why: t("core.focus.staleWhy", { months: String(assumption.ageMonths) }),
         meta: teamOf(assumption),
         body: [
-          { label: germanLabels.text19, value: assumption.summary || localized.text9 },
-          { label: localized.text10, value: assumption.risk || localized.text11 },
-          { label: localized.text12, value: assumption.criticality || "—" },
           {
-            label: germanLabels.text135,
-            value: assumption.referencedBy.join("\n") || localized.text13,
+            label: t("core.focus.label.assumption"),
+            value: assumption.summary || t("core.focus.noDescription"),
           },
           {
-            label: remainingText.text51,
+            label: t("core.focus.label.ifWrong"),
+            value: assumption.risk || t("core.focus.noRisk"),
+          },
+          { label: t("core.focus.label.criticality"), value: assumption.criticality || "—" },
+          {
+            label: t("core.focus.label.usedBy"),
+            value: assumption.referencedBy.join("\n") || t("core.focus.noReference"),
+          },
+          {
+            label: t("core.focus.label.evidence"),
             value:
               assumption.evidence
                 .map((entry) => [entry.date, entry.kind, entry.note].filter(Boolean).join(" · "))
-                .join("\n") || localized.text14,
+                .join("\n") || t("core.focus.noEvidence"),
           },
         ],
       });
@@ -111,17 +125,14 @@ export function focusItems(model: AtlasModel): FocusItem[] {
         severity: 1,
         id: alert.rec.id,
         section: "ops",
-        title: String(alert.name ?? alert.id ?? labelText.text285),
-        why: localized.text15,
+        title: String(alert.name ?? alert.id ?? t("core.focus.alert")),
+        why: t("core.focus.alertWhy"),
         meta: teamOf(alert.rec),
         body: [
-          { label: labelText.text420, value: String(alert.condition ?? "—") },
-          { label: labelText.text421, value: String(alert.severity ?? "—") },
-          { label: "Record", value: alert.rec.id },
-          {
-            label: labelText.text295,
-            value: localized.text16,
-          },
+          { label: t("core.focus.label.condition"), value: String(alert.condition ?? "—") },
+          { label: t("core.focus.label.severity"), value: String(alert.severity ?? "—") },
+          { label: t("core.focus.label.record"), value: alert.rec.id },
+          { label: t("core.focus.label.runbook"), value: t("core.focus.runbookMissing") },
         ],
       });
     });
@@ -132,15 +143,18 @@ export function focusItems(model: AtlasModel): FocusItem[] {
       id: record.id,
       section: "code",
       title: record.label,
-      why: localized.text17,
+      why: t("core.focus.unanchoredWhy"),
       meta: teamOf(record),
       body: [
-        { label: labelText.text422, value: record.summary || localized.text18 },
-        { label: localized.text19, value: `${record.total}${localized.text20}${record.proven}` },
         {
-          label: labelText.text423,
-          value: localized.text21,
+          label: t("core.focus.label.description"),
+          value: record.summary || t("core.focus.noDescription"),
         },
+        {
+          label: t("core.focus.label.promises"),
+          value: t("core.focus.promisesValue", { total: record.total, proven: record.proven }),
+        },
+        { label: t("core.focus.label.consequence"), value: t("core.focus.unanchoredConsequence") },
       ],
     });
   });
@@ -153,13 +167,16 @@ export function focusItems(model: AtlasModel): FocusItem[] {
         id: scenario.rec.id,
         section: "promises",
         title: scenario.id,
-        why: localized.text22,
+        why: t("core.focus.untestedWhy"),
         meta: teamOf(scenario.rec),
         body: [
-          { label: "Record", value: scenario.rec.id },
-          { label: germanLabels.text23, value: scenario.steps.map(gherkinLine).join("\n") },
-          { label: localized.text23, value: stateOf(scenario) },
-          { label: "Test", value: "keiner benannt" },
+          { label: t("core.focus.label.record"), value: scenario.rec.id },
+          {
+            label: t("core.focus.label.promise"),
+            value: scenario.steps.map((step) => gherkinLine(step, text)).join("\n"),
+          },
+          { label: t("core.focus.label.state"), value: stateOf(scenario, text) },
+          { label: t("core.focus.label.test"), value: t("core.focus.noTestNamed") },
         ],
       });
     });
@@ -170,12 +187,15 @@ export function focusItems(model: AtlasModel): FocusItem[] {
       id: record.id,
       section: "teams",
       title: record.label,
-      why: localized.text24,
+      why: t("core.focus.noOwnerWhy"),
       meta: "—",
       body: [
-        { label: labelText.text424, value: KIND_WORD[record.kind] ?? record.kind },
-        { label: labelText.text422, value: record.summary || localized.text25 },
-        { label: labelText.text423, value: localized.text26 },
+        { label: t("core.focus.label.type"), value: kindOf(record) },
+        {
+          label: t("core.focus.label.description"),
+          value: record.summary || t("core.focus.noDescription"),
+        },
+        { label: t("core.focus.label.consequence"), value: t("core.focus.noOwnerConsequence") },
       ],
     });
   });
@@ -186,14 +206,11 @@ export function focusItems(model: AtlasModel): FocusItem[] {
       id: record.id,
       section: "records",
       title: record.label,
-      why: localized.text27,
+      why: t("core.focus.noDescription"),
       meta: teamOf(record),
       body: [
-        { label: labelText.text424, value: KIND_WORD[record.kind] ?? record.kind },
-        {
-          label: labelText.text423,
-          value: localized.text28,
-        },
+        { label: t("core.focus.label.type"), value: kindOf(record) },
+        { label: t("core.focus.label.consequence"), value: t("core.focus.noIntentConsequence") },
       ],
     });
   });
@@ -204,14 +221,14 @@ export function focusItems(model: AtlasModel): FocusItem[] {
       id: record.id,
       section: "ops",
       title: record.label,
-      why: localized.text29,
+      why: t("core.focus.noObsWhy"),
       meta: teamOf(record),
       body: [
-        { label: labelText.text422, value: record.summary || localized.text30 },
         {
-          label: labelText.text423,
-          value: localized.text31,
+          label: t("core.focus.label.description"),
+          value: record.summary || t("core.focus.noDescription"),
         },
+        { label: t("core.focus.label.consequence"), value: t("core.focus.noObsConsequence") },
       ],
     });
   });
@@ -222,14 +239,11 @@ export function focusItems(model: AtlasModel): FocusItem[] {
       id: ghost,
       section: "graph",
       title: String(ghost).split("/").pop() ?? ghost,
-      why: localized.text32,
+      why: t("core.focus.ghostWhy"),
       meta: "—",
       body: [
-        { label: labelText.text425, value: ghost },
-        {
-          label: labelText.text423,
-          value: localized.text33,
-        },
+        { label: t("core.focus.label.identifier"), value: ghost },
+        { label: t("core.focus.label.consequence"), value: t("core.focus.ghostConsequence") },
       ],
     });
   });
@@ -237,6 +251,7 @@ export function focusItems(model: AtlasModel): FocusItem[] {
   return items.sort((a, b) => a.severity - b.severity);
 }
 
+/** Counts for the lead sentence — every number is a probe into its derivation. */
 export type LeadSentenceFacts = {
   open: number;
   overdue: number;

@@ -2,7 +2,13 @@ import { memo, useState, type ComponentType, type CSSProperties } from "react";
 import { color } from "../../../design-system/tokens";
 import type { MarkBar, MarkProps } from "./Mark";
 
-export type MarkVariant = "static" | "loading" | "brand";
+export type MarkVariant =
+  /** The resting mark, without motion. */
+  | "static"
+  /** The loading animation runs as long as something is not there yet. */
+  | "loading"
+  /** The brand animation runs once and then rests; a click plays it again. */
+  | "brand";
 
 export type WithMarkProps = Omit<
   MarkProps,
@@ -16,7 +22,7 @@ export type WithMarkProps = Omit<
   | "onClick"
 > & {
   variant?: MarkVariant;
-
+  /** Width in pixels. */
   size?: number;
   label?: string;
   style?: CSSProperties;
@@ -42,6 +48,15 @@ function fiveBars(prefix: "open" | "load"): MarkBar[] {
   }));
 }
 
+/**
+ * Translates a variant into bars and field size - the keyframes themselves live
+ * centrally in `tokens.css`, as `[data-up]`/`[data-right]` already do, so that
+ * `prefers-reduced-motion` applies to all of them in one place.
+ *
+ * `brand` additionally gets a click replayer: a new `key` on the plain version
+ * forces a fresh instance, and a fresh instance starts every CSS animation at
+ * 0&nbsp;% again - no resetting by hand.
+ */
 export function withMarkLogic(Component: ComponentType<MarkProps>) {
   const Wrapped = ({
     variant = "static",
@@ -52,6 +67,8 @@ export function withMarkLogic(Component: ComponentType<MarkProps>) {
   }: WithMarkProps) => {
     const [playCount, setPlayCount] = useState(0);
 
+    // The same check as in Counter.hoc.tsx and AtlasPage.hoc.tsx: `window` is
+    // missing during server rendering, matchMedia in older test environments.
     const reduced =
       typeof window !== "undefined" &&
       typeof window.matchMedia === "function" &&

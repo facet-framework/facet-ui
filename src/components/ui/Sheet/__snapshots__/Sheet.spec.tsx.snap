@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for Sheet closed 1`] = `<div />`;
+
+exports[`Snapshot tests for Sheet open 1`] = `
+<div
+  data-in="true"
+  role="presentation"
+  style="position: fixed; inset: 0; background: var(--scrim); display: flex; align-items: flex-end; z-index: 40;"
+>
+  <div
+    aria-label="Register"
+    aria-modal="true"
+    data-up="true"
+    role="dialog"
+    style="width: 100%; height: 86%; min-height: 0; background: var(--paper); border-top-style: solid; border-top-width: 1px; border-top-color: var(--line-2); display: flex; flex-direction: column; outline: none;"
+    tabindex="-1"
+  >
+    <p>
+      Content
+    </p>
+  </div>
+</div>
+`;
