@@ -13,7 +13,11 @@ import { Button } from "@facet-tools/ui";
 import "@facet-tools/ui/styles.css";
 
 export function OpenRegistry({ onOpen }: { onOpen: () => void }) {
-  return <Button onClick={onOpen}>Open registry</Button>;
+  return (
+    <div className="t-app">
+      <Button onClick={onOpen}>Open registry</Button>
+    </div>
+  );
 }
 ```
 
