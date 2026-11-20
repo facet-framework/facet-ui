@@ -2,6 +2,8 @@ import { createText } from "../facet/i18n/text";
 import { taskflowModel } from "./fixtures";
 import { focusItems, leadSentenceFacts } from "./focus";
 
+const germanText = createText("de");
+
 describe("Unit tests for focusItems", () => {
   const model = taskflowModel();
   const items = focusItems(model);
@@ -72,9 +74,9 @@ describe("Unit tests for focusItems", () => {
     expect(reasons).toContain("no description");
     expect(reasons).toContain("active, but nothing is measured");
     const german = focusItems(model2, createText("de")).map((item) => item.why);
-    expect(german).toContain("ohne Zuständigkeit");
-    expect(german).toContain("ohne Beschreibung");
-    expect(german).toContain("aktiv, aber nichts wird gemessen");
+    expect(german).toContain(germanText.t("core.focus.noOwnerWhy"));
+    expect(german).toContain(germanText.t("core.focus.noDescription"));
+    expect(german).toContain(germanText.t("core.focus.noObsWhy"));
   });
 
   it("reports references without a record", () => {
@@ -97,13 +99,20 @@ describe("Unit tests for focusItems", () => {
 
   it("speaks German labels and roles under the German text", () => {
     const german = focusItems(model, createText("de"));
-    const untested = german.find((item) => item.why === "Zusage ohne Test");
-    expect(untested?.body.map((row) => row.label)).toEqual(["Record", "Zusage", "Zustand", "Test"]);
+    const untested = german.find((item) => item.why === germanText.t("core.focus.untestedWhy"));
+    expect(untested?.body.map((row) => row.label)).toEqual([
+      "Record",
+      germanText.t("core.label.facet.contract"),
+      germanText.t("core.focus.label.state"),
+      "Test",
+    ]);
     const promise = items.find((item) => item.why === "Promise without a test");
     expect(promise?.body.find((row) => row.label === "Promise")?.value).toMatch(
       /^(GIVEN|WHEN|THEN|AND|BUT) · /m,
     );
-    expect(untested?.body.find((row) => row.label === "Zusage")?.value).toMatch(/AUSGANGSLAGE · /);
+    expect(
+      untested?.body.find((row) => row.label === germanText.t("core.label.facet.contract"))?.value,
+    ).toMatch(`${germanText.t("core.gherkin.given")} · `);
   });
 
   it("stays empty for an empty model", () => {

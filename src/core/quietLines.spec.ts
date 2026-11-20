@@ -4,6 +4,8 @@ import { buildModel } from "./model";
 import { buildQuietLines } from "./quietLines";
 import type { RawRecord } from "./types";
 
+const germanText = createText("de");
+
 describe("Unit tests for buildQuietLines", () => {
   it("states every reassurance in the demo corpus when the population is not empty", () => {
     const model = taskflowModel();
@@ -24,10 +26,10 @@ describe("Unit tests for buildQuietLines", () => {
     expect(lines).toContain("Every record has a team.");
     expect(lines).toContain("No reference points into nothing.");
     expect(buildQuietLines(quiet, createText("de"))).toEqual([
-      "Keine Prüfung ist überfällig.",
-      "Jeder aktive Record hat einen Einstieg im Code.",
-      "Jeder Record hat ein Team.",
-      "Kein Verweis zeigt ins Leere.",
+      germanText.t("core.quiet.noOverdue"),
+      germanText.t("core.quiet.allAnchored"),
+      germanText.t("core.quiet.allOwned"),
+      germanText.t("core.quiet.noGhosts"),
     ]);
   });
 

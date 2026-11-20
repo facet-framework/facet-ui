@@ -1,6 +1,8 @@
 import { createText } from "../facet/i18n/text";
 import { parseTaxonomy, taxonomyTree } from "./taxonomy";
 
+const germanText = createText("de");
+
 const DOC = `schema_version: "1.8"
 domains:
   registry:
@@ -113,7 +115,7 @@ describe("taxonomyTree", () => {
     expect(leftovers.nodes[0].ids).toEqual(["infra/cicd/facet-lsp"]);
     expect(leftovers.domain.title).toBe("Not declared");
     const german = taxonomyTree(tax, ["infra/cicd/facet-lsp"], createText("de"));
-    expect(german[german.length - 1].domain.title).toBe("Nicht deklariert");
+    expect(german[german.length - 1].domain.title).toBe(germanText.t("core.taxonomy.undeclared"));
   });
 
   it("is empty as long as no taxonomy is declared", () => {

@@ -12,7 +12,7 @@ const raw = (path: string, summary: string): RawRecord => ({
   doc: { id: path, intent: { summary } },
 });
 
-const raws = [raw("tasks/create/quick-add", "Der Schnellanleger.")];
+const raws = [raw("tasks/create/quick-add", "The quick add form.")];
 
 function modelWithScan(scan: RepoScan) {
   return buildModel(

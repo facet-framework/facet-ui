@@ -1,6 +1,8 @@
 import { createText } from "../facet/i18n/text";
 import { AGENT_PATH, agentState, askAgent, type AgentStream } from "./agent";
 
+const germanText = createText("de");
+
 /** A stream the test feeds by hand — no network, no agent. */
 function fakeStream() {
   const listeners: Record<string, ((event: MessageEvent) => void)[]> = {};
@@ -33,7 +35,7 @@ describe("Unit tests for askAgent", () => {
     const order: string[] = [];
 
     askAgent(
-      "wo steht das",
+      "where is that written",
       {
         onRead: (target) => order.push(`read:${target}`),
         onText: (text) => order.push(`text:${text}`),
@@ -43,17 +45,17 @@ describe("Unit tests for askAgent", () => {
     );
 
     fake.emit("read", { kind: "read", tool: "Grep", target: "cmd/facet/hook.go" });
-    fake.emit("text", { kind: "text", text: "Dort." });
+    fake.emit("text", { kind: "text", text: "There." });
     fake.emit("done", { kind: "done", session: "s1", cost: 0.02 });
 
-    expect(order).toEqual(["read:cmd/facet/hook.go", "text:Dort.", "done"]);
+    expect(order).toEqual(["read:cmd/facet/hook.go", "text:There.", "done"]);
   });
 
   it("passes the session on so the next question can continue it", () => {
     const fake = fakeStream();
     const onDone = jest.fn();
 
-    askAgent("erste Frage", { onDone }, { open: () => fake.stream });
+    askAgent("first question", { onDone }, { open: () => fake.stream });
     fake.emit("done", { kind: "done", session: "session-7", cost: 0.5 });
 
     expect(onDone).toHaveBeenCalledWith("session-7", 0.5);
@@ -120,7 +122,7 @@ describe("Unit tests for askAgent", () => {
     askAgent("question", { onError }, { open: () => fake.stream, text: createText("de") });
     fake.emit("error", "");
 
-    expect(onError.mock.calls[0][0].message).toBe("Kein Agent erreichbar.");
+    expect(onError.mock.calls[0][0].message).toBe(germanText.t("core.agent.unreachable"));
   });
 
   it("reports only once, even if something still arrives after the abort", () => {

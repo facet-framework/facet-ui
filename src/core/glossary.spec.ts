@@ -49,7 +49,7 @@ describe("parseGlossary", () => {
 terms:
   - term: Consignee
     definition: |
-      Die benannte Partei.
+      The named party.
   - term: ""
     definition: |
       Without a term.

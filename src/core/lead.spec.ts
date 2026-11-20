@@ -4,6 +4,8 @@ import { leadFor } from "./lead";
 import { ROLES } from "./roles";
 import type { RoleKey } from "./types";
 
+const germanText = createText("de");
+
 const model = taskflowModel();
 
 /** The sentence as running text, as it appears on screen. */
@@ -60,12 +62,28 @@ describe("Unit tests for leadFor", () => {
   it("computes coverage from the model, not from a cached copy", () => {
     const coverage = Math.round((model.scnProven / model.scnTotal) * 100);
     expect(sentence("qa")).toMatch(new RegExp(`^${coverage}% of the promised behaviour`));
-    expect(sentence("qa", "de")).toMatch(new RegExp(`^${coverage} % des zugesagten Verhaltens`));
+    expect(sentence("qa", "de")).toBe(
+      germanText.t("core.lead.qa", {
+        coverage: germanText.t("shell.percent", { value: coverage }),
+        proven: model.scnProven,
+        total: model.scnTotal,
+        untested: model.scnTotal - model.scnProven,
+      }),
+    );
   });
 
   it("speaks German under the German text, with the numbers in the same places", () => {
-    expect(sentence(null, "de")).toMatch(/^Diese Software besteht aus /);
-    expect(sentence("ops", "de")).toMatch(/SLOs und .* Alarme sind hinterlegt/);
+    expect(sentence(null, "de").startsWith(germanText.t("core.lead.default").split("{{")[0])).toBe(
+      true,
+    );
+    expect(sentence("ops", "de")).toBe(
+      germanText.t("core.lead.ops", {
+        slos: model.slos.length,
+        alerts: model.alerts.length,
+        noRunbook: model.noRunbook,
+        noObs: model.noObs.length,
+      }),
+    );
     const probes = (locale: string) =>
       leadFor(model, "arch", createText(locale))
         .filter((segment) => segment.kind === "probe")

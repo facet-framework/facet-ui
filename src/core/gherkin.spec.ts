@@ -2,6 +2,8 @@ import { createText } from "../facet/i18n/text";
 import { GHERKIN_LABEL, parseGherkin, scenarioPreview, tokenizeGherkin } from "./gherkin";
 import { gherkinLabel } from "./labels";
 
+const germanText = createText("de");
+
 describe("Unit tests for parseGherkin", () => {
   it("splits a statement into steps", () => {
     const steps = parseGherkin("Given a list\nWhen something is typed\nThen it is created");
@@ -39,11 +41,11 @@ describe("Unit tests for parseGherkin", () => {
     expect(GHERKIN_LABEL.GIVEN).toBe("GIVEN");
     expect(gherkinLabel("THEN")).toBe("THEN");
     const de = createText("de");
-    expect(gherkinLabel("GIVEN", de)).toBe("AUSGANGSLAGE");
-    expect(gherkinLabel("WHEN", de)).toBe("AKTION");
-    expect(gherkinLabel("THEN", de)).toBe("ERGEBNIS");
-    expect(gherkinLabel("AND", de)).toBe("UND");
-    expect(gherkinLabel("BUT", de)).toBe("ABER");
+    expect(gherkinLabel("GIVEN", de)).toBe(germanText.t("core.gherkin.given"));
+    expect(gherkinLabel("WHEN", de)).toBe(germanText.t("core.gherkin.when"));
+    expect(gherkinLabel("THEN", de)).toBe(germanText.t("core.gherkin.then"));
+    expect(gherkinLabel("AND", de)).toBe(germanText.t("core.gherkin.and"));
+    expect(gherkinLabel("BUT", de)).toBe(germanText.t("core.gherkin.but"));
   });
 });
 
@@ -99,7 +101,7 @@ describe("Unit tests for scenarioPreview", () => {
     const steps = parseGherkin("Given a list\nThen it is created");
     expect(scenarioPreview(steps)).toEqual({ label: "THEN", text: "it is created" });
     expect(scenarioPreview(steps, createText("de"))).toEqual({
-      label: "ERGEBNIS",
+      label: germanText.t("core.gherkin.then"),
       text: "it is created",
     });
   });
@@ -107,7 +109,9 @@ describe("Unit tests for scenarioPreview", () => {
   it("falls back to the last step without a Then", () => {
     const steps = parseGherkin("Given a list\nWhen something is typed");
     expect(scenarioPreview(steps)).toEqual({ label: "PROMISE", text: "something is typed" });
-    expect(scenarioPreview(steps, createText("de"))?.label).toBe("ZUSAGE");
+    expect(scenarioPreview(steps, createText("de"))?.label).toBe(
+      germanText.t("core.gherkin.promise"),
+    );
   });
 
   it("returns nothing without steps", () => {

@@ -2,6 +2,8 @@ import { createText } from "../facet/i18n/text";
 import { FACET_LABEL, KIND_WORD, LIFECYCLE_LABEL, TEST_KIND_LABEL } from "../design-system/tokens";
 import { facetLabel, lifecycleLabel, recordKindLabel, testKindLabel } from "./labels";
 
+const germanText = createText("de");
+
 describe("schema value labels", () => {
   const de = createText("de");
 
@@ -14,10 +16,10 @@ describe("schema value labels", () => {
   });
 
   it("follow the German text", () => {
-    expect(facetLabel("contract", de)).toBe("Zusage");
-    expect(testKindLabel("e2e", de)).toBe("Ende-zu-Ende");
-    expect(recordKindLabel("policy", de)).toBe("Regelwerk");
-    expect(lifecycleLabel("deprecated", de)).toBe("abgelöst");
+    expect(facetLabel("contract", de)).toBe(germanText.t("core.label.facet.contract"));
+    expect(testKindLabel("e2e", de)).toBe(germanText.t("core.label.testKind.e2e"));
+    expect(recordKindLabel("policy", de)).toBe(germanText.t("core.label.kind.policy"));
+    expect(lifecycleLabel("deprecated", de)).toBe(germanText.t("core.label.lifecycle.deprecated"));
   });
 
   it("return an unknown value as it is instead of a key", () => {

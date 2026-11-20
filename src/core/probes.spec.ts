@@ -5,6 +5,8 @@ import { formatNumber } from "./model";
 import { probeOf } from "./probes";
 import { ROLES } from "./roles";
 
+const germanText = createText("de");
+
 const model = taskflowModel();
 
 const ALL: ProbeKey[] = [
@@ -108,9 +110,11 @@ describe("Unit tests for probeOf", () => {
     expect(view.note[0]).toContain("Test code share 20%");
     expect(view.note[1]).toContain("line coverage not connected");
     const german = probeOf(scanned, "coverage", createText("de"));
-    expect(german.head).toBe("TESTZUORDNUNGEN");
-    expect(german.note[0]).toContain("Testcode-Anteil 20 %");
-    expect(german.note[1]).toContain("Zeilenabdeckung nicht angebunden");
+    expect(german.head).toBe(germanText.t("core.probes.head.coverage"));
+    expect(german.note[0]).toContain(
+      germanText.t("core.probes.testCodeShare", { pct: 20, test: 400, total: 2000 }),
+    );
+    expect(german.note[1]).toContain(germanText.t("core.probes.testFiles", { count: 9 }));
   });
 
   it("stays silent about lines as long as the scan has counted none", () => {
@@ -132,7 +136,7 @@ describe("Unit tests for probeOf", () => {
         .rows.slice(2)
         .map((row) => row.label);
     expect(labels("en")).toContain("UNIT");
-    expect(labels("de")).toContain("MODUL");
+    expect(labels("de")).toContain(germanText.t("core.label.testKind.unit").toUpperCase());
   });
 
   it("fills every probe's notes in German without leaving a placeholder", () => {
@@ -148,6 +152,8 @@ describe("Unit tests for probeOf", () => {
         expect(line).not.toMatch(/\{\{/),
       );
     }
-    expect(probeOf(drifted, "anchors", de).note).toContain("verschoben: tasks/create/quick-add");
+    expect(probeOf(drifted, "anchors", de).note).toContain(
+      germanText.t("core.probes.movedLine", { id: "tasks/create/quick-add" }),
+    );
   });
 });

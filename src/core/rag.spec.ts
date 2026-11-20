@@ -12,6 +12,8 @@ import {
   type RagResponse,
 } from "./rag";
 
+const germanText = createText("de");
+
 const model = taskflowModel();
 
 /** An answer from the host, without a host. */
@@ -67,7 +69,7 @@ describe("Unit tests for shouldConsultIndex", () => {
     );
     expect(shouldConsultIndex(model, "Why was the limit set to five?")).toBe(true);
     // The same holds for a German question.
-    expect(shouldConsultIndex(model, "Warum ist das Limit auf fünf gesetzt worden?")).toBe(true);
+    expect(shouldConsultIndex(model, germanText.t("elements.roleGate.headline"))).toBe(true);
   });
 
   it("does not ask the index when the question names a record", () => {
@@ -88,8 +90,8 @@ describe("Unit tests for shouldConsultIndex", () => {
       "Where should I start?",
       "Which alerts have no runbook?",
       // German questions find the same areas.
-      "Was ist überfällig?",
-      "Welche personenbezogenen Daten gibt es?",
+      germanText.t("core.companion.suggest.overdue"),
+      germanText.t("core.companion.data.head", { pii: 1, enc: 0 }),
     ]) {
       expect([question, shouldConsultIndex(model, question)]).toEqual([question, false]);
     }
@@ -185,11 +187,23 @@ describe("Unit tests for ragPlan", () => {
   it("speaks German under the German text", () => {
     const de = createText("de");
     const plan = ragPlan(response({ lexical: true }), de);
-    expect(plan.text).toMatch(/^2 Stellen im Bestand liegen nah an der Frage:/);
-    expect(plan.text).toContain("(Nähe 0.71)");
-    expect(plan.text).toContain("vergleicht Wörter");
-    expect(plan.facts.map((entry) => entry.label)).toEqual(["GEFUNDEN", "NÄHE", "DURCHSUCHT"]);
-    expect(plan.follow[0]).toBe("Was ist bei sync/conflict/last-write-wins offen?");
+    expect(plan.text).toMatch(germanText.t("core.rag.head.other", { count: "2" }));
+    expect(plan.text).toContain(
+      germanText.t("core.rag.hitLine", {
+        where: response().hits[0].title ?? "",
+        path: response().hits[0].path,
+        score: "0.71",
+      }),
+    );
+    expect(plan.text).toContain(germanText.t("core.rag.footLexical"));
+    expect(plan.facts.map((entry) => entry.label)).toEqual([
+      germanText.t("core.rag.found"),
+      germanText.t("core.rag.closeness"),
+      germanText.t("core.rag.searched"),
+    ]);
+    expect(plan.follow[0]).toBe(
+      germanText.t("core.companion.suggest.recordOpen", { label: "sync/conflict/last-write-wins" }),
+    );
     const single = ragPlan(response({ hits: [response().hits[0]] }));
     expect(single.text).toMatch(/^One passage in the inventory is close to the question:/);
   });
@@ -206,8 +220,8 @@ describe("Unit tests for ragEmptyPlan", () => {
     expect(plan.openId).toBeNull();
     expect(plan.facts.find((entry) => entry.label === "FOUND")?.value).toBe("0");
     const german = ragEmptyPlan(response({ hits: [] }), createText("de"));
-    expect(german.text).toContain("steht dazu nichts");
-    expect(german.text).toContain("erfinde ich nicht");
+    expect(german.text).toContain(germanText.t("core.rag.empty"));
+    expect(german.text).toContain(germanText.t("core.rag.emptyFoot"));
   });
 });
 

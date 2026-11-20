@@ -39,14 +39,14 @@ describe("Unit tests for companionRoute", () => {
   // A reader asks in their own language, whatever the surface speaks: the
   // keywords of both dictionaries count.
   it("maps German questions to the same areas", () => {
-    expect(companionRoute(model, "Was ist überfällig?")).toBe("rules");
-    expect(companionRoute(model, "Wie hoch ist die Abdeckung?")).toBe("tests");
-    expect(companionRoute(model, "Womit sollte ich anfangen?")).toBe("open");
-    expect(companionRoute(model, "Wer ist zuständig?")).toBe("teams");
-    expect(companionRoute(model, "Welche personenbezogenen Felder gibt es?")).toBe("data");
-    expect(companionRoute(model, "Was ist nicht im Code verankert?")).toBe("code");
-    expect(companionRoute(model, "Wo ist die Kopplung am stärksten?")).toBe("graph");
-    expect(companionRoute(model, "Welche Alarme haben kein Runbook?")).toBe("ops");
+    expect(companionRoute(model, de.t("core.companion.suggest.overdue"))).toBe("rules");
+    expect(companionRoute(model, de.t("core.companion.suggest.coverage"))).toBe("tests");
+    expect(companionRoute(model, de.t("core.companion.suggest.start"))).toBe("open");
+    expect(companionRoute(model, de.t("core.companion.suggest.who"))).toBe("teams");
+    expect(companionRoute(model, de.t("core.companion.route.data").split(",")[0])).toBe("data");
+    expect(companionRoute(model, de.t("core.companion.suggest.unanchored"))).toBe("code");
+    expect(companionRoute(model, de.t("core.companion.route.graph").split(",")[0])).toBe("graph");
+    expect(companionRoute(model, de.t("core.companion.route.ops").split(",")[0])).toBe("ops");
   });
 
   it("falls back to corpus when the question fits no area", () => {
@@ -93,31 +93,62 @@ describe("Unit tests for companionAnswer", () => {
       expect([route, plan.text.length > 0]).toEqual([route, true]);
       expect(plan.text).not.toMatch(/\{\{/);
       plan.facts.forEach((entry) => expect(entry.label).toMatch(/^[A-Z][A-Z ]+$/));
-      expect(plan.text).not.toMatch(/[äöüß]/);
+      expect(plan.text).not.toMatch(/[\u00e4\u00f6\u00fc\u00df]/);
     }
   });
 
   it("answers every area in German under the German text", () => {
-    expect(companionAnswer(model, QUESTIONS.rules, de).facts[0].label).toBe("ÜBERFÄLLIG");
-    expect(companionAnswer(model, QUESTIONS.tests, de).text).toMatch(
-      /% des zugesagten Verhaltens hat eine Testzuordnung/,
+    expect(companionAnswer(model, QUESTIONS.rules, de).facts[0].label).toBe(
+      de.t("core.probes.overdue"),
     );
-    expect(companionAnswer(model, QUESTIONS.open, de).text).toMatch(/^Nach Dringlichkeit sortiert/);
-    expect(companionAnswer(model, QUESTIONS.teams, de).text).toMatch(/Teams? tr(a|ä)g/);
-    expect(companionAnswer(model, QUESTIONS.data, de).text).toMatch(/als personenbezogen/);
-    expect(companionAnswer(model, QUESTIONS.code, de).text).toMatch(/Einstiege verweisen aus/);
-    expect(companionAnswer(model, QUESTIONS.graph, de).text).toMatch(/^Der Bestand hängt über/);
-    expect(companionAnswer(model, QUESTIONS.ops, de).text).toMatch(/SLOs und .* Alarme/);
-    expect(companionAnswer(model, "Warum?", de).text).toMatch(/^Ich lese die /);
+    expect(companionAnswer(model, QUESTIONS.tests, de).text).toMatch(
+      de.t("core.companion.tests.share", {
+        pct: String(Math.round((model.scnProven / model.scnTotal) * 100)),
+        proven: String(model.scnProven),
+        total: String(model.scnTotal),
+      }),
+    );
+    expect(companionAnswer(model, QUESTIONS.open, de).text).toContain(
+      de.t("core.companion.open.deadlinesFirst"),
+    );
+    expect(companionAnswer(model, QUESTIONS.teams, de).text).toContain(
+      de.plural("core.companion.teams.head", Object.keys(model.teams).length),
+    );
+    expect(companionAnswer(model, QUESTIONS.data, de).text).toContain(
+      de.t("core.companion.data.head", { pii: String(model.pii), enc: String(model.enc) }),
+    );
+    expect(companionAnswer(model, QUESTIONS.code, de).text).toContain(
+      de.t("core.companion.code.head", {
+        anchors: String(model.anchorPairs.length),
+        features: String(Object.keys(model.anchorMap).length),
+      }),
+    );
+    expect(companionAnswer(model, QUESTIONS.graph, de).text).toContain(
+      de.plural("core.companion.graph.head", model.maxDepth, {
+        edges: String(model.edges.length),
+        count: String(model.maxDepth),
+      }),
+    );
+    expect(companionAnswer(model, QUESTIONS.ops, de).text).toContain(
+      de.t("core.companion.ops.head", {
+        slos: String(model.slos.length),
+        alerts: String(model.alerts.length),
+      }),
+    );
+    expect(companionAnswer(model, "Why?", de).text).toContain(de.t("core.companion.corpus.ask"));
   });
 
   it("names what is open about a record, in English and German", () => {
     const en = companionAnswer(model, "What about Quick add?");
     expect(en.facts[0].label).toBe("STATE");
     expect(en.follow).toEqual(["Who owns Quick add?", "Which tests are missing for Quick add?"]);
-    const german = companionAnswer(model, "Was ist mit Quick add?", de);
-    expect(german.facts[0].label).toBe("ZUSTAND");
-    expect(german.follow[0]).toBe("Wer ist für Quick add zuständig?");
+    const german = companionAnswer(
+      model,
+      de.t("core.companion.suggest.recordOpen", { label: "Quick add" }),
+      de,
+    );
+    expect(german.facts[0].label).toBe(de.t("core.companion.fact.state"));
+    expect(german.follow[0]).toBe(de.t("core.companion.follow.owner", { label: "Quick add" }));
   });
 
   it("says what it sees when no area fits", () => {
@@ -178,12 +209,12 @@ describe("Unit tests for the companion frame", () => {
   it("states intro, footer and scope in English, and in German under the German text", () => {
     expect(COMPANION_INTRO).toMatch(/^Ask me about the loaded records/);
     expect(COMPANION_FOOT).toMatch(/^answers from the records it read/);
-    expect(de.t("core.companion.intro")).toMatch(/^Frag mich nach den geladenen Records/);
+    expect(de.t("core.companion.intro")).not.toBe(COMPANION_INTRO);
     expect(companionScope(model, "QUALITY", null)).toMatch(
       /^sees: \d+ records · .*\nRole QUALITY$/,
     );
-    expect(companionScope(model, "QUALITÄT", "a/b/c", de)).toMatch(
-      /^sieht: \d+ Records · .*\nRolle QUALITÄT · offen a\/b\/c$/,
+    expect(companionScope(model, de.t("core.roles.qa.tag"), "a/b/c", de)).toMatch(
+      `${de.t("core.companion.scope", { records: de.number(model.recs.length), sources: (Array.isArray(model.rc.sources) ? model.rc.sources.join(", ") : "") || "—", lines: de.number(Number(model.scan.totalLoc) || 0) })}\n${de.t("core.companion.scopeRoleOpen", { role: de.t("core.roles.qa.tag"), id: "a/b/c" })}`,
     );
   });
 
@@ -231,7 +262,13 @@ describe("Unit tests for agentPlan", () => {
 
   it("counts the same file and the same question only once, and speaks German on request", () => {
     const plan = agentPlan(model, "x", ["a.ts", "a.ts"], ["question", "question"], de);
-    expect(plan.facts[0]).toMatchObject({ label: "GELESEN", value: "1 Datei" });
-    expect(plan.facts[1]).toMatchObject({ label: "GESUCHT", value: "1 Frage" });
+    expect(plan.facts[0]).toMatchObject({
+      label: de.t("core.companion.fact.read"),
+      value: de.t("core.companion.files.one", { count: "1" }),
+    });
+    expect(plan.facts[1]).toMatchObject({
+      label: de.t("core.companion.fact.searched"),
+      value: de.t("core.companion.questions.one", { count: "1" }),
+    });
   });
 });

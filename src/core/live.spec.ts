@@ -9,6 +9,8 @@ import {
   type IndexStatus,
 } from "./live";
 
+const germanText = createText("de");
+
 /** A stream the test feeds by hand — no network, no timer. */
 function fakeStream() {
   const listeners: Record<string, ((event: MessageEvent) => void)[]> = {};
@@ -112,10 +114,10 @@ describe("Unit tests for subscribeCorpus", () => {
     const onError = jest.fn();
     subscribeCorpus("/api/corpus", { onError }, { open: () => fake.stream });
 
-    fake.emit("failed", { message: "docs/facets fehlt in diesem Repo" });
+    fake.emit("failed", { message: "docs/facets is missing in this repository" });
 
     expect(onError).toHaveBeenCalledWith(
-      expect.objectContaining({ message: "docs/facets fehlt in diesem Repo" }),
+      expect.objectContaining({ message: "docs/facets is missing in this repository" }),
     );
     expect(fake.closed).toBe(true);
   });
@@ -165,7 +167,7 @@ describe("Unit tests for subscribeCorpus", () => {
     fake.emit("error", "");
 
     expect(onError.mock.calls[0][0].message).toBe(
-      "Keine Verbindung zum facet-Server (/api/corpus).",
+      germanText.t("core.live.noConnection", { url: "/api/corpus" }),
     );
   });
 

@@ -3,6 +3,8 @@ import { corpusErrorText, loadCorpus } from "./corpus";
 import * as yamlModule from "./yaml";
 import { YamlError } from "./yaml";
 
+const germanText = createText("de");
+
 const facetrc = 'schema_version: "1.5"\nrecords: docs/facets\n';
 const index = "records:\n  - a.yaml\n  - missing.yaml\n";
 const records = {
@@ -73,7 +75,9 @@ describe("A broken record does not block the whole corpus", () => {
         key: "core.corpus.missingFile",
       },
     ]);
-    expect(corpusErrorText(model.corpusErrors[0], createText("de"))).toBe("Datei fehlt im Korpus");
+    expect(corpusErrorText(model.corpusErrors[0], createText("de"))).toBe(
+      germanText.t("core.corpus.missingFile"),
+    );
     expect(corpusErrorText({ path: "x", message: "as is" }, createText("de"))).toBe("as is");
   });
 

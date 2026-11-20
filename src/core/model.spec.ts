@@ -359,8 +359,8 @@ describe("Unit tests for shapeRecord", () => {
   });
 
   it("copes with an empty document", () => {
-    const record = shapeRecord({ path: "leer.yaml", raw: "", doc: {} }, {});
-    expect(record.id).toBe("leer.yaml");
+    const record = shapeRecord({ path: "empty.yaml", raw: "", doc: {} }, {});
+    expect(record.id).toBe("empty.yaml");
     expect(record.lifecycle).toBe("—");
     expect(record.present.intent).toBe(false);
   });

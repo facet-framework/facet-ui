@@ -102,9 +102,9 @@ describe("Unit tests for parseInline", () => {
   });
 
   it("reads a link with text and target", () => {
-    expect(parseInline("siehe [die Spec](https://example.org/spec)")).toEqual([
-      { kind: "text", text: "siehe " },
-      { kind: "link", text: "die Spec", href: "https://example.org/spec" },
+    expect(parseInline("see [the spec](https://example.org/spec)")).toEqual([
+      { kind: "text", text: "see " },
+      { kind: "link", text: "the spec", href: "https://example.org/spec" },
     ]);
   });
 

@@ -2,6 +2,8 @@ import { createText } from "../facet/i18n/text";
 import { thrown } from "../../test/thrown";
 import { parseYaml, YamlError, yamlErrorText } from "./yaml";
 
+const germanText = createText("de");
+
 describe("Unit tests for parseYaml", () => {
   it("reads nested block maps", () => {
     expect(parseYaml("intent:\n  summary: Creates a task\n")).toEqual({
@@ -96,7 +98,7 @@ describe("Unit tests for parseYaml", () => {
     expect(error.message).toBe("Tabs are not allowed as indentation (line 2)");
     expect(yamlErrorText(error)).toBe("Tabs are not allowed as indentation (line 2)");
     expect(yamlErrorText(error, createText("de"))).toBe(
-      "Tabulatoren sind als Einrückung nicht zulässig (Zeile 2)",
+      germanText.t("core.yaml.atLine", { message: germanText.t("core.yaml.tabIndent"), line: "2" }),
     );
     // An error without a key keeps its message.
     expect(yamlErrorText(new YamlError("broken"), createText("de"))).toBe("broken");
@@ -166,7 +168,7 @@ describe("Multi-line flow collections", () => {
   it("names the line when the bracket is never closed", () => {
     const error = thrown(() => parseYaml(["proves:", "  [", "    eins,", ""].join("\n")));
     expect(error).toBeInstanceOf(YamlError);
-    expect((error as YamlError).message).toContain("Nicht geschlossene Flow-Collection");
+    expect((error as YamlError).message).toContain("Unclosed flow collection");
     expect((error as YamlError).line).toBe(1);
   });
 });
@@ -253,7 +255,7 @@ describe("Multi-line quoted scalars", () => {
 
   it("names the line when the string never closes", () => {
     const error = thrown(() =>
-      parseYaml(["summary: 'nie geschlossen", "  bleibt offen", ""].join("\n")),
+      parseYaml(["summary: 'never closed", "  stays open", ""].join("\n")),
     );
     expect(error).toBeInstanceOf(YamlError);
     expect((error as YamlError).line).toBe(0);
