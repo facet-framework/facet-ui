@@ -11,7 +11,7 @@ describe("deprecated alias namespaces in the shipped declarations", () => {
     for (const alias of ALIASES)
       expect(text).toMatch(
         new RegExp(
-          `/\\*\\* @deprecated Import from \`@facet-framework/ui/facet/atlas\`[^*]*\\*/ (?:[\\w$]+ as )?${alias}\\b`,
+          `/\\*\\* @deprecated Import from \`@facet-tools/ui/facet/atlas\`[^*]*\\*/ (?:[\\w$]+ as )?${alias}\\b`,
         ),
       );
   });
