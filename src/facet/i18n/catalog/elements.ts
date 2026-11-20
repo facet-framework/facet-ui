@@ -1,5 +1,5 @@
 /**
- * Texts of the elements components (`facet-ui/elements`, `src/components/ui`).
+ * Texts of the elements components (`@facet-tools/ui/elements`, `src/components/ui`).
  * Keys: `elements.<component>.<slug>`. `deElements` must carry exactly the keys
  * of `enElements`; the type makes a missing or an extra key a compile error.
  */

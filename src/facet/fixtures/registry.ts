@@ -4042,7 +4042,7 @@ export const registry: FixtureRegistry = {
         },
       ],
       logCount: 3,
-      tickets: ["#11"],
+      tickets: ["issue-example"],
     },
     {
       id: "delivery/releases/mirror",

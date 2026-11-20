@@ -1,5 +1,5 @@
 /**
- * The text functions without React: the data layer (`facet-ui/core`) builds
+ * The text functions without React: the data layer (`@facet-tools/ui/core`) builds
  * visible sentences too, and it must not pull React in to do so.
  * `TextProvider` builds on the same `createText`.
  */

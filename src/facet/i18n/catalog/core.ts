@@ -1,5 +1,5 @@
 /**
- * Texts the data layer (`facet-ui/core`) and the elements tokens build.
+ * Texts the data layer (`@facet-tools/ui/core`) and the elements tokens build.
  * Keys: `core.<module>.<slug>`. `deCore` must carry exactly the keys of
  * `enCore`; the type makes a missing or an extra key a compile error.
  */

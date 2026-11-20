@@ -201,7 +201,7 @@ describe("Unit tests for the agent's steps", () => {
     fake.emit("signin", {
       kind: "signin",
       text: "Nobody is signed in to Claude Code.",
-      hint: "Melde dich in einem Terminal an: `claude auth login`.",
+      hint: "Sign in from a terminal: `claude auth login`.",
     });
 
     expect(onSignIn).toHaveBeenCalled();

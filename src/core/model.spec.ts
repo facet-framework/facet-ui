@@ -161,7 +161,7 @@ describe("Unit tests for shapeRecord", () => {
                 deviation: {
                   reason: "A tenant filter is built and never applied.",
                   confirmed_by: "code-review",
-                  tracked_as: "#212",
+                  tracked_as: "issue-example",
                 },
               },
             ],
@@ -177,7 +177,7 @@ describe("Unit tests for shapeRecord", () => {
     expect(record.scenarios[1].deviation).toEqual({
       reason: "A tenant filter is built and never applied.",
       confirmedBy: "code-review",
-      trackedAs: "#212",
+      trackedAs: "issue-example",
     });
   });
 
@@ -299,7 +299,7 @@ describe("Unit tests for shapeRecord", () => {
                 commit: "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
                 date: "2026-03-02",
                 files: ["src/list.ts", "src/page.ts"],
-                issue: "#42",
+                issue: "issue-fix-example",
                 recorded_by: "git-history",
               },
             ],
@@ -313,7 +313,7 @@ describe("Unit tests for shapeRecord", () => {
     expect(record.defects.total).toBe(2);
     // Newest first — the question is what broke most recently.
     expect(record.defects.fixes[0].date).toBe("2026-03-02");
-    expect(record.defects.fixes[0].issue).toBe("#42");
+    expect(record.defects.fixes[0].issue).toBe("issue-fix-example");
     expect(record.defects.lastFix).toBe("2026-03-02");
     // The per-file count is computed, not read: list.ts in both.
     expect(record.defects.byFile).toEqual([

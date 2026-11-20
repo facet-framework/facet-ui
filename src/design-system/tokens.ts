@@ -102,7 +102,7 @@ export type Facet = (typeof FACETS)[number];
 
 /**
  * English plain-text labels — schema jargon stays in the raw source. For the
- * active language use `facetLabel` from `facet-ui/core`.
+ * active language use `facetLabel` from `@facet-tools/ui/core`.
  */
 export const FACET_LABEL: Record<Facet, string> = {
   intent: "Purpose",
@@ -119,7 +119,7 @@ export const TEST_KINDS = ["unit", "property", "integration", "e2e"] as const;
 
 export type TestKind = (typeof TEST_KINDS)[number];
 
-/** English test-level labels; `testKindLabel` from `facet-ui/core` follows the active language. */
+/** English test-level labels; `testKindLabel` from `@facet-tools/ui/core` follows the active language. */
 export const TEST_KIND_LABEL: Record<string, string> = {
   unit: "Unit",
   property: "Property",
@@ -127,7 +127,7 @@ export const TEST_KIND_LABEL: Record<string, string> = {
   e2e: "End-to-end",
 };
 
-/** English record-kind words; `recordKindLabel` from `facet-ui/core` follows the active language. */
+/** English record-kind words; `recordKindLabel` from `@facet-tools/ui/core` follows the active language. */
 export const KIND_WORD: Record<string, string> = {
   feature: "Feature",
   policy: "Policy",
@@ -135,7 +135,7 @@ export const KIND_WORD: Record<string, string> = {
   entity: "Data object",
 };
 
-/** English lifecycle words; `lifecycleLabel` from `facet-ui/core` follows the active language. */
+/** English lifecycle words; `lifecycleLabel` from `@facet-tools/ui/core` follows the active language. */
 export const LIFECYCLE_LABEL: Record<string, string> = {
   active: "active",
   planned: "planned",

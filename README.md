@@ -1,6 +1,6 @@
 <h1 align="center">FACET UI</h1>
 
-<p align="center">React components, design tokens, custom elements and data models for FACET records.</p>
+<p align="center">The FACET design system: React primitives, application shell, design tokens and custom elements.</p>
 
 Version **0.1.0-rc.2** · [Documentation](https://facet-framework.com) · [Apache-2.0](LICENSE)
 

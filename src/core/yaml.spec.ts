@@ -217,7 +217,7 @@ describe("Multi-line quoted scalars", () => {
   // This is exactly how Prettier wraps a long `summary:` line: single
   // quotes, one clause per line, a blank line between the lines. Valid
   // YAML — a reader that cannot handle it rejects records the linter
-  // accepts (facet-ui, reported bug).
+  // accepts.
   it("folds a single line break into a space", () => {
     const doc = parseYaml(["summary: 'one line", "  goes on here'", ""].join("\n")) as {
       summary: string;

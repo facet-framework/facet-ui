@@ -1,4 +1,4 @@
-/** facet-ui/core — FACET's data layer: read, check, compute. */
+/** @facet-tools/ui/core — FACET's data layer: read, check, compute. */
 export * from "./yaml";
 export * from "./types";
 export * from "./gherkin";

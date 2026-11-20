@@ -4,7 +4,7 @@ FACET ships English source text and a German dictionary. The app picks the
 language once, at the root:
 
 ```tsx
-import { TextProvider } from "facet-ui";
+import { TextProvider } from "@facet-tools/ui";
 
 <TextProvider locale={i18n.language}>{app}</TextProvider>;
 ```
@@ -20,9 +20,9 @@ over the built-in one).
 - `de.ts`: typed as `Dictionary`, so a missing or an extra key is a compile
   error.
 - `catalog/core.ts` (`enCore` / `deCore`, keys `core.*`): the texts the data
-  layer (`facet-ui/core`) and the elements tokens build. `catalog/elements.ts`
+  layer (`@facet-tools/ui/core`) and the elements tokens build. `catalog/elements.ts`
   (`enElements` / `deElements`, keys `elements.*`): the texts of the elements
-  components (`facet-ui/elements`). `en.ts` and `de.ts` spread them in.
+  components (`@facet-tools/ui/elements`). `en.ts` and `de.ts` spread them in.
 - `text.ts`: `createText(locale)` and `ENGLISH_TEXT`, without React. Every core
   function that builds a visible sentence takes an optional `text: FacetText`
   (English by default), e.g. `companionAnswer(model, question, createText("de"))`.
@@ -39,7 +39,7 @@ never explains or defends the design: no sentence on why something is or is
 not shown, or how a page is drawn ("… does not report this, so it is not shown
 here"). A legend that
 labels marks is fine. `no-design-prose.spec.ts` fails on the connectives such
-a sentence needs ("because", "therefore", "deshalb", "weil", …) in both
+a sentence needs ("because", "therefore", and their German equivalents) in both
 dictionaries; a key that uses one in another sense goes on its allowlist with
 that sense written next to it.
 
@@ -47,7 +47,7 @@ that sense written next to it.
 
 1. **Find every visible string** in the component: text nodes, `aria-label`,
    `title`, `placeholder`, `aria-valuetext`, labels passed to primitives, and
-   strings built in code (`` `${n} Treffer` ``). Data from fixtures is content,
+   strings built in code (`` `${n} matches` ``). Data from fixtures is content,
    not UI text, and stays where it is.
 2. **Add a key to `en.ts`** with the English text, then the same key to
    `de.ts` with the German text that was in the component. Keys are flat and
@@ -73,8 +73,7 @@ that sense written next to it.
    and the visible name comes from a key such as `shell.history.kind.record`.
    Renaming such an exported value is an API change; say so in the commit.
 5. **Tests:** a spec that asserts German text renders through
-   `renderInGerman` from `i18n/testing.tsx` (every screen spec imports it as
-   `render` today, so their German assertions keep holding). Add at least one case that checks the English
+   `renderInGerman` from `i18n/testing.tsx` for locale-specific assertions. Add at least one case that checks the English
    default. Select by role, text or `data-testid`, never by CSS class.
 
 ## Stories
