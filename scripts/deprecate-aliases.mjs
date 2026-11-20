@@ -1,8 +1,8 @@
 /**
- * Puts the `@deprecated` tag back on the alias namespaces of `@facet-framework/ui/facet`
+ * Puts the `@deprecated` tag back on the alias namespaces of `@facet-tools/ui/facet`
  * (`frame`, `records`, `contents`, `plugins`) in the bundled declarations.
  *
- * Why a step after tsup: the namespaces are shared with `@facet-framework/ui/facet/atlas`,
+ * Why a step after tsup: the namespaces are shared with `@facet-tools/ui/facet/atlas`,
  * so the declaration bundler (rollup-plugin-dts) moves them into a common
  * chunk and re-exports them from `dist/facet.d.ts` by specifier
  * (`export { ap as frame } from './atlas-….js'`). It rewrites that statement
@@ -16,7 +16,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 const ALIASES = ["frame", "records", "contents", "plugins"];
-const TAG = "/** @deprecated Import from `@facet-framework/ui/facet/atlas`. */";
+const TAG = "/** @deprecated Import from `@facet-tools/ui/facet/atlas`. */";
 const FILES = process.argv.slice(2).length
   ? process.argv.slice(2)
   : ["dist/facet.d.ts", "dist/facet.d.cts"];

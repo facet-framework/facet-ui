@@ -1,5 +1,5 @@
 {
-  "name": "@facet-framework/ui",
+  "name": "@facet-tools/ui",
   "version": "0.1.0-rc.1",
   "description": "React components, design tokens, custom elements and FACET record data models.",
   "license": "Apache-2.0",

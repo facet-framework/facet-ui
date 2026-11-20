@@ -4,7 +4,7 @@ FACET design system ships English source text and a German dictionary. The app p
 language once, at the root:
 
 ```tsx
-import { FacetTextProvider } from "@facet-framework/ui/facet";
+import { FacetTextProvider } from "@facet-tools/ui/facet";
 
 <FacetTextProvider locale={i18n.language}>{app}</FacetTextProvider>;
 ```
