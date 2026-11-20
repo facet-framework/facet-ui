@@ -71,3 +71,10 @@ A human contributor or authorized organization must hold the necessary rights
 and sign the CLA. An automated agent cannot sign on your behalf or supply
 employer authorization. Review generated changes, identify their sources and
 licenses, and take responsibility for the submitted patch.
+
+## Releases
+
+A release runs the Release workflow on `main` with the version from
+`package.json`. The workflow builds and tests the package, then stages it on
+npm through trusted publishing after approval of the `npm` environment. The
+staged version is published once a maintainer approves it on npmjs.com.
