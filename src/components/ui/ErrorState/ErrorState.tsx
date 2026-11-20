@@ -5,15 +5,19 @@ export type ErrorStateProps = {
   headlineStyle: CSSProperties;
   originStyle: CSSProperties;
   retryStyle: CSSProperties;
-
+  /** Cause in plain text. */
   headline: string;
-
+  /** Origin: file and line — an error without a location is not a report. */
   origin?: string;
   onRetry?: () => void;
   retryLabel: string;
   "data-testid"?: string;
 };
 
+/**
+ * Error state: cause, origin (file, line), the way back. It never replaces the
+ * whole application — a broken record stays a broken record.
+ */
 export function ErrorState({
   containerStyle,
   headlineStyle,

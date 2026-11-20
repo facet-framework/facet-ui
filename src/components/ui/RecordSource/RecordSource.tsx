@@ -4,10 +4,10 @@ export type SourceToken = { kind: "key" | "value" | "punct" | "comment" | "marke
 
 export type SourceLine = {
   key: string;
-
+  /** Line number, right-aligned. */
   number: string;
   tokens: SourceToken[];
-
+  /** Highlighted line — e.g. the one an error points to. */
   marked: boolean;
   rowStyle: CSSProperties;
   numberStyle: CSSProperties;
@@ -18,11 +18,15 @@ export type RecordSourceProps = {
   captionStyle: CSSProperties;
   tokenStyle: Record<SourceToken["kind"], CSSProperties>;
   lines: SourceLine[];
-
+  /** Origin of the file, e.g. the path in the repository. */
   caption: string;
   "data-testid"?: string;
 };
 
+/**
+ * Raw source — the third level of the depth ladder. Not a reconstruction of
+ * the record, but the file itself, with line numbers and light highlighting.
+ */
 export function RecordSource({
   containerStyle,
   captionStyle,

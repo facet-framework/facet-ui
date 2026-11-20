@@ -1,3 +1,10 @@
+/**
+ * The FACET icon set — 24×24 strokes drawn for this library.
+ *
+ * Every glyph is a list of SVG path strings, stroked with `currentColor` so an
+ * icon takes the colour of the text beside it. No glyph is filled, which keeps
+ * them legible at 14 px and consistent with the hairline language.
+ */
 const P = {
   back: ["M15 5l-7 7 7 7"],
   forward: ["M9 5l7 7-7 7"],
@@ -59,7 +66,7 @@ const P = {
   file: ["M6 3h8l4 4v14H6z", "M14 3v4h4"],
   folder: ["M3 6h6l2 2h10v11H3z"],
   test: ["M9 3h6", "M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"],
-
+  // The mark's two offset blocks: drift is the same thing in two states.
   drift: ["M4 3h6.5v13H4z", "M13.5 8H20v13h-6.5z"],
   fixed: ["M5 12l4 4L19 6", "M5 20h14"],
   knowledge: ["M9 18h6", "M10 21h4", "M12 3a6 6 0 0 1 3.5 10.9V16h-7v-2.1A6 6 0 0 1 12 3z"],
@@ -167,7 +174,7 @@ export const iconNames = Object.keys(P) as IconName[];
 export type IconProps = {
   name: IconName;
   size?: number;
-
+  /** When set, the icon is announced; otherwise it is decoration. */
   label?: string;
   className?: string;
 };

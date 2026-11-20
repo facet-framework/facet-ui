@@ -1,8 +1,7 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/FieldSheet/FieldSheet.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import type { SchemaField } from "../../../core";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { FieldSheetProps, FieldView } from "./FieldSheet";
 
 export type WithFieldSheetProps = Omit<
@@ -10,20 +9,25 @@ export type WithFieldSheetProps = Omit<
   "containerStyle" | "captionStyle" | "fields" | "caption"
 > & {
   fields: SchemaField[];
-
+  /** Only fields with personal data. */
   onlyPii?: boolean;
   style?: CSSProperties;
 };
 
-const SENSITIVITY_LABEL: Record<string, string> = {
-  pii: labelText.text297,
-  sensitive: labelText.text299,
-  internal: labelText.extra26,
-  public: localized.text1,
-};
+const SENSITIVITY_KEY = {
+  pii: "elements.fieldSheet.sensitivity.pii",
+  sensitive: "elements.fieldSheet.sensitivity.sensitive",
+  internal: "elements.fieldSheet.sensitivity.internal",
+  public: "elements.fieldSheet.sensitivity.public",
+} as const;
 
+const isKnownSensitivity = (value: string): value is keyof typeof SENSITIVITY_KEY =>
+  Object.prototype.hasOwnProperty.call(SENSITIVITY_KEY, value);
+
+/** Orders fields, translates sensitivity and finds fields without retention. */
 export function withFieldSheetLogic(Component: ComponentType<FieldSheetProps>) {
   const Wrapped = ({ fields, onlyPii, style, ...rest }: WithFieldSheetProps) => {
+    const { t } = useText();
     const isPii = (field: SchemaField) =>
       field.sensitivity === "pii" || field.sensitivity === "sensitive";
 
@@ -35,12 +39,18 @@ export function withFieldSheetLogic(Component: ComponentType<FieldSheetProps>) {
           const open = isPii(field) && !field.retention;
           return {
             key: `${field.name || index}`,
-            name: field.name || `${labelText.text300}${index + 1}`,
-            type: field.type || localized.text2,
+            name: field.name || t("elements.fieldSheet.fieldN", { n: index + 1 }),
+            type: field.type || t("elements.fieldSheet.noType"),
             sensitivity: field.sensitivity
-              ? (SENSITIVITY_LABEL[field.sensitivity] ?? field.sensitivity)
-              : localized.text3,
-            retention: field.retention ? String(field.retention) : open ? localized.text4 : "—",
+              ? isKnownSensitivity(field.sensitivity)
+                ? t(SENSITIVITY_KEY[field.sensitivity])
+                : field.sensitivity
+              : t("elements.fieldSheet.notStated"),
+            retention: field.retention
+              ? String(field.retention)
+              : open
+                ? t("elements.fieldSheet.noRetention")
+                : "—",
             open,
             rowStyle: {
               display: "grid",
@@ -84,17 +94,19 @@ export function withFieldSheetLogic(Component: ComponentType<FieldSheetProps>) {
             },
           };
         }),
-      [visible],
+      [visible, t],
     );
 
     const caption = useMemo(() => {
-      if (!fields.length) return localized.text5;
+      if (!fields.length) return t("elements.fieldSheet.empty");
       const pii = fields.filter(isPii).length;
       const open = fields.filter((field) => isPii(field) && !field.retention).length;
-      const head = `${fields.length}${labelText.text301}${pii}${localized.text6}`;
-      if (!pii) return `${fields.length}${localized.text7}`;
-      return open ? `${head} ${open}${localized.text8}` : `${head}${localized.text9}`;
-    }, [fields]);
+      const head = t("elements.fieldSheet.head", { total: fields.length, pii });
+      if (!pii) return t("elements.fieldSheet.noPii", { total: fields.length });
+      return open
+        ? `${head} ${t("elements.fieldSheet.openRetention", { count: open })}`
+        : `${head} ${t("elements.fieldSheet.allRetained")}`;
+    }, [fields, t]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({ display: "grid", gap: 0, minWidth: 0, ...style }),

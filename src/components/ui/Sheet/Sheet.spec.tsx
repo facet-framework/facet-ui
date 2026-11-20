@@ -1,60 +1,56 @@
-import { localized } from "../../../i18n/legacy/components/ui/Sheet/Sheet.spec.text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SheetWithLogic, { Sheet, withSheetLogic } from ".";
 
 describe("Unit tests for Sheet", () => {
-  it("renders nothing while closed", () => {
+  it("renders nothing while it is closed", () => {
     const { container } = render(
       <Sheet
         scrimStyle={{}}
         panelStyle={{}}
         open={false}
-        label={localized.text2}
+        label="Register"
         onScrimClick={jest.fn()}
         onKeyDown={jest.fn()}
       >
-        <p>{localized.text3}</p>
+        <p>Content</p>
       </Sheet>,
     );
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("exposes an accessible dialog while open", () => {
+  it("is a dialog with plain words when open", () => {
     render(
       <Sheet
         scrimStyle={{}}
         panelStyle={{}}
         open
-        label={localized.text5}
+        label="Register"
         onScrimClick={jest.fn()}
         onKeyDown={jest.fn()}
       >
-        <p>{localized.text6}</p>
+        <p>Content</p>
       </Sheet>,
     );
-    expect(screen.getByRole("dialog", { name: localized.text7 })).toHaveAttribute(
-      "aria-modal",
-      "true",
-    );
+    expect(screen.getByRole("dialog", { name: "Register" })).toHaveAttribute("aria-modal", "true");
   });
 
-  it("closes on backdrop clicks but not inside", async () => {
+  it("closes on a click on the scrim, not inside", async () => {
     const onScrimClick = jest.fn();
     render(
       <Sheet
         scrimStyle={{}}
         panelStyle={{}}
         open
-        label={localized.text9}
+        label="Register"
         onScrimClick={onScrimClick}
         onKeyDown={jest.fn()}
         data-testid="scrim"
       >
-        <p>{localized.text10}</p>
+        <p>Content</p>
       </Sheet>,
     );
-    await userEvent.click(screen.getByText(localized.text11));
+    await userEvent.click(screen.getByText("Content"));
     expect(onScrimClick).not.toHaveBeenCalled();
     await userEvent.click(screen.getByTestId("scrim"));
     expect(onScrimClick).toHaveBeenCalledTimes(1);
@@ -62,46 +58,46 @@ describe("Unit tests for Sheet", () => {
 });
 
 describe("Unit tests for withSheetLogic", () => {
-  it("closes on Escape", async () => {
+  it("closes with Escape", async () => {
     const onClose = jest.fn();
     render(
-      <SheetWithLogic open label={localized.text13} onClose={onClose}>
-        <p>{localized.text14}</p>
+      <SheetWithLogic open label="Register" onClose={onClose}>
+        <p>Content</p>
       </SheetWithLogic>,
     );
     await userEvent.keyboard("{Escape}");
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("focuses the register when opened", () => {
+  it("gives the register the focus when opening", () => {
     render(
-      <SheetWithLogic open label={localized.text16}>
-        <p>{localized.text17}</p>
+      <SheetWithLogic open label="Register">
+        <p>Content</p>
       </SheetWithLogic>,
     );
     expect(screen.getByRole("dialog")).toHaveFocus();
   });
 
-  it("accepts a custom height", () => {
+  it("accepts its own height", () => {
     render(
-      <SheetWithLogic open label={localized.text19} height="60%">
-        <p>{localized.text20}</p>
+      <SheetWithLogic open label="Register" height="60%">
+        <p>Content</p>
       </SheetWithLogic>,
     );
     expect(screen.getByRole("dialog")).toHaveStyle({ height: "60%" });
   });
 
-  it("handles a missing close callback", async () => {
+  it("copes without a close callback", async () => {
     render(
-      <SheetWithLogic open label={localized.text22}>
-        <p>{localized.text23}</p>
+      <SheetWithLogic open label="Register">
+        <p>Content</p>
       </SheetWithLogic>,
     );
     await userEvent.keyboard("{Escape}");
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withSheetLogic(Sheet).displayName).toBe("withSheetLogic(Sheet)");
   });
 });
@@ -109,17 +105,17 @@ describe("Unit tests for withSheetLogic", () => {
 describe("Snapshot tests for Sheet", () => {
   it("open", () => {
     const { container } = render(
-      <SheetWithLogic open label={localized.text26}>
-        <p>{localized.text27}</p>
+      <SheetWithLogic open label="Register">
+        <p>Content</p>
       </SheetWithLogic>,
     );
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("compact", () => {
+  it("closed", () => {
     const { container } = render(
-      <SheetWithLogic open={false} label={localized.text28}>
-        <p>{localized.text29}</p>
+      <SheetWithLogic open={false} label="Register">
+        <p>Content</p>
       </SheetWithLogic>,
     );
     expect(container).toMatchSnapshot();

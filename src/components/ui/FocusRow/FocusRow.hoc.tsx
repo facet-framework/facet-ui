@@ -23,20 +23,25 @@ export type WithFocusRowProps = Omit<
   | "open"
   | "rank"
 > & {
+  /** Position in the ranking, counted from 1. */
   rank: number;
-
+  /** Id of the row — it decides whether this row is the open one. */
   id: string;
   openId?: string | null;
-
+  /** Coupling shadow: uninvolved rows lose contrast. */
   dimmed?: boolean;
-
+  /** Red only for deadlines. */
   overdue?: boolean;
   onOpenChange?: (id: string | null) => void;
-
+  /** Arrow right goes one level deeper instead of only opening. */
   onDeeper?: (id: string) => void;
   style?: CSSProperties;
 };
 
+/**
+ * Manages opening, closing and keyboard handling:
+ * Enter/Space opens, arrow right goes deeper, arrow left and Esc go back.
+ */
 export function withFocusRowLogic(Component: ComponentType<FocusRowProps>) {
   const Wrapped = ({
     rank,
@@ -136,7 +141,7 @@ export function withFocusRowLogic(Component: ComponentType<FocusRowProps>) {
         gridArea: "why",
         fontFamily: font.sans,
         fontSize: fontSize.meta,
-        color: overdue ? color.deadline : color.dim,
+        color: overdue ? color.due : color.dim,
         whiteSpace: "nowrap",
         overflow: "hidden",
         textOverflow: "ellipsis",

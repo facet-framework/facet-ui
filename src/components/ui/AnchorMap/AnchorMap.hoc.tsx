@@ -1,27 +1,28 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/AnchorMap/AnchorMap.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import type { Anchor, DriftEntry } from "../../../core";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { AnchorEntryView, AnchorMapProps } from "./AnchorMap";
 
 export type WithAnchorMapProps = Omit<
   AnchorMapProps,
   "containerStyle" | "captionStyle" | "entries" | "caption"
 > & {
+  /** Anchors from the repo scan. */
   anchors: Anchor[];
-
+  /** Files of this record that changed without the record following. */
   drift?: DriftEntry[] | null;
-
+  /** Lifecycle — an active record without anchors is a finding, a planned one is not. */
   lifecycle?: string;
-
+  /** Builds the link into the repo; without a configured tool the path stays text. */
   buildHref?: (anchor: Anchor) => string | undefined;
   onOpen?: (anchor: Anchor) => void;
-
+  /** Hide code excerpts (narrow columns). */
   hideExcerpt?: boolean;
   style?: CSSProperties;
 };
 
+/** Sorts anchors (drift first), builds links and phrases the answer line. */
 export function withAnchorMapLogic(Component: ComponentType<AnchorMapProps>) {
   const Wrapped = ({
     anchors,
@@ -33,6 +34,8 @@ export function withAnchorMapLogic(Component: ComponentType<AnchorMapProps>) {
     style,
     ...rest
   }: WithAnchorMapProps) => {
+    const { t, plural } = useText();
+    // Match drift by file path so inserted lines do not change the result.
     const driftedPaths = useMemo(() => new Set((drift ?? []).map((entry) => entry.path)), [drift]);
 
     const sorted = useMemo(
@@ -71,7 +74,7 @@ export function withAnchorMapLogic(Component: ComponentType<AnchorMapProps>) {
             pathStyle: {
               fontFamily: font.mono,
               fontSize: fontSize.meta,
-              color: drifted ? color.deadline : color.ink,
+              color: drifted ? color.due : color.ink,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -113,17 +116,20 @@ export function withAnchorMapLogic(Component: ComponentType<AnchorMapProps>) {
 
     const caption = useMemo(() => {
       if (!anchors.length) {
-        return lifecycle === "active" ? localized.text1 : localized.text2;
+        return lifecycle === "active"
+          ? t("elements.anchorMap.activeWithoutAnchors")
+          : t("elements.anchorMap.noAnchors");
       }
       const files = new Set(anchors.map((anchor) => anchor.path)).size;
-      const head = `${anchors.length} ${anchors.length === 1 ? labelText.text203 : labelText.text339} in ${files} ${
-        files === 1 ? labelText.text340 : localized.text3
-      }.`;
+      const head = t("elements.anchorMap.head", {
+        entries: plural("elements.anchorMap.entryPoints", anchors.length),
+        files: plural("elements.anchorMap.files", files),
+      });
       if (!driftedPaths.size) return head;
-
-      const word = driftedPaths.size === 1 ? labelText.text341 : localized.text4;
-      return `${head} ${driftedPaths.size} ${word}${localized.text5}`;
-    }, [anchors, driftedPaths, lifecycle]);
+      // Append files changed without a record update. This measures path drift,
+      // not whether behaviour changed; the scan cannot establish that.
+      return `${head} ${plural("elements.anchorMap.driftedFiles", driftedPaths.size)}`;
+    }, [anchors, driftedPaths, lifecycle, plural, t]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({ display: "grid", gap: 4, minWidth: 0, ...style }),
@@ -135,7 +141,7 @@ export function withAnchorMapLogic(Component: ComponentType<AnchorMapProps>) {
         margin: 0,
         fontFamily: font.sans,
         fontSize: fontSize.base,
-        color: !anchors.length && lifecycle === "active" ? color.deadline : color.ink,
+        color: !anchors.length && lifecycle === "active" ? color.due : color.ink,
       }),
       [anchors.length, lifecycle],
     );

@@ -7,7 +7,7 @@ describe("Unit tests for Hairline", () => {
     expect(container.firstChild).toHaveStyle({ height: "1px" });
   });
 
-  it("forwards the role", () => {
+  it("passes the role through", () => {
     render(<Hairline computedStyle={{}} role="separator" data-testid="line" />);
     expect(screen.getByTestId("line")).toHaveAttribute("role", "separator");
   });
@@ -19,33 +19,33 @@ describe("Unit tests for withHairlineLogic", () => {
     expect(container.firstChild).toHaveStyle({ height: "1px", background: "var(--line)" });
   });
 
-  it("supports vertical orientation", () => {
+  it("becomes vertical on request", () => {
     const { container } = render(<HairlineWithLogic orientation="vertical" />);
     expect(container.firstChild).toHaveStyle({ width: "1px", alignSelf: "stretch" });
   });
 
-  it("uses a stronger line for zones", () => {
+  it("uses the stronger line for zones", () => {
     const { container } = render(<HairlineWithLogic strength="line2" />);
     expect(container.firstChild).toHaveStyle({ background: "var(--line-2)" });
   });
 
-  it("applies spacing along the correct axis", () => {
+  it("sets the spacing along the axis", () => {
     const { container } = render(<HairlineWithLogic inset={8} />);
     expect(container.firstChild).toHaveStyle({ margin: "0px 8px" });
   });
 
-  it("exposes orientation to assistive technology", () => {
+  it("reports the orientation to accessibility", () => {
     render(<HairlineWithLogic orientation="vertical" data-testid="line" />);
     expect(screen.getByTestId("line")).toHaveAttribute("aria-orientation", "vertical");
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withHairlineLogic(Hairline).displayName).toBe("withHairlineLogic(Hairline)");
   });
 });
 
 describe("Snapshot tests for Hairline", () => {
-  it("closed", () => {
+  it("horizontal", () => {
     const { container } = render(<HairlineWithLogic />);
     expect(container.firstChild).toMatchSnapshot();
   });

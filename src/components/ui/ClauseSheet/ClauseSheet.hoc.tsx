@@ -1,8 +1,8 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/ClauseSheet/ClauseSheet.hoc";
+import { deCore } from "../../../facet/i18n/catalog/core";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import type { Clause } from "../../../core";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { ClauseSheetProps, ClauseView } from "./ClauseSheet";
 
 export type WithClauseSheetProps = Omit<
@@ -10,23 +10,28 @@ export type WithClauseSheetProps = Omit<
   "containerStyle" | "captionStyle" | "clauses" | "caption"
 > & {
   clauses: Clause[];
-
+  /** Only mandatory clauses (MUST). */
   onlyBinding?: boolean;
   style?: CSSProperties;
 };
 
-const BINDING = localized.text1;
-const RECOMMENDED = /\b(SOLL|SHOULD)\w*\b/i;
+// The word lists accept both languages: they match the wording of the clause
+// content, including German obligation words.
+const BINDING = new RegExp(`\\b(${deCore["core.requirement.bindingPattern"]}|SHALL)\\w*\\b`, "i");
+const RECOMMENDED = new RegExp(`\\b(${deCore["core.requirement.recommendedPattern"]})\\w*\\b`, "i");
 
-function obligationOf(clause: Clause): { word: string; binding: boolean } {
+/** Reads the binding strength from the requirement text and counts it. */
+function obligationOf(clause: Clause): { kind: "must" | "should" | "may"; binding: boolean } {
   const text = `${clause.requirement ?? ""} ${clause.obligation ?? ""}`;
-  if (BINDING.test(text)) return { word: "MUSS", binding: true };
-  if (RECOMMENDED.test(text)) return { word: "SOLL", binding: false };
-  return { word: localized.text2, binding: false };
+  if (BINDING.test(text)) return { kind: "must", binding: true };
+  if (RECOMMENDED.test(text)) return { kind: "should", binding: false };
+  return { kind: "may", binding: false };
 }
 
+/** Prepares clauses and phrases the answer line. */
 export function withClauseSheetLogic(Component: ComponentType<ClauseSheetProps>) {
   const Wrapped = ({ clauses, onlyBinding, style, ...rest }: WithClauseSheetProps) => {
+    const { t } = useText();
     const visible = useMemo(
       () => (onlyBinding ? clauses.filter((clause) => obligationOf(clause).binding) : clauses),
       [clauses, onlyBinding],
@@ -35,13 +40,13 @@ export function withClauseSheetLogic(Component: ComponentType<ClauseSheetProps>)
     const views = useMemo<ClauseView[]>(
       () =>
         visible.map((clause, index) => {
-          const { word, binding } = obligationOf(clause);
+          const { kind, binding } = obligationOf(clause);
           return {
             key: String(clause.id || index),
-            id: String(clause.id || `${labelText.text311}${index + 1}`),
-            obligation: word,
-            requirement: String(clause.requirement || localized.text3),
-            measure: clause.measure ? String(clause.measure) : localized.text4,
+            id: String(clause.id || t("elements.clauseSheet.clauseN", { n: index + 1 })),
+            obligation: t(`elements.clauseSheet.${kind}`),
+            requirement: String(clause.requirement || t("elements.clauseSheet.noWording")),
+            measure: clause.measure ? String(clause.measure) : t("elements.clauseSheet.noMeasure"),
             binding,
             rowStyle: {
               display: "grid",
@@ -82,16 +87,18 @@ export function withClauseSheetLogic(Component: ComponentType<ClauseSheetProps>)
             },
           };
         }),
-      [visible],
+      [visible, t],
     );
 
     const caption = useMemo(() => {
-      if (!clauses.length) return localized.text5;
+      if (!clauses.length) return t("elements.clauseSheet.empty");
       const binding = clauses.filter((clause) => obligationOf(clause).binding).length;
       const unmeasured = clauses.filter((clause) => !clause.measure).length;
-      const head = `${clauses.length}${labelText.text312}${binding} verpflichtend.`;
-      return unmeasured ? `${head} ${unmeasured}${localized.text6}` : `${head}${localized.text7}`;
-    }, [clauses]);
+      const head = t("elements.clauseSheet.head", { total: clauses.length, binding });
+      return unmeasured
+        ? `${head} ${t("elements.clauseSheet.unmeasured", { count: unmeasured })}`
+        : `${head} ${t("elements.clauseSheet.allMeasured")}`;
+    }, [clauses, t]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({ display: "grid", gap: 2, minWidth: 0, ...style }),

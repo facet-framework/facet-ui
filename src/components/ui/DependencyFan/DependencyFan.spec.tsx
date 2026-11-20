@@ -1,7 +1,10 @@
-import { localized } from "../../../i18n/legacy/components/ui/DependencyFan/DependencyFan.spec.text";
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import DependencyFanWithLogic, { DependencyFan, withDependencyFanLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const edges = [
   { from: "lists/core/list-store", to: "tasks/create/quick-add" },
@@ -17,7 +20,7 @@ const depth = {
 };
 
 describe("Unit tests for DependencyFan", () => {
-  it("reports when there are no dependencies", () => {
+  it("says so when nothing depends on anything else", () => {
     render(
       <DependencyFan
         containerStyle={{}}
@@ -25,38 +28,39 @@ describe("Unit tests for DependencyFan", () => {
         emptyStyle={{}}
         groups={[]}
         caption=""
-        emptyText={localized.text2}
-        upstreamLabel={localized.text3}
-        downstreamLabel={localized.text4}
+        emptyText="No record depends on another."
+        upstreamLabel="depends on"
+        downstreamLabel="carries"
       />,
     );
-    expect(screen.getByText(localized.text5)).toBeInTheDocument();
+    expect(screen.getByText("No record depends on another.")).toBeInTheDocument();
   });
 });
 
 describe("Unit tests for withDependencyFanLogic", () => {
-  it("lists each participating record once", () => {
+  it("lists every involved record exactly once", () => {
     const { container } = render(<DependencyFanWithLogic edges={edges} depth={depth} />);
-
+    // Four records, although three edges name them six times.
     expect(container.querySelectorAll("[data-fan]")).toHaveLength(4);
   });
 
-  it("expands both directions", () => {
+  it("fans out both directions", () => {
     const { container } = render(<DependencyFanWithLogic edges={edges} depth={depth} />);
     const row = container.querySelector('[data-fan="tasks/create/quick-add"]') as HTMLElement;
 
+    // What it needs, and what needs it — in one row.
     expect(within(row).getByText("lists/core/list-store")).toBeInTheDocument();
     expect(within(row).getByText("sync/queue/offline-queue")).toBeInTheDocument();
     expect(within(row).getByText("search/fulltext/task-search")).toBeInTheDocument();
   });
 
-  it("places roots at the top", () => {
+  it("puts the roots at the top", () => {
     const { container } = render(<DependencyFanWithLogic edges={edges} depth={depth} />);
     const rows = Array.from(container.querySelectorAll("[data-fan]"));
     expect(rows[rows.length - 1]).toHaveAttribute("data-fan", "search/fulltext/task-search");
   });
 
-  it("keeps a stable order without depth values", () => {
+  it("stays in a stable order without a depth", () => {
     const { container } = render(<DependencyFanWithLogic edges={edges} />);
     const ids = Array.from(container.querySelectorAll("[data-fan]")).map((row) =>
       row.getAttribute("data-fan"),
@@ -64,33 +68,33 @@ describe("Unit tests for withDependencyFanLogic", () => {
     expect(ids).toEqual([...ids].sort());
   });
 
-  it("identifies references without records", () => {
+  it("names a reference without a record as such", () => {
     render(
       <DependencyFanWithLogic
-        edges={[{ from: localized.text11, to: "tasks/create/quick-add" }]}
-        ghosts={[localized.text12]}
+        edges={[{ from: "does/not/exist", to: "tasks/create/quick-add" }]}
+        ghosts={["does/not/exist"]}
       />,
     );
-
-    expect(screen.getAllByText(localized.text13).length).toBeGreaterThan(0);
+    // Colour alone would not carry the message.
+    expect(screen.getAllByText("does/not/exist · no record").length).toBeGreaterThan(0);
   });
 
-  it("counts unresolved references in the summary", () => {
+  it("counts the dangling references in the answer line", () => {
     render(
       <DependencyFanWithLogic
-        edges={[{ from: localized.text15, to: "tasks/create/quick-add" }]}
-        ghosts={[localized.text16]}
+        edges={[{ from: "does/not/exist", to: "tasks/create/quick-add" }]}
+        ghosts={["does/not/exist"]}
       />,
     );
-    expect(screen.getByText(localized.text17)).toBeInTheDocument();
+    expect(screen.getByText(/1 reference points to an id without a record/)).toBeInTheDocument();
   });
 
-  it("opens records but never unresolved references", async () => {
+  it("opens a record, but never a dangling reference", async () => {
     const onOpen = jest.fn();
     render(
       <DependencyFanWithLogic
-        edges={[{ from: localized.text19, to: "tasks/create/quick-add" }]}
-        ghosts={[localized.text20]}
+        edges={[{ from: "does/not/exist", to: "tasks/create/quick-add" }]}
+        ghosts={["does/not/exist"]}
         onOpen={onOpen}
       />,
     );
@@ -98,10 +102,11 @@ describe("Unit tests for withDependencyFanLogic", () => {
     await userEvent.click(screen.getAllByRole("button", { name: "tasks/create/quick-add" })[0]);
     expect(onOpen).toHaveBeenCalledWith("tasks/create/quick-add");
 
-    expect(screen.queryByRole("button", { name: localized.text21 })).not.toBeInTheDocument();
+    // A dangling reference is not a button: the detail could show nothing.
+    expect(screen.queryByRole("button", { name: /no record/ })).not.toBeInTheDocument();
   });
 
-  it("accepts readable names when available", () => {
+  it("accepts readable names where there are any", () => {
     render(
       <DependencyFanWithLogic
         edges={edges}
@@ -111,7 +116,26 @@ describe("Unit tests for withDependencyFanLogic", () => {
     expect(screen.getAllByText("Quick add").length).toBeGreaterThan(0);
   });
 
-  it("sets a descriptive displayName", () => {
+  it("speaks German under the German locale", () => {
+    renderInGerman(
+      <DependencyFanWithLogic
+        edges={[{ from: "does/not/exist", to: "tasks/create/quick-add" }]}
+        ghosts={["does/not/exist"]}
+      />,
+    );
+    expect(
+      screen.getAllByText(`does/not/exist · ${germanText.t("elements.dependencyFan.noRecord")}`)
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText(germanText.plural("elements.dependencyFan.ghostLinks", 1), { exact: false }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByText(germanText.t("elements.dependencyFan.upstream")).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("assigns a descriptive displayName", () => {
     expect(withDependencyFanLogic(DependencyFan).displayName).toBe(
       "withDependencyFanLogic(DependencyFan)",
     );
@@ -119,7 +143,7 @@ describe("Unit tests for withDependencyFanLogic", () => {
 });
 
 describe("Snapshot tests for DependencyFan", () => {
-  it("Corpus graph", () => {
+  it("corpus graph", () => {
     const { container } = render(<DependencyFanWithLogic edges={edges} depth={depth} />);
     expect(container.firstChild).toMatchSnapshot();
   });

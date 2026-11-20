@@ -1,21 +1,24 @@
-import { localized } from "../../../i18n/legacy/components/ui/KnowledgeSlots/KnowledgeSlots.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import type { KnowledgeSlot } from "../../../core";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { KnowledgeSlotsProps, KnowledgeSlotView } from "./KnowledgeSlots";
 
 export type WithKnowledgeSlotsProps = Omit<
   KnowledgeSlotsProps,
   "containerStyle" | "captionStyle" | "slots" | "caption"
 > & {
+  /** Slots from `knowledge.*`. */
   slots: KnowledgeSlot[];
-
+  /** Show only the open questions. */
   onlyOpen?: boolean;
   style?: CSSProperties;
 };
 
+/** Marks open questions, names the derivation and counts both. */
 export function withKnowledgeSlotsLogic(Component: ComponentType<KnowledgeSlotsProps>) {
   const Wrapped = ({ slots, onlyOpen, style, ...rest }: WithKnowledgeSlotsProps) => {
+    const { t, plural } = useText();
     const visible = useMemo(
       () => (onlyOpen ? slots.filter((slot) => !slot.answer) : slots),
       [onlyOpen, slots],
@@ -29,9 +32,13 @@ export function withKnowledgeSlotsLogic(Component: ComponentType<KnowledgeSlotsP
           return {
             key: slot.key,
             slot: slot.key,
-            question: slot.question ? String(slot.question) : localized.text1,
-            answer: filled ? String(slot.answer) : localized.text2,
-            derivation: derive.length ? derive.join(", ") : localized.text3,
+            question: slot.question
+              ? String(slot.question)
+              : t("elements.knowledgeSlots.noQuestion"),
+            answer: filled ? String(slot.answer) : t("elements.knowledgeSlots.open"),
+            derivation: derive.length
+              ? derive.join(", ")
+              : t("elements.knowledgeSlots.noDerivation"),
             filled,
             rowStyle: {
               display: "grid",
@@ -76,15 +83,15 @@ export function withKnowledgeSlotsLogic(Component: ComponentType<KnowledgeSlotsP
             },
           };
         }),
-      [visible],
+      [visible, t],
     );
 
     const caption = useMemo(() => {
-      if (!slots.length) return localized.text4;
+      if (!slots.length) return t("elements.knowledgeSlots.empty");
       const open = slots.filter((slot) => !slot.answer).length;
-      if (!open) return `${slots.length}${localized.text5}`;
-      return `${slots.length}${localized.text6}${open} ${open === 1 ? localized.text7 : localized.text8}.`;
-    }, [slots]);
+      if (!open) return plural("elements.knowledgeSlots.allAnswered", slots.length);
+      return plural("elements.knowledgeSlots.someOpen", slots.length, { open });
+    }, [plural, slots, t]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({ display: "grid", gap: 2, minWidth: 0, ...style }),

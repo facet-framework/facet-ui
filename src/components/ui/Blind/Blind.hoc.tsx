@@ -15,12 +15,14 @@ export type WithBlindProps = Omit<
   BlindProps,
   "scrimStyle" | "panelStyle" | "onScrimClick" | "onKeyDown" | "panelRef"
 > & {
+  /** Esc goes back exactly one level — first the depth, then the blind. */
   onClose?: () => void;
-
+  /** Width of the blind. */
   width?: number | string;
   style?: CSSProperties;
 };
 
+/** Owns the blind's focus takeover and Escape handling. */
 export function withBlindLogic(Component: ComponentType<BlindProps>) {
   const Wrapped = ({ open, onClose, width = 720, style, ...rest }: WithBlindProps) => {
     const panelRef = useRef<HTMLDivElement | null>(null);

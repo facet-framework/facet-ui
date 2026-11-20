@@ -1,18 +1,16 @@
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/QuietLine/QuietLine.spec.text";
 import { render, screen } from "@testing-library/react";
 import QuietLineWithLogic, { QuietLine, withQuietLineLogic } from ".";
 
 describe("Unit tests for QuietLine", () => {
-  it("broad base", () => {
-    render(<QuietLine computedStyle={{}}>{localized.text1}</QuietLine>);
-    expect(screen.getByText(localized.text2).tagName).toBe("P");
+  it("renders the sentence as a paragraph", () => {
+    render(<QuietLine computedStyle={{}}>No check is overdue.</QuietLine>);
+    expect(screen.getByText("No check is overdue.").tagName).toBe("P");
   });
 
-  it("applies the computed style", () => {
+  it("takes over the computed style", () => {
     render(
-      <QuietLine computedStyle={{ color: "rgb(74, 79, 86)" }} data-testid={"quiet"}>
-        still
+      <QuietLine computedStyle={{ color: "rgb(74, 79, 86)" }} data-testid="quiet">
+        calm
       </QuietLine>,
     );
     expect(screen.getByTestId("quiet")).toHaveStyle({ color: "rgb(74, 79, 86)" });
@@ -20,46 +18,46 @@ describe("Unit tests for QuietLine", () => {
 });
 
 describe("Unit tests for withQuietLineLogic", () => {
-  it("uses muted monospace text", () => {
-    render(<QuietLineWithLogic data-testid={"quiet"}>{localized.text5}</QuietLineWithLogic>);
+  it("is muted and set in mono", () => {
+    render(<QuietLineWithLogic data-testid="quiet">nothing open</QuietLineWithLogic>);
     expect(screen.getByTestId("quiet")).toHaveStyle({
       color: "var(--dim)",
       fontFamily: "var(--font-mono)",
     });
   });
 
-  it("colors a healthy quiet state green", () => {
+  it("colours a good quiet green", () => {
     render(
-      <QuietLineWithLogic tone="ok" data-testid={"quiet"}>
-        {germanLabels.text172}
+      <QuietLineWithLogic tone="ok" data-testid="quiet">
+        everything backed
       </QuietLineWithLogic>,
     );
     expect(screen.getByTestId("quiet")).toHaveStyle({ color: "var(--ok)" });
   });
 
-  it("accepts custom styles", () => {
+  it("allows custom styles", () => {
     render(
-      <QuietLineWithLogic style={{ maxWidth: 200 }} data-testid={"quiet"}>
-        still
+      <QuietLineWithLogic style={{ maxWidth: 200 }} data-testid="quiet">
+        calm
       </QuietLineWithLogic>,
     );
     expect(screen.getByTestId("quiet")).toHaveStyle({ maxWidth: "200px" });
   });
 
-  it("sets a descriptive displayName", () => {
+  it("gives a meaningful displayName", () => {
     expect(withQuietLineLogic(QuietLine).displayName).toBe("withQuietLineLogic(QuietLine)");
   });
 });
 
 describe("Snapshot tests for QuietLine", () => {
-  it("Quiet line", () => {
-    const { container } = render(<QuietLineWithLogic>{localized.text9}</QuietLineWithLogic>);
+  it("quiet line", () => {
+    const { container } = render(<QuietLineWithLogic>No check is overdue.</QuietLineWithLogic>);
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("Quiet line as a positive result", () => {
+  it("quiet line as a good result", () => {
     const { container } = render(
-      <QuietLineWithLogic tone="ok">{localized.text10}</QuietLineWithLogic>,
+      <QuietLineWithLogic tone="ok">Every record has a team.</QuietLineWithLogic>,
     );
     expect(container.firstChild).toMatchSnapshot();
   });

@@ -1,17 +1,18 @@
 import type { CSSProperties } from "react";
 import Bar from "../Bar";
 
+/** A group — a domain, a team — as a tile. */
 export type GroupTile = {
   key: string;
-
+  /** Name of the group. It carries the identity, not the colour. */
   label: string;
-
+  /** The number that matters, already formatted. */
   value: string;
-
+  /** What it is made of, in one line. */
   meta: string;
-
+  /** Share of the tile, e.g. promises with a test mapping. `null` means: nothing to measure. */
   share: { value: number; total: number; label: string } | null;
-
+  /** Sentence below the bar — the share as a number, because a bar is not a statement. */
   shareText: string;
   onOpen?: () => void;
   tileStyle: CSSProperties;
@@ -26,12 +27,25 @@ export type GroupTilesProps = {
   gridStyle: CSSProperties;
   captionStyle: CSSProperties;
   tiles: GroupTile[];
-
+  /** Counts across all tiles. */
   caption: string;
   emptyText: string;
   "data-testid"?: string;
 };
 
+/**
+ * Domains or teams as a field of tiles.
+ *
+ * Every tile carries its name, its number and the share it makes up. The
+ * identity stands there as a word and not as a colour: the four semantic
+ * colours of this system are a status palette, and measured, deadline red and
+ * planned ochre lie below the distinguishability threshold even with full
+ * colour vision. A field of tiles that colours its groups would not be
+ * readable, just colourful.
+ *
+ * Separation uses hairlines instead of shadows — a tile here is a bounded
+ * area, not a floating card.
+ */
 export function GroupTiles({
   containerStyle,
   gridStyle,

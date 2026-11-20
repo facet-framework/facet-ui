@@ -1,10 +1,10 @@
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { localized } from "../../../i18n/legacy/components/ui/Companion/Companion.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import type { CompanionPlan } from "../../../core";
 import { color, font, fontSize, MEANING_COLOR } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { CompanionMessage, CompanionProps } from "./Companion";
 
+/** An exchange: either a question or a finished answer plan. */
 export type CompanionEntry =
   { kind: "ask"; id: string; text: string } | { kind: "answer"; id: string; plan: CompanionPlan };
 
@@ -20,7 +20,7 @@ export type WithCompanionProps = Omit<
   | "reads"
 > & {
   entries: CompanionEntry[];
-
+  /** The files of the running answer, up to the current step. */
   reads?: string[];
   onAsk: (question: string) => void;
   onOpenRecord: (id: string) => void;
@@ -64,6 +64,7 @@ type StyleKeys = {
   footStyle: unknown;
 };
 
+/** Puts the exchange into rows and the send button into its state. */
 export function withCompanionLogic(Component: ComponentType<CompanionProps>) {
   const Wrapped = ({
     entries,
@@ -76,6 +77,7 @@ export function withCompanionLogic(Component: ComponentType<CompanionProps>) {
     style,
     ...rest
   }: WithCompanionProps) => {
+    const { t } = useText();
     const messages = useMemo<CompanionMessage[]>(
       () =>
         entries.map((entry) =>
@@ -117,12 +119,15 @@ export function withCompanionLogic(Component: ComponentType<CompanionProps>) {
                 onSection: entry.plan.section
                   ? () => onOpenSection(entry.plan.section as string)
                   : undefined,
-                sectionLabel: localized.text1,
+                sectionLabel: t("elements.companion.inRegister"),
               },
         ),
-      [entries, onAsk, onOpenRecord, onOpenSection],
+      [entries, onAsk, onOpenRecord, onOpenSection, t],
     );
 
+    // Not tied to '!busy': sending during a running answer is a valid move that
+    // appends the question. A button that stayed grey for it would look as if
+    // it did nothing.
     const ready = Boolean(draft.trim());
 
     const containerStyle = useMemo<CSSProperties>(
@@ -166,14 +171,14 @@ export function withCompanionLogic(Component: ComponentType<CompanionProps>) {
         sendStyle={sendStyle(ready)}
         footStyle={FOOT_STYLE}
         title="Companion"
-        clearLabel={entries.length ? remainingText.text151 : ""}
+        clearLabel={entries.length ? t("elements.companion.clear") : ""}
         showIntro={!entries.length}
         messages={messages}
         reads={reads}
         busy={busy}
         draft={draft}
-        placeholder={localized.text2}
-        sendLabel={localized.text3}
+        placeholder={t("elements.companion.placeholder")}
+        sendLabel={t("elements.companion.send")}
         {...rest}
       />
     );
@@ -184,7 +189,7 @@ export function withCompanionLogic(Component: ComponentType<CompanionProps>) {
   return Memoized;
 }
 
-function factValueStyle(meaning: "neutral" | "signal" | "deadline"): CSSProperties {
+function factValueStyle(meaning: "neutral" | "signal" | "due"): CSSProperties {
   return {
     fontFamily: font.sans,
     fontSize: fontSize.base,
@@ -194,6 +199,7 @@ function factValueStyle(meaning: "neutral" | "signal" | "deadline"): CSSProperti
   };
 }
 
+/** The most recently read line carries colour, the previous ones are done. */
 function readStyle(current: boolean): CSSProperties {
   return {
     fontFamily: font.mono,

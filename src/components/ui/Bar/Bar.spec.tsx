@@ -1,56 +1,48 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/Bar/Bar.spec.text";
 import { render, screen } from "@testing-library/react";
 import BarWithLogic, { Bar, withBarLogic } from ".";
 
 describe("Unit tests for Bar", () => {
-  it("exposes progress with a readable label", () => {
-    render(<Bar trackStyle={{}} fillStyle={{}} label={germanLabels.text154} percent={82} />);
-    const bar = screen.getByRole("progressbar", { name: germanLabels.text154 });
+  it("announces itself as progress with plain text", () => {
+    render(<Bar trackStyle={{}} fillStyle={{}} label="31 of 38 backed" percent={82} />);
+    const bar = screen.getByRole("progressbar", { name: "31 of 38 backed" });
     expect(bar).toHaveAttribute("aria-valuenow", "82");
     expect(bar).toHaveAttribute("aria-valuemax", "100");
   });
 
-  it("draws the fill inside the track", () => {
+  it("draws the fill as a child of the track", () => {
     const { container } = render(
-      <Bar
-        trackStyle={{ height: 3 }}
-        fillStyle={{ width: "50%" }}
-        label={localized.text3}
-        percent={50}
-      />,
+      <Bar trackStyle={{ height: 3 }} fillStyle={{ width: "50%" }} label="Half" percent={50} />,
     );
     expect((container.firstChild as HTMLElement).firstChild).toHaveStyle({ width: "50%" });
   });
 });
 
 describe("Unit tests for withBarLogic", () => {
-  it("prioritizes open entry points", () => {
-    render(<BarWithLogic value={31} total={38} label={labelText.text335} />);
+  it("computes the share in percent", () => {
+    render(<BarWithLogic value={31} total={38} label="Coverage" />);
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "82");
   });
 
-  it("stays at zero without a total", () => {
-    render(<BarWithLogic value={5} total={0} label={localized.text5} />);
+  it("stays at zero without a reference total", () => {
+    render(<BarWithLogic value={5} total={0} label="no reference" />);
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
   });
 
-  it("clamps values above the total", () => {
-    render(<BarWithLogic value={9} total={4} label={labelText.extra24} />);
+  it("caps values above the reference total", () => {
+    render(<BarWithLogic value={9} total={4} label="capped" />);
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
   });
 
-  it("colors full coverage as proven", () => {
-    const { container } = render(<BarWithLogic value={4} total={4} label={labelText.text336} />);
+  it("colours full coverage as backed", () => {
+    const { container } = render(<BarWithLogic value={4} total={4} label="full" />);
     expect((container.firstChild as HTMLElement).firstChild).toHaveStyle({
       background: "var(--ok)",
     });
   });
 
-  it("allows automatic coloring to be disabled", () => {
+  it("lets the automatic colouring be switched off", () => {
     const { container } = render(
-      <BarWithLogic value={4} total={4} autoComplete={false} label={labelText.text336} />,
+      <BarWithLogic value={4} total={4} autoComplete={false} label="full" />,
     );
     expect((container.firstChild as HTMLElement).firstChild).toHaveStyle({
       background: "var(--signal)",
@@ -58,25 +50,23 @@ describe("Unit tests for withBarLogic", () => {
   });
 
   it("accepts a custom height", () => {
-    const { container } = render(
-      <BarWithLogic value={1} total={2} height={6} label={labelText.extra25} />,
-    );
+    const { container } = render(<BarWithLogic value={1} total={2} height={6} label="tall" />);
     expect(container.firstChild).toHaveStyle({ height: "6px" });
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withBarLogic(Bar).displayName).toBe("withBarLogic(Bar)");
   });
 });
 
 describe("Snapshot tests for Bar", () => {
-  it("enters from the right", () => {
-    const { container } = render(<BarWithLogic value={31} total={38} label={labelText.text335} />);
+  it("partially backed", () => {
+    const { container } = render(<BarWithLogic value={31} total={38} label="Coverage" />);
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("fully proven", () => {
-    const { container } = render(<BarWithLogic value={4} total={4} label={labelText.text336} />);
+  it("fully backed", () => {
+    const { container } = render(<BarWithLogic value={4} total={4} label="full" />);
     expect(container.firstChild).toMatchSnapshot();
   });
 });

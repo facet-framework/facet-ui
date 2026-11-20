@@ -2,14 +2,14 @@ import { act, render, screen } from "@testing-library/react";
 import CounterWithLogic, { Counter, withCounterLogic } from ".";
 
 describe("Unit tests for Counter", () => {
-  it("shows the current value and an accessible final value", () => {
+  it("shows the running value and the final value for screen readers", () => {
     render(<Counter display="12" finalLabel="16" computedStyle={{}} data-testid="counter" />);
     const node = screen.getByTestId("counter");
     expect(node).toHaveTextContent("12");
     expect(node).toHaveTextContent("16");
   });
 
-  it("forwards attributes", () => {
+  it("hides the running value from screen readers", () => {
     const { container } = render(<Counter display="12" finalLabel="16" computedStyle={{}} />);
     expect(container.querySelector('[aria-hidden="true"]')).toHaveTextContent("12");
   });
@@ -22,7 +22,7 @@ describe("Unit tests for withCounterLogic", () => {
     jest.useRealTimers();
   });
 
-  it("counts from zero to the final value", () => {
+  it("runs from zero to the final value", () => {
     render(<CounterWithLogic value={80} duration={400} data-testid="counter" />);
     const node = screen.getByTestId("counter");
     expect(node.firstChild).toHaveTextContent("0");
@@ -32,17 +32,17 @@ describe("Unit tests for withCounterLogic", () => {
     expect(node.firstChild).toHaveTextContent("80");
   });
 
-  it("accepts numeric spacing", () => {
+  it("names the final value in plain text from the start", () => {
     render(<CounterWithLogic value={77} unit=" %" data-testid="counter" />);
     expect(screen.getByTestId("counter")).toHaveTextContent("77 %");
   });
 
-  it("describes the state", () => {
+  it("jumps straight to the value when the count-up is disabled", () => {
     render(<CounterWithLogic value={38} animate={false} data-testid="counter" />);
     expect(screen.getByTestId("counter").firstChild).toHaveTextContent("38");
   });
 
-  it("jumps to subsequent values without restarting", () => {
+  it("jumps on later changes instead of counting up again", () => {
     const { rerender } = render(
       <CounterWithLogic value={10} duration={80} data-testid="counter" />,
     );
@@ -61,7 +61,7 @@ describe("Unit tests for withCounterLogic", () => {
     clear.mockRestore();
   });
 
-  it("stays static with reduced motion", () => {
+  it("stays static under reduced motion", () => {
     const original = window.matchMedia;
     window.matchMedia = ((query: string) => ({
       matches: query.includes("reduce"),
@@ -74,12 +74,12 @@ describe("Unit tests for withCounterLogic", () => {
       onchange: null,
     })) as unknown as typeof window.matchMedia;
 
-    render(<CounterWithLogic value={64} data-testid={"quiet"} />);
-    expect(screen.getByTestId("quiet").firstChild).toHaveTextContent("64");
+    render(<CounterWithLogic value={64} data-testid="calm" />);
+    expect(screen.getByTestId("calm").firstChild).toHaveTextContent("64");
     window.matchMedia = original;
   });
 
-  it("sets a descriptive displayName", () => {
+  it("gives a meaningful displayName", () => {
     expect(withCounterLogic(Counter).displayName).toBe("withCounterLogic(Counter)");
   });
 });
@@ -90,7 +90,7 @@ describe("Snapshot tests for Counter", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("percentage with a unit", () => {
+  it("percentage with unit", () => {
     const { container } = render(<CounterWithLogic value={77} unit=" %" animate={false} />);
     expect(container.firstChild).toMatchSnapshot();
   });

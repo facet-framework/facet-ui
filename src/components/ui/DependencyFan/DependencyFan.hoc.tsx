@@ -1,9 +1,7 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { localized } from "../../../i18n/legacy/components/ui/DependencyFan/DependencyFan.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import type { Edge } from "../../../core";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { DependencyFanProps, FanGroup, FanLink } from "./DependencyFan";
 
 export type WithDependencyFanProps = Omit<
@@ -17,17 +15,26 @@ export type WithDependencyFanProps = Omit<
   | "upstreamLabel"
   | "downstreamLabel"
 > & {
+  /** Edges of the corpus, directed from the prerequisite to the dependent. */
   edges: Edge[];
-
+  /** Depth per id — the roots sit at 0. */
   depth?: Record<string, number>;
-
+  /** Ids for which no record exists. */
   ghosts?: string[];
-
+  /** Readable name of an id; without it, the id itself is shown. */
   labelOf?: (id: string) => string;
   onOpen?: (id: string) => void;
   style?: CSSProperties;
 };
 
+/**
+ * Builds one row with both arms per record from the edges.
+ *
+ * Rows are sorted by depth and then by id: the roots stand at the top, and
+ * whoever reads the graph from top to bottom reads it in the order in which it
+ * comes into being. Without depth information the alphabetical order remains —
+ * it says nothing about the graph, but it is stable.
+ */
 export function withDependencyFanLogic(Component: ComponentType<DependencyFanProps>) {
   const Wrapped = ({
     edges,
@@ -38,6 +45,7 @@ export function withDependencyFanLogic(Component: ComponentType<DependencyFanPro
     style,
     ...rest
   }: WithDependencyFanProps) => {
+    const { t, plural } = useText();
     const ghostSet = useMemo(() => new Set(ghosts ?? []), [ghosts]);
 
     const groups = useMemo<FanGroup[]>(() => {
@@ -67,7 +75,8 @@ export function withDependencyFanLogic(Component: ComponentType<DependencyFanPro
           label: labelOf?.(id) ?? id,
           ghost,
           style: linkStyle(ghost, Boolean(onOpen) && !ghost),
-
+          // A reference into the void leads nowhere; making it clickable would
+          // claim something the detail view cannot deliver.
           onOpen: onOpen && !ghost ? () => onOpen(id) : undefined,
         };
       };
@@ -89,10 +98,13 @@ export function withDependencyFanLogic(Component: ComponentType<DependencyFanPro
 
     const caption = useMemo(() => {
       const open = ghostSet.size;
-      const head = `${edges.length} ${edges.length === 1 ? labelText.text302 : remainingText.text157}${labelText.text303}${groups.length} Records.`;
+      const head = t("elements.dependencyFan.head", {
+        links: plural("elements.dependencyFan.links", edges.length),
+        records: groups.length,
+      });
       if (!open) return head;
-      return `${head} ${open} ${open === 1 ? localized.text1 : remainingText.text158}${localized.text2}`;
-    }, [edges.length, ghostSet.size, groups.length]);
+      return `${head} ${plural("elements.dependencyFan.ghostLinks", open)}`;
+    }, [edges.length, ghostSet.size, groups.length, plural, t]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({ display: "grid", gap: 8, minWidth: 0, ...style }),
@@ -106,9 +118,9 @@ export function withDependencyFanLogic(Component: ComponentType<DependencyFanPro
         emptyStyle={CAPTION_STYLE}
         groups={groups}
         caption={caption}
-        emptyText={localized.text3}
-        upstreamLabel={localized.text4}
-        downstreamLabel={localized.text5}
+        emptyText={t("elements.dependencyFan.empty")}
+        upstreamLabel={t("elements.dependencyFan.upstream")}
+        downstreamLabel={t("elements.dependencyFan.downstream")}
         {...rest}
       />
     );
@@ -178,8 +190,9 @@ function linkStyle(ghost: boolean, clickable: boolean): CSSProperties {
     padding: 0,
     fontFamily: font.mono,
     fontSize: fontSize.meta,
-
-    color: ghost ? color.deadline : color.soft,
+    // An open point carries the deadline colour and the word next to it;
+    // neither of the two stands alone.
+    color: ghost ? color.due : color.soft,
     cursor: clickable ? "pointer" : undefined,
     overflowWrap: "anywhere",
     minWidth: 0,

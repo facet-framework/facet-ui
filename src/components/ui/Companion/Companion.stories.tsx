@@ -1,13 +1,17 @@
-import { localized } from "../../../i18n/legacy/components/ui/Companion/Companion.stories.text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { COMPANION_INTRO } from "../../../core";
 import CompanionWithLogic, { type CompanionEntry } from ".";
 
 const meta: Meta<typeof CompanionWithLogic> = {
-  title: "Mechanisms/Companion",
+  title: "Mechanics/Companion",
   component: CompanionWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "The advisor column. It answers questions from the corpus it has read and names, for every answer, what it read — information about a repository is only worth as much as the statement of where it comes from.",
+      },
+    },
   },
   decorators: [
     (Story) => (
@@ -22,9 +26,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const base = {
-  scope: localized.text2,
+  scope: "sees: 42 records · apps, packages · 84,200 lines\nrole QUALITY",
   intro: COMPANION_INTRO,
-  foot: localized.text3,
+  foot: "Sample data · answers and actions are predefined in this story",
   draft: "",
   busy: false,
   onDraft: () => {},
@@ -37,22 +41,22 @@ const base = {
 };
 
 const suggestions = [
-  { key: "1", text: "Womit sollte ich begin?", onAsk: () => {} },
-  { key: "2", text: localized.text4, onAsk: () => {} },
-  { key: "3", text: localized.text5, onAsk: () => {} },
+  { key: "1", text: "Where should I start?", onAsk: () => {} },
+  { key: "2", text: "What is overdue?", onAsk: () => {} },
+  { key: "3", text: "What is the test coverage?", onAsk: () => {} },
 ];
 
 const conversation: CompanionEntry[] = [
-  { kind: "ask", id: "1", text: localized.text6 },
+  { kind: "ask", id: "1", text: "What is the test coverage?" },
   {
     kind: "answer",
     id: "2",
     plan: {
-      text: localized.text7,
+      text: "68 % of the promised behaviour has a mapped test — 31 of 46 promises.\n\nWeakest area: multiplayer at 16 %. In code, 12 400 of 84 200 lines are in tests; line coverage is not connected.",
       facts: [
-        { label: "TEST ZUGEORDNET", value: "31/46", meaning: "neutral" },
-        { label: localized.text8, value: "15", meaning: "signal" },
-        { label: "MODULE", value: "22", meaning: "neutral" },
+        { label: "TEST MAPPED", value: "31/46", meaning: "neutral" },
+        { label: "WITHOUT TEST", value: "15", meaning: "signal" },
+        { label: "UNIT", value: "22", meaning: "neutral" },
       ],
       reads: [],
       sources: [
@@ -67,16 +71,19 @@ const conversation: CompanionEntry[] = [
       ],
       openId: null,
       section: "promises",
-      follow: [localized.text9, "end tests missing?.to.Where are end"],
+      follow: ["Which promises have no test?", "Where are end-to-end tests missing?"],
     },
   },
 ];
 
+/** Nothing asked yet: opening sentence and suggestions. */
 export const Start: Story = { args: { ...base, entries: [], suggestions } };
 
+/** One question, one answer with key figures, sources and follow-up questions. */
 export const WithAnswer: Story = { args: { ...base, entries: conversation, suggestions: [] } };
 
-export const Reads: Story = {
+/** While reading, every file stands on its own line. */
+export const Reading: Story = {
   args: {
     ...base,
     entries: [conversation[0]],

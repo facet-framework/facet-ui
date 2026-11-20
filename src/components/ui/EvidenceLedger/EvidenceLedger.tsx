@@ -3,10 +3,10 @@ import type { CSSProperties } from "react";
 export type EvidenceView = {
   key: string;
   date: string;
-
+  /** Kind of evidence, e.g. "measurement" or "survey". */
   kind: string;
   note: string;
-
+  /** Oldest evidence in the stack — it determines how old the assumption is. */
   oldest: boolean;
   rowStyle: CSSProperties;
   dateStyle: CSSProperties;
@@ -22,6 +22,10 @@ export type EvidenceLedgerProps = {
   "data-testid"?: string;
 };
 
+/**
+ * Evidence for an assumption, newest first. Without evidence an assumption is
+ * a claim — the answer line says so.
+ */
 export function EvidenceLedger({
   containerStyle,
   captionStyle,

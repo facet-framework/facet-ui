@@ -5,11 +5,12 @@ import type { DotProps } from "./Dot";
 export type WithDotProps = Omit<DotProps, "computedStyle"> & {
   meaning?: Meaning;
   size?: number;
-
+  /** Hollow instead of filled — for "planned" or "not backed". */
   hollow?: boolean;
   style?: CSSProperties;
 };
 
+/** Translates meaning, size and fill into a dot. */
 export function withDotLogic(Component: ComponentType<DotProps>) {
   const Wrapped = ({ meaning = "neutral", size = 5, hollow, style, ...rest }: WithDotProps) => {
     const computedStyle = useMemo<CSSProperties>(() => {

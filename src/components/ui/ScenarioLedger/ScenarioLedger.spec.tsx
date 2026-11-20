@@ -1,17 +1,17 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/ScenarioLedger/ScenarioLedger.spec.text";
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import type { Scenario } from "../../../core";
 import ScenarioLedgerWithLogic, { ScenarioLedger, withScenarioLedgerLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const backed = { state: "backed", reason: "", unblockedBy: "" } as const;
 
 const scenarios: Scenario[] = [
   {
     id: "task-added",
-    steps: [{ keyword: "THEN", parent: "THEN", text: localized.text1 }],
+    steps: [{ keyword: "THEN", parent: "THEN", text: "the task is created" }],
     pre: { count: 0 },
     post: { count: 1 },
     proven: true,
@@ -46,7 +46,7 @@ const unbackedScenario: Scenario = {
   tests: [],
   backing: {
     state: "unbacked",
-    reason: localized.text2,
+    reason: "Transactions do not carry a category column yet.",
     unblockedBy: "billing/categories/assign-category",
   },
   deviation: null,
@@ -56,20 +56,20 @@ const unbackedScenario: Scenario = {
 };
 
 describe("Unit tests for ScenarioLedger", () => {
-  it("renders a row with status and tests for each promise", () => {
+  it("renders one row per promise with state and tests", () => {
     const { container } = render(
       <ScenarioLedger
         containerStyle={{}}
         captionStyle={{}}
-        caption={localized.text4}
+        caption="2 promises"
         entries={[
           {
             key: "a",
             id: "task-added",
             proven: true,
-            status: "Test zugeordnet",
-            state: labelText.text281,
-            tests: [remainingText.text113],
+            status: "Test mapped",
+            state: "before: count 0",
+            tests: ["Unit · creates_task"],
             backingGap: "",
             implementedBy: [],
             implementedByLabel: "",
@@ -87,23 +87,23 @@ describe("Unit tests for ScenarioLedger", () => {
       />,
     );
     expect(container.querySelectorAll("[data-scenario]")).toHaveLength(1);
-    expect(screen.getByText("Test zugeordnet")).toBeInTheDocument();
-    expect(screen.getByText(remainingText.text113)).toBeInTheDocument();
+    expect(screen.getByText("Test mapped")).toBeInTheDocument();
+    expect(screen.getByText("Unit · creates_task")).toBeInTheDocument();
   });
 
-  it("reports when no test is named", () => {
+  it("says so when no test is named", () => {
     render(
       <ScenarioLedger
         containerStyle={{}}
         captionStyle={{}}
-        caption={germanLabels.text167}
+        caption="1 promise"
         entries={[
           {
             key: "a",
             id: "open",
             proven: false,
-            status: localized.text7,
-            state: localized.text8,
+            status: "without a test",
+            state: "no state change described",
             tests: [],
             backingGap: "",
             implementedBy: [],
@@ -121,23 +121,23 @@ describe("Unit tests for ScenarioLedger", () => {
         ]}
       />,
     );
-    expect(screen.getByText(localized.text9)).toBeInTheDocument();
+    expect(screen.getByText("no test named")).toBeInTheDocument();
   });
 
-  it("renders anchors that fulfill a promise", () => {
+  it("renders the anchors that fulfil a promise", () => {
     render(
       <ScenarioLedger
         containerStyle={{}}
         captionStyle={{}}
-        caption={germanLabels.text167}
+        caption="1 promise"
         entries={[
           {
             key: "a",
             id: "task-added",
             proven: true,
-            status: "Test zugeordnet",
-            state: labelText.text281,
-            tests: [remainingText.text113],
+            status: "Test mapped",
+            state: "before: count 0",
+            tests: ["Unit · creates_task"],
             backingGap: "",
             implementedBy: ["src/tasks/quick_add.ts:48 · export async function quickAdd()"],
             implementedByLabel: "",
@@ -160,23 +160,23 @@ describe("Unit tests for ScenarioLedger", () => {
     expect(document.querySelector('[data-implemented-by="implemented"]')).not.toBeNull();
   });
 
-  it("reports assigned tests without an anchor claiming the promise", () => {
+  it("marks the finding — test assigned, but no anchor claims the promise", () => {
     render(
       <ScenarioLedger
         containerStyle={{}}
         captionStyle={{}}
-        caption={germanLabels.text167}
+        caption="1 promise"
         entries={[
           {
             key: "a",
             id: "task-added",
             proven: true,
-            status: "Test zugeordnet",
-            state: labelText.text281,
-            tests: [remainingText.text113],
+            status: "Test mapped",
+            state: "before: count 0",
+            tests: ["Unit · creates_task"],
             backingGap: "",
             implementedBy: [],
-            implementedByLabel: localized.text12,
+            implementedByLabel: "Test mapped, but no anchor claims this promise.",
             implementedByState: "gap",
             statement: null,
             rowStyle: {},
@@ -190,27 +190,27 @@ describe("Unit tests for ScenarioLedger", () => {
         ]}
       />,
     );
-    expect(screen.getByText(localized.text13)).toBeInTheDocument();
+    expect(screen.getByText("Test mapped, but no anchor claims this promise.")).toBeInTheDocument();
     expect(document.querySelector('[data-implemented-by="gap"]')).not.toBeNull();
   });
 
-  it("labels undeclared registries without implying a finding", () => {
+  it("says “not explained” instead of making an undeclared registry look like a finding", () => {
     render(
       <ScenarioLedger
         containerStyle={{}}
         captionStyle={{}}
-        caption={germanLabels.text167}
+        caption="1 promise"
         entries={[
           {
             key: "a",
             id: "task-added",
             proven: true,
-            status: "Test zugeordnet",
-            state: labelText.text281,
-            tests: [remainingText.text113],
+            status: "Test mapped",
+            state: "before: count 0",
+            tests: ["Unit · creates_task"],
             backingGap: "",
             implementedBy: [],
-            implementedByLabel: localized.text15,
+            implementedByLabel: "Not explained — this registry does not use @facet-proves: yet.",
             implementedByState: "not-explained",
             statement: null,
             rowStyle: {},
@@ -224,18 +224,20 @@ describe("Unit tests for ScenarioLedger", () => {
         ]}
       />,
     );
-    expect(screen.getByText(localized.text16)).toBeInTheDocument();
+    expect(
+      screen.getByText("Not explained — this registry does not use @facet-proves: yet."),
+    ).toBeInTheDocument();
     expect(document.querySelector('[data-implemented-by="not-explained"]')).not.toBeNull();
     expect(document.querySelector('[data-implemented-by="gap"]')).toBeNull();
   });
 
-  it("shows a gap only when one exists", () => {
+  it("shows the gap only when there is one", () => {
     const base = {
       key: "a",
       id: "x",
       proven: false,
-      status: localized.text18,
-      state: localized.text19,
+      status: "without a test",
+      state: "no state change described",
       tests: [],
       implementedBy: [],
       implementedByLabel: "",
@@ -253,7 +255,7 @@ describe("Unit tests for ScenarioLedger", () => {
       <ScenarioLedger
         containerStyle={{}}
         captionStyle={{}}
-        caption={germanLabels.text167}
+        caption="1 promise"
         entries={[{ ...base, backingGap: "" }]}
       />,
     );
@@ -263,40 +265,40 @@ describe("Unit tests for ScenarioLedger", () => {
       <ScenarioLedger
         containerStyle={{}}
         captionStyle={{}}
-        caption={germanLabels.text167}
-        entries={[{ ...base, backingGap: localized.text20 }]}
+        caption="1 promise"
+        entries={[{ ...base, backingGap: "No evidence — reason" }]}
       />,
     );
-    expect(screen.getByText(localized.text21)).toBeInTheDocument();
+    expect(screen.getByText("No evidence — reason")).toBeInTheDocument();
   });
 });
 
 describe("Unit tests for withScenarioLedgerLogic", () => {
   it("counts promises, evidence and tests", () => {
     render(<ScenarioLedgerWithLogic scenarios={scenarios} />);
-    expect(screen.getByText(localized.text23)).toBeInTheDocument();
+    expect(screen.getByText("2 promises · 1 with a mapped test · 1 test.")).toBeInTheDocument();
   });
 
-  it("hides the animated value from screen readers", () => {
+  it("phrases the state change as plain text", () => {
     render(<ScenarioLedgerWithLogic scenarios={scenarios} />);
-    expect(screen.getByText(labelText.text282)).toBeInTheDocument();
+    expect(screen.getByText("before: count 0 · after: count 1")).toBeInTheDocument();
   });
 
-  it("names missing state transitions", () => {
+  it("calls missing state changes by name", () => {
     render(<ScenarioLedgerWithLogic scenarios={[scenarios[1]]} />);
-    expect(screen.getByText(localized.text25)).toBeInTheDocument();
+    expect(screen.getByText("no state change described")).toBeInTheDocument();
   });
 
-  it("translates test levels into German", () => {
+  it("translates the test level into plain words", () => {
     render(<ScenarioLedgerWithLogic scenarios={scenarios} />);
-    expect(screen.getByText(remainingText.text113)).toBeInTheDocument();
+    expect(screen.getByText("Unit · creates_task")).toBeInTheDocument();
   });
 
-  it("shows steps except in compact mode", () => {
+  it("shows the steps, except in the compact form", () => {
     const { rerender } = render(<ScenarioLedgerWithLogic scenarios={scenarios} />);
-    expect(screen.getByText(localized.text28)).toBeInTheDocument();
+    expect(screen.getByText("the task is created")).toBeInTheDocument();
     rerender(<ScenarioLedgerWithLogic scenarios={scenarios} compact />);
-    expect(screen.queryByText(localized.text29)).not.toBeInTheDocument();
+    expect(screen.queryByText("the task is created")).not.toBeInTheDocument();
   });
 
   it("filters to gaps", () => {
@@ -304,25 +306,29 @@ describe("Unit tests for withScenarioLedgerLogic", () => {
     expect(container.querySelectorAll("[data-scenario]")).toHaveLength(1);
   });
 
-  it("emphasizes unproven promises with font weight", () => {
+  it("emphasises unproven promises through weight", () => {
     render(<ScenarioLedgerWithLogic scenarios={scenarios} />);
     expect(screen.getByText("offline-added")).toHaveStyle({ fontWeight: 500 });
   });
 
-  it("reports when no promise is described", () => {
+  it("says so when no promise is described", () => {
     render(<ScenarioLedgerWithLogic scenarios={[]} />);
-    expect(screen.getByText(localized.text33)).toBeInTheDocument();
+    expect(screen.getByText("No promise described.")).toBeInTheDocument();
   });
 
-  it("names the reason and resolution only when data is missing", () => {
+  it("names cause and fix when the data is missing — otherwise nothing at all", () => {
     const { container, rerender } = render(<ScenarioLedgerWithLogic scenarios={scenarios} />);
     expect(container.querySelector("[data-backing-gap]")).toBeNull();
 
     rerender(<ScenarioLedgerWithLogic scenarios={[unbackedScenario]} />);
-    expect(screen.getByText(localized.text35)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "No evidence — Transactions do not carry a category column yet. · resolved by billing/categories/assign-category",
+      ),
+    ).toBeInTheDocument();
   });
 
-  it("labels gaps even without a reason", () => {
+  it("does not leave a gap without a cause unlabelled", () => {
     render(
       <ScenarioLedgerWithLogic
         scenarios={[
@@ -330,13 +336,47 @@ describe("Unit tests for withScenarioLedgerLogic", () => {
         ]}
       />,
     );
-    expect(screen.getByText(localized.text37)).toBeInTheDocument();
+    expect(screen.getByText("No evidence — no reason given")).toBeInTheDocument();
   });
 
-  it("sets a descriptive displayName", () => {
+  it("gives a meaningful displayName", () => {
     expect(withScenarioLedgerLogic(ScenarioLedger).displayName).toBe(
       "withScenarioLedgerLogic(ScenarioLedger)",
     );
+  });
+});
+
+describe("Unit tests for the German locale", () => {
+  it("speaks German under the German locale", () => {
+    renderInGerman(<ScenarioLedgerWithLogic scenarios={[...scenarios, unbackedScenario]} />);
+    expect(
+      screen.getByText(
+        germanText.t("elements.scenarioLedger.caption", {
+          total: "3",
+          proven: "1",
+          tests: "1 Test",
+        }),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        `${germanText.t("elements.scenarioLedger.before")}: count 0 · ${germanText.t("elements.scenarioLedger.after")}: count 1`,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(`${germanText.t("core.label.testKind.unit")} · creates_task`),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByText(germanText.t("elements.scenarioLedger.noTest")).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText(
+        germanText.t("elements.scenarioLedger.unbackedUnblockedBy", {
+          reason: "Transactions do not carry a category column yet.",
+          by: "billing/categories/assign-category",
+        }),
+      ),
+    ).toBeInTheDocument();
   });
 });
 
@@ -346,7 +386,7 @@ describe("Snapshot tests for ScenarioLedger", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("converts values into shares", () => {
+  it("compact", () => {
     const { container } = render(<ScenarioLedgerWithLogic scenarios={scenarios} compact />);
     expect(container.firstChild).toMatchSnapshot();
   });

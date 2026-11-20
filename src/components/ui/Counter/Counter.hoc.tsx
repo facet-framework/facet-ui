@@ -11,18 +11,24 @@ import { font } from "../../../design-system/tokens";
 import type { CounterProps } from "./Counter";
 
 export type WithCounterProps = Omit<CounterProps, "display" | "computedStyle" | "finalLabel"> & {
+  /** Final value. */
   value: number;
-
+  /** Unit after the number, e.g. `%`. */
   unit?: string;
-
+  /** Duration of the count-up in milliseconds. */
   duration?: number;
-
+  /** Turn the count-up off — for values that change often. */
   animate?: boolean;
   style?: CSSProperties;
 };
 
 const STEP_MS = 40;
 
+/**
+ * Owns the counting timer and cleans it up. The count-up runs only on first
+ * appearance; later changes jump straight to the new value, so that the
+ * counter does not fake freshness. `prefers-reduced-motion` turns it off.
+ */
 export function withCounterLogic(Component: ComponentType<CounterProps>) {
   const Wrapped = ({
     value,

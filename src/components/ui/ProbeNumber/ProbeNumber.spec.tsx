@@ -1,32 +1,30 @@
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { localized } from "../../../i18n/legacy/components/ui/ProbeNumber/ProbeNumber.spec.text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ProbeNumberWithLogic, { ProbeNumber, withProbeNumberLogic } from ".";
 
 describe("Unit tests for ProbeNumber", () => {
-  it("renders a toggle with a readable label", () => {
+  it("renders a toggle with plain-text labelling", () => {
     render(
-      <ProbeNumber computedStyle={{}} expanded={false} label="16 offene Punkte anzeigen">
+      <ProbeNumber computedStyle={{}} expanded={false} label="Show 16 open points">
         16
       </ProbeNumber>,
     );
-    const button = screen.getByRole("button", { name: "16 offene Punkte anzeigen" });
+    const button = screen.getByRole("button", { name: "Show 16 open points" });
     expect(button).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("reports the open state", () => {
+  it("reports the opened state", () => {
     render(
-      <ProbeNumber computedStyle={{}} expanded label={localized.text3}>
+      <ProbeNumber computedStyle={{}} expanded label="open">
         2
       </ProbeNumber>,
     );
     expect(screen.getByRole("button")).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("supports disabling", () => {
+  it("can be disabled", () => {
     render(
-      <ProbeNumber computedStyle={{}} expanded={false} label={localized.text5} disabled>
+      <ProbeNumber computedStyle={{}} expanded={false} label="open" disabled>
         0
       </ProbeNumber>,
     );
@@ -38,7 +36,7 @@ describe("Unit tests for withProbeNumberLogic", () => {
   it("opens the probe on click", async () => {
     const onToggle = jest.fn();
     render(
-      <ProbeNumberWithLogic probeKey="open" label="offene Punkte" onToggle={onToggle}>
+      <ProbeNumberWithLogic probeKey="open" label="open points" onToggle={onToggle}>
         16
       </ProbeNumberWithLogic>,
     );
@@ -46,13 +44,13 @@ describe("Unit tests for withProbeNumberLogic", () => {
     expect(onToggle).toHaveBeenCalledWith("open");
   });
 
-  it("closes an already open probe", async () => {
+  it("closes the probe that is already open", async () => {
     const onToggle = jest.fn();
     render(
       <ProbeNumberWithLogic
         probeKey="open"
         activeProbe="open"
-        label="offene Punkte"
+        label="open points"
         onToggle={onToggle}
       >
         16
@@ -62,9 +60,9 @@ describe("Unit tests for withProbeNumberLogic", () => {
     expect(onToggle).toHaveBeenCalledWith(null);
   });
 
-  it("handles a missing callback", async () => {
+  it("works without a callback", async () => {
     render(
-      <ProbeNumberWithLogic probeKey="open" label="offene Punkte">
+      <ProbeNumberWithLogic probeKey="open" label="open points">
         16
       </ProbeNumberWithLogic>,
     );
@@ -72,9 +70,9 @@ describe("Unit tests for withProbeNumberLogic", () => {
     expect(screen.getByRole("button")).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("emphasizes the active probe", () => {
+  it("emphasises the active probe more strongly", () => {
     const { rerender } = render(
-      <ProbeNumberWithLogic probeKey="open" label={localized.text16}>
+      <ProbeNumberWithLogic probeKey="open" label="open">
         16
       </ProbeNumberWithLogic>,
     );
@@ -83,7 +81,7 @@ describe("Unit tests for withProbeNumberLogic", () => {
       borderBottomColor: "var(--sig-mid)",
     });
     rerender(
-      <ProbeNumberWithLogic probeKey="open" activeProbe="open" label={localized.text19}>
+      <ProbeNumberWithLogic probeKey="open" activeProbe="open" label="open">
         16
       </ProbeNumberWithLogic>,
     );
@@ -93,36 +91,36 @@ describe("Unit tests for withProbeNumberLogic", () => {
     });
   });
 
-  it("supports keyboard focus", async () => {
+  it("is reachable by keyboard", async () => {
     const onToggle = jest.fn();
     render(
-      <ProbeNumberWithLogic probeKey="deadline" label={remainingText.text148} onToggle={onToggle}>
+      <ProbeNumberWithLogic probeKey="due" label="Deadlines" onToggle={onToggle}>
         2
       </ProbeNumberWithLogic>,
     );
     await userEvent.tab();
     await userEvent.keyboard("{Enter}");
-    expect(onToggle).toHaveBeenCalledWith("deadline");
+    expect(onToggle).toHaveBeenCalledWith("due");
   });
 
-  it("sets a descriptive displayName", () => {
+  it("gives a meaningful displayName", () => {
     expect(withProbeNumberLogic(ProbeNumber).displayName).toBe("withProbeNumberLogic(ProbeNumber)");
   });
 });
 
 describe("Snapshot tests for ProbeNumber", () => {
-  it("compact", () => {
+  it("closed", () => {
     const { container } = render(
-      <ProbeNumberWithLogic probeKey="open" label={localized.text23}>
+      <ProbeNumberWithLogic probeKey="open" label="open">
         16
       </ProbeNumberWithLogic>,
     );
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("open", () => {
+  it("opened", () => {
     const { container } = render(
-      <ProbeNumberWithLogic probeKey="open" activeProbe="open" label={localized.text27}>
+      <ProbeNumberWithLogic probeKey="open" activeProbe="open" label="open">
         16
       </ProbeNumberWithLogic>,
     );

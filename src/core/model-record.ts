@@ -1,3 +1,5 @@
+/** Normalize a single parsed record; registry-wide aggregation stays in model.ts. */
+
 import { parseGherkin } from "./gherkin";
 import { asArray, asRecord, asString, humanize } from "./model-values";
 import type {
@@ -29,6 +31,7 @@ import type {
 } from "./types";
 import type { YamlValue } from "./yaml";
 
+/** An existing deviation remains visible even when its metadata is incomplete. */
 function shapeDeviation(value: YamlValue | undefined): ScenarioDeviation | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const doc = value as Record<string, YamlValue>;
@@ -39,10 +42,12 @@ function shapeDeviation(value: YamlValue | undefined): ScenarioDeviation | null 
   };
 }
 
+/** Only schema-defined audiences become model values; absence or an unknown value is null. */
 function shapeAudience(value: YamlValue | undefined): ScenarioAudience | null {
   return value === "product" || value === "engineering" ? value : null;
 }
 
+/** Whether any source anchor declares scenario coverage anywhere in this registry. */
 export function anyAnchorProves(scan: RepoScan | undefined): boolean {
   return Object.values(scan?.anchors ?? {}).some((list) =>
     list.some((a) => Array.isArray(a.proves) && a.proves.length > 0),
@@ -56,6 +61,7 @@ export function recordKindOf(id: string): RecordKind {
   return "feature";
 }
 
+/** Normalize recorded fixes while preserving the distinction between an absent register and an empty one. */
 export function shapeDefects(value: YamlValue | undefined): Defects {
   const empty: Defects = { present: false, fixes: [], total: 0, byFile: [], lastFix: "" };
   if (value == null || typeof value !== "object" || Array.isArray(value)) return empty;
@@ -72,6 +78,7 @@ export function shapeDefects(value: YamlValue | undefined): Defects {
     }))
     .filter((f) => f.commit !== "");
 
+  // Newest fixes first; the commit orders fixes with the same date deterministically.
   fixes.sort((a, b) =>
     a.date === b.date ? a.commit.localeCompare(b.commit) : b.date.localeCompare(a.date),
   );
@@ -91,6 +98,7 @@ export function shapeDefects(value: YamlValue | undefined): Defects {
   };
 }
 
+/** Normalize one record and associate its declared tests and source anchors with its scenarios. */
 export function shapeRecord(raw: RawRecord, scan: RepoScan | undefined): FacetRecord {
   const doc = raw.doc ?? {};
   const id = asString(doc.id) || raw.path;
@@ -136,7 +144,7 @@ export function shapeRecord(raw: RawRecord, scan: RepoScan | undefined): FacetRe
       steps: parseGherkin(asString(s.statement)),
       pre: s.pre_state ?? null,
       post: s.post_state ?? null,
-
+      // A declared test association, not the outcome of a test execution.
       proven: (provenBy[sid] || []).length > 0,
       tests: provenBy[sid] || [],
       backing: {
@@ -160,6 +168,11 @@ export function shapeRecord(raw: RawRecord, scan: RepoScan | undefined): FacetRe
   const intent = asRecord(doc.intent);
   const owner = asRecord(lineage.owner);
 
+  // FACET 1.4 `variants` — per-target lifecycle for a feature that exists on
+  // more than one independently deployable target. The schema's top-level
+  // `oneOf` forbids a record from carrying both `variants` and a top-level
+  // `lifecycle`, so a variants record has no scalar lifecycle to read — the
+  // field above stays "—" for it, honestly, instead of a fabricated aggregate.
   const variantsDoc = asRecord(doc.variants);
   const variantKeys = Object.keys(variantsDoc);
   const variants: Record<string, RecordVariant> | null = variantKeys.length
@@ -176,11 +189,15 @@ export function shapeRecord(raw: RawRecord, scan: RepoScan | undefined): FacetRe
         }),
       )
     : null;
-
+  // Derived predicate only — mirrors Go's Record.ActiveAnywhere(). Never
+  // surfaced as a raw field value (see RENDERED_PATHS): it decides which
+  // records a filter counts, it does not describe what the record declares.
   const activeAnywhere = variants
     ? Object.values(variants).some((v) => v.lifecycle === "active")
     : asString(doc.lifecycle) === "active";
 
+  // FACET 1.4 `flags` — feature flags gating exposure. Orthogonal to
+  // lifecycle: a feature can be fully built and visible to nobody.
   const flags: FeatureFlag[] = asArray<Record<string, YamlValue>>(doc.flags).map((f) => ({
     key: asString(f.key),
     system: f.system == null ? undefined : asString(f.system),
@@ -194,6 +211,8 @@ export function shapeRecord(raw: RawRecord, scan: RepoScan | undefined): FacetRe
     .map((d) => ({ url: asString(d.url) }))
     .filter((d) => d.url);
 
+  // FACET 1.6 `observability` — developer-facing emission contract. Distinct
+  // from `observation` above, which is operator-facing (SLOs, alerts).
   const observabilityDoc = asRecord(doc.observability);
   const metricsEmitted: MetricEmission[] = asArray<Record<string, YamlValue>>(
     observabilityDoc.metrics_emitted,
@@ -224,7 +243,7 @@ export function shapeRecord(raw: RawRecord, scan: RepoScan | undefined): FacetRe
       key: k,
       question: slot.question == null ? undefined : String(slot.question),
       answer: slot.answer == null ? undefined : String(slot.answer),
-
+      // Keep each declared derivation source as a separate value.
       derive: slot.derive_from == null ? undefined : asArray<string>(slot.derive_from).map(String),
     };
   });

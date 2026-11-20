@@ -1,4 +1,3 @@
-import { localized } from "../../i18n/legacy/facet/shell/Shell.stories.text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import {
@@ -14,7 +13,7 @@ import {
 import { useText } from "../i18n/TextProvider";
 import { HISTORY, useNav, useRoles } from "../fixtures/shell";
 
-const meta: Meta = { title: "Frame/App", parameters: { layout: "fullscreen" } };
+const meta: Meta = { title: "Shell/App", parameters: { layout: "fullscreen" } };
 export default meta;
 type Story = StoryObj;
 
@@ -57,11 +56,16 @@ function Frame({
       tabbar={
         <MobileTabBar
           items={[
-            { key: "overview", label: "Overview", icon: "home", current: true },
-            { key: "product", label: "Product", icon: "product" },
-            { key: "records", label: "records", icon: "records", badge: true },
-            { key: "ask", label: localized.text2, icon: "chat" },
-            { key: "more", label: "More", icon: "menu" },
+            {
+              key: "overview",
+              label: text("shell.nav.item.overview"),
+              icon: "home",
+              current: true,
+            },
+            { key: "product", label: text("shell.nav.item.product"), icon: "product" },
+            { key: "records", label: text("shell.nav.item.records"), icon: "records", badge: true },
+            { key: "ask", label: text("shell.tab.ask"), icon: "chat" },
+            { key: "more", label: text("shell.tab.more"), icon: "menu" },
           ]}
           onPick={(k) => k === "more" && setMore(true)}
         />
@@ -76,15 +80,15 @@ function Frame({
       }
     >
       <div className="t-page">
-        <p className="t-muted">{localized.text3}</p>
+        <p className="t-muted">Content</p>
       </div>
     </AppShell>
   );
 }
 
 export const Desktop: Story = { render: () => <Frame /> };
-export const HistoryOpen: Story = { name: "History Open", render: () => <Frame historyOpen /> };
-export const RoleOpen: Story = { name: "Role Open", render: () => <Frame roleOpen /> };
+export const HistoryOpen: Story = { name: "History open", render: () => <Frame historyOpen /> };
+export const RoleOpen: Story = { name: "Role open", render: () => <Frame roleOpen /> };
 export const Mobile: Story = {
   globals: { viewport: { value: "mobile" } },
   render: () => <Frame mobile />,
@@ -102,7 +106,7 @@ function BootDemo({
   return (
     <BootScreen
       phase={phase}
-      file="docs/facets/features/workspace/board/column.yaml"
+      file="docs/facets/features/navigation/atlas/adr-plugin.yaml"
       progress={progress}
       leaving={leaving}
       counts={{
@@ -114,39 +118,39 @@ function BootDemo({
   );
 }
 
-export const StartConnect: Story = {
-  name: "Start Connect",
+export const BootConnecting: Story = {
+  name: "Boot · connecting",
   render: () => <BootDemo phase="connect" progress={null} />,
 };
-export const StartRecords: Story = {
-  name: "Start Records",
+export const BootRecords: Story = {
+  name: "Boot · reading records",
   render: () => <BootDemo phase="records" progress={34} />,
 };
-export const StartIndex: Story = {
-  name: "Start Index",
+export const BootIndex: Story = {
+  name: "Boot · indexing anchors",
   render: () => <BootDemo phase="index" progress={78} />,
 };
-export const StartFlight: Story = {
-  name: "Start Flight",
+export const BootFlight: Story = {
+  name: "Boot · flight into the logo",
   render: () => <BootDemo phase="ready" progress={100} leaving />,
 };
-export const StartError: Story = {
-  name: "Start Error",
+export const BootError: Story = {
+  name: "Boot · error",
   render: () => (
     <BootScreen
       phase="connect"
       progress={null}
       counts={{ records: null, files: null, anchors: null }}
       error={{
-        title: localized.text6,
-        reason: localized.text7,
+        title: "facet ui does not answer",
+        reason: "GET /api/model timed out after 10 s. Is `facet ui` still running?",
         onRetry: () => undefined,
       }}
     />
   ),
 };
-export const StartMobile: Story = {
-  name: "Start Mobile",
+export const BootMobile: Story = {
+  name: "Boot · mobile",
   globals: { viewport: { value: "mobile" } },
   render: () => <BootDemo phase="records" progress={34} />,
 };

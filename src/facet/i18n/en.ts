@@ -1,9 +1,15 @@
-import { enA } from "./screens/a";
-import { enB } from "./screens/b";
-import { enC } from "./screens/c";
-import { enD } from "./screens/d";
+import { enElements } from "./catalog/elements";
+import { enCore } from "./catalog/core";
 
+/**
+ * The English dictionary — the source of truth for every visible text in FACET.
+ *
+ * Keys are flat and dotted by area (`shell.history.clear`). A key ending in
+ * `.one` / `.other` is a plural pair, read through `plural()`. `{{name}}` marks
+ * a parameter; numbers are formatted for the active locale.
+ */
 export const en = {
+  /* Primitives */
   "primitives.chip.remove": "Remove",
   "primitives.meter.unmeasured": "not measured",
   "primitives.state.retry": "Try again",
@@ -28,6 +34,7 @@ export const en = {
   "primitives.collection.noMatchesHint": "Fewer filters, another word — or ask Atlas.",
   "primitives.collection.resetFilters": "Reset filters",
 
+  /* Shell */
   "shell.percent": "{{value}}%",
   "shell.history.label": "Visited places",
   "shell.history.heading": "Visited places · {{count}}",
@@ -36,9 +43,9 @@ export const en = {
   "shell.history.older.one": "{{count}} older",
   "shell.history.older.other": "{{count}} older",
   "shell.history.clear": "Clear history",
-  "shell.history.kind.situation": "Overview",
+  "shell.history.kind.overviewPage": "Overview",
   "shell.history.kind.area": "Area",
-  "shell.history.kind.dossier": "Record",
+  "shell.history.kind.record": "Record",
   "shell.history.kind.plugin": "Plugin",
   "shell.history.kind.overview": "Overview",
   "shell.history.kind.content": "Content",
@@ -49,7 +56,7 @@ export const en = {
   "shell.top.forwardNone": "Forward — no later place",
   "shell.top.home": "FACET Atlas, to the overview",
   "shell.top.features": "Features",
-  "shell.top.proven": "Proven",
+  "shell.top.proven": "Test named",
   "shell.top.drift": "Drift",
   "shell.mark.drift": "Drift: {{value}} of records",
   "shell.mark.level": "No drift",
@@ -59,20 +66,21 @@ export const en = {
   "shell.top.command": "Go to a record, role or command",
   "shell.top.ctrl": "Ctrl",
   "shell.top.settings": "Settings",
+  "shell.top.settingsNew": "new settings page",
   "shell.role.label": "Reader role",
   "shell.role.who": "Who is reading?",
   "shell.role.leadership.name": "Leadership",
-  "shell.role.leadership.purpose": "How far the product is proven and where it sticks.",
-  "shell.role.developer.name": "Developer",
-  "shell.role.developer.purpose": "Which files have moved away from their record.",
-  "shell.role.test.name": "Test & review",
-  "shell.role.test.purpose": "Which promises a test carries and which not.",
+  "shell.role.leadership.purpose": "How much of the product a test names and where it sticks.",
+  "shell.role.dev.name": "Developer",
+  "shell.role.dev.purpose": "Which files have moved away from their record.",
+  "shell.role.review.name": "Test & review",
+  "shell.role.review.purpose": "Which promises a test carries and which not.",
   "shell.role.author.name": "Record author",
   "shell.role.author.purpose": "Where knowledge is missing and which records fall out of the band.",
-  "shell.role.ownership.name": "Ownership",
-  "shell.role.ownership.purpose": "Who owns which area and what nobody owns.",
-  "shell.role.new.name": "New here",
-  "shell.role.new.purpose": "How the product is built and where to start.",
+  "shell.role.owner.name": "Ownership",
+  "shell.role.owner.purpose": "Who owns which area and what nobody owns.",
+  "shell.role.newcomer.name": "New here",
+  "shell.role.newcomer.purpose": "How the product is built and where to start.",
   "shell.role.agent.name": "Agent",
   "shell.role.agent.purpose": "Registry state, tools and checks before the commit.",
   "shell.nav.item.overview": "Overview",
@@ -107,13 +115,13 @@ export const en = {
   "shell.boot.files": "Files",
   "shell.boot.anchors": "Anchors",
   "shell.boot.noShare": "no share yet",
-
-  ...enA,
-  ...enB,
-  ...enC,
-  ...enD,
+  /* Catalogs outside the design system, one file each. */
+  ...enCore,
+  ...enElements,
 } as const;
 
+/** Every text key FACET knows. A key missing here is a type error at the call site. */
 export type TextKey = keyof typeof en;
 
+/** A complete dictionary: one string for every key, nothing more. */
 export type Dictionary = { readonly [K in TextKey]: string };

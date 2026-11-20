@@ -1,8 +1,7 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/ErrorState/ErrorState.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import { YamlError } from "../../../core";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { ErrorStateProps } from "./ErrorState";
 
 export type WithErrorStateProps = Omit<
@@ -15,32 +14,36 @@ export type WithErrorStateProps = Omit<
   | "origin"
   | "retryLabel"
 > & {
+  /** The error that occurred — `YamlError` brings the line number along. */
   error: unknown;
-
+  /** File in which the error occurred. */
   path?: string;
   retryLabel?: string;
   style?: CSSProperties;
 };
 
+/** Extracts reason and origin from the error — including the line number for YAML. */
 export function withErrorStateLogic(Component: ComponentType<ErrorStateProps>) {
   const Wrapped = ({
     error,
     path,
-    retryLabel = labelText.text467,
+    retryLabel: retryLabelProp,
     style,
     ...rest
   }: WithErrorStateProps) => {
+    const { t } = useText();
+    const retryLabel = retryLabelProp ?? t("elements.errorState.retry");
     const headline = useMemo(() => {
       if (error instanceof Error) return error.message;
-      return typeof error === "string" ? error : localized.text1;
-    }, [error]);
+      return typeof error === "string" ? error : t("elements.errorState.unknown");
+    }, [error, t]);
 
     const origin = useMemo(() => {
       const line = error instanceof YamlError && error.line != null ? error.line + 1 : null;
       if (path && line != null) return `${path}:${line}`;
       if (path) return path;
-      return line != null ? `${labelText.text468}${line}` : undefined;
-    }, [error, path]);
+      return line != null ? t("elements.errorState.line", { line }) : undefined;
+    }, [error, path, t]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({
@@ -48,10 +51,10 @@ export function withErrorStateLogic(Component: ComponentType<ErrorStateProps>) {
         gap: 6,
         justifyItems: "start",
         padding: "12px 14px",
-        background: color.deadlineSoft,
+        background: color.dueSoft,
         borderLeftStyle: "solid",
         borderLeftWidth: 2,
-        borderLeftColor: color.deadline,
+        borderLeftColor: color.due,
         minWidth: 0,
         ...style,
       }),
@@ -63,7 +66,7 @@ export function withErrorStateLogic(Component: ComponentType<ErrorStateProps>) {
         margin: 0,
         fontFamily: font.sans,
         fontSize: fontSize.base,
-        color: color.deadline,
+        color: color.due,
         overflowWrap: "anywhere",
       }),
       [],

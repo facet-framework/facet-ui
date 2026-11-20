@@ -1,6 +1,3 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/IndexProgress/IndexProgress.hoc";
 import {
   memo,
   useEffect,
@@ -10,8 +7,9 @@ import {
   type ComponentType,
   type CSSProperties,
 } from "react";
-import { formatNumber, phaseRank, type IndexPhase, type IndexStatus } from "../../../core";
+import { phaseRank, type IndexPhase, type IndexStatus } from "../../../core";
 import { color, font, fontSize, space } from "../../../design-system/tokens";
+import { useText, type FacetText, type TextKey } from "../../../facet/i18n";
 import type { IndexPhaseRow, IndexProgressProps } from "./IndexProgress";
 
 export type WithIndexProgressProps = Omit<
@@ -33,39 +31,49 @@ export type WithIndexProgressProps = Omit<
   | "ticker"
   | "busy"
 > & {
+  /** The host's most recently reported state. */
   status: IndexStatus;
-
+  /** Repo root; if not given, the one the host reports in its state. */
   root?: string;
-
+  /** Registry of the run; if not given, the one from the state. */
   registry?: string;
-
+  /** How many files the ticker holds. */
   historyLength?: number;
   style?: CSSProperties;
 };
 
-const LADDER: { phase: IndexPhase; label: string }[] = [
-  { phase: "connect", label: labelText.text304 },
-  { phase: "config", label: labelText.text305 },
-  { phase: "records", label: "Records lesen" },
-  { phase: "enumerate", label: localized.text1 },
-  { phase: "index", label: germanLabels.text179 },
-  { phase: "model", label: germanLabels.text180 },
+/** The steps in run order. `ready` ends the state instead of standing in it. */
+const LADDER: { phase: IndexPhase; label: TextKey }[] = [
+  { phase: "connect", label: "elements.indexProgress.step.connect" },
+  { phase: "config", label: "elements.indexProgress.step.config" },
+  { phase: "records", label: "elements.indexProgress.step.records" },
+  { phase: "enumerate", label: "elements.indexProgress.step.enumerate" },
+  { phase: "index", label: "elements.indexProgress.step.index" },
+  { phase: "model", label: "elements.indexProgress.step.model" },
 ];
 
-const TITLE: Record<IndexPhase, string> = {
-  connect: germanLabels.text178,
-  config: localized.text2,
-  records: localized.text3,
-  enumerate: localized.text4,
-  index: localized.text5,
-  model: localized.text6,
-  ready: labelText.text306,
+const TITLE: Record<IndexPhase, TextKey> = {
+  connect: "elements.indexProgress.title.connect",
+  config: "elements.indexProgress.title.config",
+  records: "elements.indexProgress.title.records",
+  enumerate: "elements.indexProgress.title.enumerate",
+  index: "elements.indexProgress.title.index",
+  model: "elements.indexProgress.title.model",
+  ready: "elements.indexProgress.title.ready",
 };
 
 const MARK = { done: "✓", active: "▸", pending: "·" } as const;
 
 type RowState = keyof typeof MARK;
 
+/**
+ * Converts the host's state into the ladder: which step is done, which is
+ * running, which is still pending — and keeps the most recently read files as
+ * a ticker, so it stays visible that work is happening.
+ *
+ * The ticker is the only state here. It lives in the HOC because it grows over
+ * time; the presentation only receives the finished list.
+ */
 export function withIndexProgressLogic(Component: ComponentType<IndexProgressProps>) {
   const Wrapped = ({
     status,
@@ -75,6 +83,8 @@ export function withIndexProgressLogic(Component: ComponentType<IndexProgressPro
     style,
     ...rest
   }: WithIndexProgressProps) => {
+    const text = useText();
+    const { t, number } = text;
     const [ticker, setTicker] = useState<string[]>([]);
     const lastFile = useRef("");
 
@@ -95,8 +105,8 @@ export function withIndexProgressLogic(Component: ComponentType<IndexProgressPro
           const state: RowState = own < rank ? "done" : own === rank ? "active" : "pending";
           return {
             key: phase,
-            label,
-            detail: phaseDetail(phase, state, status),
+            label: t(label),
+            detail: phaseDetail(phase, state, status, text),
             mark: MARK[state],
             rowStyle: rowStyle(state),
             markStyle: markStyle(state),
@@ -104,7 +114,7 @@ export function withIndexProgressLogic(Component: ComponentType<IndexProgressPro
             detailStyle: detailStyle(state),
           };
         }),
-      [rank, status],
+      [rank, status, text, t],
     );
 
     const percent = useMemo(
@@ -119,18 +129,24 @@ export function withIndexProgressLogic(Component: ComponentType<IndexProgressPro
 
     const progressLabel = useMemo(() => {
       if (status.total > 0) {
-        return `${formatNumber(status.done)}${germanLabels.text109}${formatNumber(status.total)} — ${TITLE[status.phase]}`;
+        return t("elements.indexProgress.progressLabel", {
+          done: number(status.done),
+          total: number(status.total),
+          title: t(TITLE[status.phase]),
+        });
       }
-      return TITLE[status.phase];
-    }, [status.done, status.phase, status.total]);
+      return t(TITLE[status.phase]);
+    }, [status.done, status.phase, status.total, t, number]);
 
-    const caption = useMemo(() => captionFor(status), [status]);
+    const caption = useMemo(() => captionFor(status, text), [status, text]);
 
     const origin = useMemo(() => {
       const place = root ?? status.root;
       const name = registry ?? status.registry;
-      return [place, name ? `Registry ${name}` : ""].filter(Boolean).join(" · ");
-    }, [registry, root, status.registry, status.root]);
+      return [place, name ? t("elements.indexProgress.registry", { name }) : ""]
+        .filter(Boolean)
+        .join(" · ");
+    }, [registry, root, status.registry, status.root, t]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({
@@ -155,7 +171,8 @@ export function withIndexProgressLogic(Component: ComponentType<IndexProgressPro
           letterSpacing: 0,
           textTransform: "none",
           color: color.dim,
-
+          // The newest line stands first and strongest; older ones recede.
+          // The position carries the same statement as the opacity.
           opacity: Math.max(0.15, 1 - index * 0.18),
           whiteSpace: "nowrap",
           overflow: "hidden",
@@ -174,7 +191,7 @@ export function withIndexProgressLogic(Component: ComponentType<IndexProgressPro
         captionStyle={CAPTION_STYLE}
         tickerStyle={TICKER_STYLE}
         tickerRowStyles={tickerRowStyles}
-        title={TITLE[status.phase]}
+        title={t(TITLE[status.phase])}
         origin={origin}
         phases={phases}
         percent={percent}
@@ -192,50 +209,71 @@ export function withIndexProgressLogic(Component: ComponentType<IndexProgressPro
   return Memoized;
 }
 
-function phaseDetail(phase: IndexPhase, state: RowState, status: IndexStatus): string {
+/** What stands on the right of the row: the count this step knows. */
+function phaseDetail(
+  phase: IndexPhase,
+  state: RowState,
+  status: IndexStatus,
+  { t, number }: FacetText,
+): string {
   if (state === "pending") return "";
 
   switch (phase) {
     case "connect":
-      return state === "done" ? labelText.text307 : "…";
+      return state === "done" ? t("elements.indexProgress.up") : "…";
     case "config":
       return ".facetrc.yaml";
     case "records":
       return state === "active" && status.total > 0
-        ? `${formatNumber(status.done)}/${formatNumber(status.total)}`
-        : formatNumber(status.records);
+        ? `${number(status.done)}/${number(status.total)}`
+        : number(status.records);
     case "enumerate":
-      return formatNumber(state === "active" ? status.done : status.files);
+      return number(state === "active" ? status.done : status.files);
     case "index":
       return state === "active" && status.total > 0
-        ? `${formatNumber(status.done)}/${formatNumber(status.total)}`
-        : `${formatNumber(status.anchors)}${germanLabels.text181}`;
+        ? `${number(status.done)}/${number(status.total)}`
+        : t("elements.indexProgress.anchorsCount", { count: number(status.anchors) });
     case "model":
-      return `${formatNumber(status.records)} Records`;
+      return t("elements.indexProgress.recordsCount", { count: number(status.records) });
     default:
       return "";
   }
 }
 
-function captionFor(status: IndexStatus): string {
+/** The run's counts, written out below the bar. */
+function captionFor(status: IndexStatus, { t, number }: FacetText): string {
   switch (status.phase) {
     case "connect":
-      return localized.text7;
+      return t("elements.indexProgress.caption.connect");
     case "config":
-      return localized.text8;
+      return t("elements.indexProgress.caption.config");
     case "records":
       return status.total > 0
-        ? `${formatNumber(status.done)}${germanLabels.text109}${formatNumber(status.total)} Records gelesen`
-        : `${formatNumber(status.records)} Records gelesen`;
+        ? t("elements.indexProgress.caption.recordsOf", {
+            done: number(status.done),
+            total: number(status.total),
+          })
+        : t("elements.indexProgress.caption.records", { count: number(status.records) });
     case "enumerate":
-      return `${formatNumber(status.done)}${localized.text9}`;
+      return t("elements.indexProgress.caption.enumerate", { count: number(status.done) });
     case "index":
       return status.total > 0
-        ? `${formatNumber(status.done)}${germanLabels.text109}${formatNumber(status.total)}${localized.text10}${formatNumber(status.anchors)}${germanLabels.text181}`
-        : `${formatNumber(status.files)}${localized.text11}${formatNumber(status.anchors)}${germanLabels.text181}`;
+        ? t("elements.indexProgress.caption.indexOf", {
+            done: number(status.done),
+            total: number(status.total),
+            anchors: number(status.anchors),
+          })
+        : t("elements.indexProgress.caption.index", {
+            files: number(status.files),
+            anchors: number(status.anchors),
+          });
     case "model":
     case "ready":
-      return `${formatNumber(status.records)} Records · ${formatNumber(status.files)}${localized.text12}${formatNumber(status.anchors)}${germanLabels.text181}`;
+      return t("elements.indexProgress.caption.done", {
+        records: number(status.records),
+        files: number(status.files),
+        anchors: number(status.anchors),
+      });
     default:
       return "";
   }
@@ -259,7 +297,8 @@ const ORIGIN_STYLE: CSSProperties = {
   fontFamily: font.mono,
   fontSize: fontSize.meta,
   color: color.dim,
-
+  // A path is wrapped, not truncated: what would fall off the end is the
+  // folder that matters.
   overflowWrap: "anywhere",
 };
 
@@ -285,7 +324,7 @@ const TICKER_STYLE: CSSProperties = {
   listStyle: "none",
   margin: `${space.s2} 0 0`,
   padding: 0,
-
+  // Final geometry: the ticker keeps its height so nothing below it jumps.
   minHeight: 6 * 15,
   alignContent: "start",
 };
@@ -313,7 +352,8 @@ function labelStyle(state: RowState): CSSProperties {
   return {
     fontFamily: font.sans,
     fontSize: fontSize.base,
-
+    // Weight carries the same statement as colour: the running step is the
+    // only one that gets emphasis.
     fontWeight: state === "active" ? 500 : 400,
     color: state === "pending" ? color.faint : color.ink,
   };

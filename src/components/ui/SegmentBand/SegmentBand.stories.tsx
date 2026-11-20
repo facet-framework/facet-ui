@@ -6,7 +6,11 @@ const meta: Meta<typeof SegmentBandWithLogic> = {
   title: "Atoms/SegmentBand",
   component: SegmentBandWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component: "Distribution of a set in one row — lifecycle, test types, severities.",
+      },
+    },
   },
   decorators: [
     (Story) => (
@@ -20,27 +24,30 @@ const meta: Meta<typeof SegmentBandWithLogic> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Lifecycle across all records. */
 export const Lifecycle: Story = {
   args: {
     segments: [
       { key: "active", label: "active", value: 11, color: color.ink },
       { key: "planned", label: "planned", value: 4, color: color.plan },
-      { key: "deprecated", label: "superseded", value: 2, color: color.line2 },
+      { key: "deprecated", label: "deprecated", value: 2, color: color.line2 },
     ],
   },
 };
 
+/** Test kinds in the corpus. */
 export const TestKinds: Story = {
   args: {
     height: 6,
     segments: [
-      { key: "unit", label: "Module", value: 42, color: color.signal },
+      { key: "unit", label: "Unit", value: 42, color: color.signal },
       { key: "integration", label: "Integration", value: 18, color: color.signalMid },
-      { key: "e2e", label: "end.to.End", value: 7, color: color.line2 },
+      { key: "e2e", label: "End-to-end", value: 7, color: color.line2 },
     ],
   },
 };
 
+/** Empty set — the band stays a quiet line. */
 export const Empty: Story = {
   args: { segments: [{ key: "active", label: "active", value: 0, color: color.ink }] },
 };

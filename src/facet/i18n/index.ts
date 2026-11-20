@@ -1,11 +1,12 @@
 export { de } from "./de";
 export { en, type Dictionary, type TextKey } from "./en";
 export {
-  FacetTextProvider,
+  TextProvider,
   useText,
+  createText,
   type PluralKey,
   type TextParams,
   type FacetLocale,
   type FacetText,
-  type FacetTextProviderProps,
+  type TextProviderProps,
 } from "./TextProvider";

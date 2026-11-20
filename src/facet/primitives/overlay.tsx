@@ -1,7 +1,119 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { useText } from "../i18n/TextProvider";
 import { Icon, type IconName } from "./Icon";
 import { IconButton } from "./controls";
+
+/**
+ * Overlays are pure: whether they are open is a prop, and closing is a callback.
+ * Focus handling and outside clicks belong to the logic layer of the app; the
+ * breadcrumb's sibling list is the exception, since every page that shows one
+ * needs the same search, Esc and outside press, and it still only calls back.
+ *
+ * A menu's keyboard is the other exception (WAI-ARIA menu button): the arrows
+ * walk its items and wrap, Home and End reach the ends, and when it closes with
+ * the focus inside, the focus goes back to the control that opened it instead of
+ * falling to the page. Whether it is open still stays with the app.
+ */
+
+/** Which item takes the focus when a menu opens from the keyboard. */
+export type MenuFocus = "first" | "last";
+
+/**
+ * Hands the opening focus to a menu that a component draws from a slot (the
+ * role menu in the top bar), where the trigger cannot pass a prop.
+ */
+export const MenuFocusContext = createContext<MenuFocus | undefined>(undefined);
+
+const MENU_ITEM = '[role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"]';
+
+function menuItems(menu: Element | null): HTMLElement[] {
+  if (!menu) return [];
+  return Array.from(menu.querySelectorAll<HTMLElement>(MENU_ITEM)).filter(
+    (el) => !(el as HTMLButtonElement).disabled,
+  );
+}
+
+function focusItem(menu: Element | null, at: MenuFocus) {
+  const items = menuItems(menu);
+  items[at === "first" ? 0 : items.length - 1]?.focus();
+}
+
+/**
+ * The keyboard of an open menu. Focuses the first or last item when it was
+ * opened from the keyboard, and gives the focus back to the opener when it
+ * closes with the focus inside it. A layout effect, so the cleanup still sees
+ * the focused item before React removes the menu from the document.
+ */
+export function useMenuKeyboard(ref: RefObject<HTMLElement | null>, openFocus?: MenuFocus) {
+  const fromContext = useContext(MenuFocusContext);
+  const initial = useRef(openFocus ?? fromContext);
+  useLayoutEffect(() => {
+    const menu = ref.current;
+    const opener = document.activeElement as HTMLElement | null;
+    if (initial.current) focusItem(menu, initial.current);
+    return () => {
+      if (!menu || !opener || opener === document.body) return;
+      if (menu.contains(document.activeElement) && !menu.contains(opener)) opener.focus();
+    };
+  }, [ref]);
+  return (e: ReactKeyboardEvent<HTMLElement>) => {
+    const items = menuItems(ref.current);
+    if (!items.length) return;
+    const at = items.indexOf(e.target as HTMLElement);
+    let next: number | null = null;
+    if (e.key === "ArrowDown") next = at < 0 ? 0 : (at + 1) % items.length;
+    else if (at < 0)
+      return; // a field in the menu's header keeps its other keys
+    else if (e.key === "ArrowUp") next = (at - 1 + items.length) % items.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = items.length - 1;
+    if (next == null) return;
+    e.preventDefault();
+    items[next].focus();
+  };
+}
+
+/**
+ * The control that opens a menu: Enter, Space and the arrows open it from the
+ * keyboard with the focus on an item (Down and Enter the first, Up the last); a
+ * pointer opens it without moving the focus. `focus` goes to the menu's
+ * `openFocus` (or through `MenuFocusContext`). An arrow on the control of an
+ * open menu moves into it; the menu stands beside the control in one wrapper.
+ */
+export function useMenuTrigger(open: boolean, onToggle?: () => void) {
+  const [focus, setFocus] = useState<MenuFocus | undefined>(undefined);
+  return {
+    focus,
+    onClick: (e: ReactMouseEvent<HTMLElement>) => {
+      // A click from Enter or Space carries no pointer press (detail 0).
+      setFocus(e.detail === 0 ? "first" : undefined);
+      onToggle?.();
+    },
+    onKeyDown: (e: ReactKeyboardEvent<HTMLElement>) => {
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      e.preventDefault();
+      const at: MenuFocus = e.key === "ArrowDown" ? "first" : "last";
+      if (open) {
+        focusItem(e.currentTarget.parentElement?.querySelector('[role="menu"]') ?? null, at);
+        return;
+      }
+      setFocus(at);
+      onToggle?.();
+    },
+  };
+}
 
 export type MenuItem = {
   key: string;
@@ -21,6 +133,7 @@ export function Menu({
   className,
   header,
   footer,
+  openFocus,
 }: {
   label: string;
   groups: { label?: string; items: MenuItem[] }[];
@@ -28,13 +141,20 @@ export function Menu({
   className?: string;
   header?: ReactNode;
   footer?: ReactNode;
+  /** The item that takes the focus when the menu opens from the keyboard. */
+  openFocus?: MenuFocus;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const onKeyDown = useMenuKeyboard(ref, openFocus);
   return (
     <div
+      ref={ref}
       className={`t-popover t-float ${className ?? ""}`}
       role="menu"
       aria-label={label}
       style={style}
+      tabIndex={-1}
+      onKeyDown={onKeyDown}
     >
       {header}
       {groups.map((g, gi) => (
@@ -74,7 +194,7 @@ export type SheetProps = {
   footer?: ReactNode;
   children: ReactNode;
   onClose?: () => void;
-
+  /** Without a scrim the page behind stays usable (the chat dock). */
   modal?: boolean;
   width?: number;
 };
@@ -190,20 +310,24 @@ export function Tooltip({ children, style }: { children: ReactNode; style?: CSSP
   );
 }
 
+/* Breadcrumbs ------------------------------------------------------------ */
+
 export type Crumb = {
   key: string;
   label: ReactNode;
   href?: string;
   onClick?: () => void;
-
+  /** Siblings reachable from this segment's caret. */
   siblings?: MenuItem[];
   mono?: boolean;
 };
 
+/** The words a sibling is found by: its key, and its label where that is text. */
 function siblingText(it: MenuItem): string {
   return typeof it.label === "string" ? `${it.key} ${it.label}` : it.key;
 }
 
+/** The siblings whose text holds every word of `query`, in their order. */
 export function filterSiblings(items: MenuItem[], query: string): MenuItem[] {
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   if (!words.length) return items;
@@ -213,6 +337,18 @@ export function filterSiblings(items: MenuItem[], query: string): MenuItem[] {
   });
 }
 
+/**
+ * Every segment is a place. The last one is the current page and not a link;
+ * a segment without `href` or `onClick` is plain text, never a dead button.
+ * A segment with siblings carries a caret that opens them (`openKey`).
+ *
+ * The open list has a search field: typing filters the siblings, Enter opens
+ * the first hit, ArrowDown moves to the list. Esc or a press outside the list
+ * calls `onClose`; the caret then holds the focus again after Esc. The query
+ * is the container's (`query`, `onQuery`) when it passes one, so a list it
+ * restores comes back as it was; otherwise the list keeps its own.
+ *
+ */
 export function Breadcrumbs({
   crumbs,
   openKey,
@@ -229,7 +365,8 @@ export function Breadcrumbs({
   onClose?: () => void;
 }) {
   const { t } = useText();
-
+  // A list the container does not hold keeps its own search, which starts
+  // empty each time a list opens: it belongs to the key it was typed under.
   const [own, setOwn] = useState<{ key: string | null | undefined; query: string }>({
     key: null,
     query: "",
@@ -238,11 +375,12 @@ export function Breadcrumbs({
   const q = query ?? (own.key === openKey ? own.query : "");
   const setQuery = onQuery ?? ((next: string) => setOwn({ key: openKey, query: next }));
   const open = openKey != null && crumbs.some((c) => c.key === openKey && c.siblings?.length);
-
+  // The list opens to be searched: its field takes the focus.
   useEffect(() => {
     if (open) openRef.current?.querySelector<HTMLInputElement>("input")?.focus();
   }, [open, openKey]);
-
+  // A press anywhere outside the open list closes it; Esc closes it and hands
+  // the focus back to its caret.
   useEffect(() => {
     if (!open || !onClose) return;
     const onDown = (e: PointerEvent) => {
@@ -285,6 +423,7 @@ export function Breadcrumbs({
                   {c.label}
                 </button>
               ) : (
+                // A segment that leads nowhere is not offered as a button.
                 <span className={c.mono ? "t-mono t-crumbs__text" : "t-crumbs__text"}>
                   {c.label}
                 </span>

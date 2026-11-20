@@ -1,0 +1,96 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for FocusRow closed 1`] = `
+<div
+  style="border-top-style: solid; border-top-width: 1px; border-top-color: var(--line); background: transparent; opacity: 1; transition: opacity var(--motion-hit) ease; min-width: 0;"
+>
+  <div
+    aria-expanded="false"
+    role="button"
+    style="display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; grid-template-areas: "rank title meta" "rank why meta"; column-gap: 12px; align-items: baseline; padding: 10px 12px 12px 0px; cursor: pointer; min-height: 32px;"
+    tabindex="0"
+  >
+    <span
+      style="grid-area: rank; align-self: start; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); padding-top: 3px;"
+    >
+      01
+    </span>
+    <span
+      style="grid-area: title; font-family: var(--font-sans); font-size: var(--text-base); color: var(--ink); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      Quiet hours
+    </span>
+    <span
+      style="grid-area: why; font-family: var(--font-sans); font-size: var(--text-meta); color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      Check overdue
+    </span>
+  </div>
+</div>
+`;
+
+exports[`Snapshot tests for FocusRow dimmed neighbouring row 1`] = `
+<div
+  style="border-top-style: solid; border-top-width: 1px; border-top-color: var(--line); background: transparent; opacity: 0.42; transition: opacity var(--motion-hit) ease; min-width: 0;"
+>
+  <div
+    aria-expanded="false"
+    role="button"
+    style="display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; grid-template-areas: "rank title meta" "rank why meta"; column-gap: 12px; align-items: baseline; padding: 10px 12px 12px 0px; cursor: pointer; min-height: 32px;"
+    tabindex="0"
+  >
+    <span
+      style="grid-area: rank; align-self: start; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); padding-top: 3px;"
+    >
+      02
+    </span>
+    <span
+      style="grid-area: title; font-family: var(--font-sans); font-size: var(--text-base); color: var(--ink); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      Task search
+    </span>
+    <span
+      style="grid-area: why; font-family: var(--font-sans); font-size: var(--text-meta); color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      no entry point
+    </span>
+  </div>
+</div>
+`;
+
+exports[`Snapshot tests for FocusRow open with evidence 1`] = `
+<div
+  style="border-top-style: solid; border-top-width: 1px; border-top-color: var(--line); background: var(--surface); opacity: 1; transition: opacity var(--motion-hit) ease; min-width: 0;"
+>
+  <div
+    aria-expanded="true"
+    role="button"
+    style="display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; grid-template-areas: "rank title meta" "rank why meta"; column-gap: 12px; align-items: baseline; padding: 10px 12px 12px 0px; cursor: pointer; min-height: 32px;"
+    tabindex="0"
+  >
+    <span
+      style="grid-area: rank; align-self: start; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); padding-top: 3px;"
+    >
+      01
+    </span>
+    <span
+      style="grid-area: title; font-family: var(--font-sans); font-size: var(--text-base); color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      Quiet hours
+    </span>
+    <span
+      style="grid-area: why; font-family: var(--font-sans); font-size: var(--text-meta); color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      Check overdue
+    </span>
+  </div>
+  <div
+    data-open="true"
+    style="padding: 0px 12px 16px 38px; min-width: 0;"
+  >
+    <p>
+      Evidence
+    </p>
+  </div>
+</div>
+`;

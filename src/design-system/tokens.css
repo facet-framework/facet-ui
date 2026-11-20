@@ -1,32 +1,51 @@
+/*
+ * FACET design system — tokens of the FACET visual language.
+ *
+ * Meaning of the colours — each carries exactly one statement:
+ *   signal  interactive, open, "this is where it continues"
+ *   ok      proven (full coverage, tested promises, rendered fields)
+ *   plan    planned
+ *   due   overdue — the only real warning colour
+ * State is never encoded by colour alone: rank, weight and position carry it too.
+ */
+
 :root {
+  /* Surfaces */
   --paper: #f2f3f0;
   --surface: #fafaf8;
   --tint: #eaedf4;
   --tint-2: #dfe4f0;
 
+  /* Lines */
   --line: #d8dad3;
   --line-2: #c2c5bd;
 
+  /* Type */
   --ink: #111318;
   --soft: #2f333a;
   --dim: #4a4f56;
   --faint: #666b72;
 
+  /* Meaning colours */
   --signal: #2244a8;
   --sig-soft: rgba(34, 68, 168, 0.1);
   --sig-mid: rgba(34, 68, 168, 0.52);
-  --deadline: #95270f;
-  --deadline-soft: rgba(149, 39, 15, 0.12);
+  --due: #95270f;
+  --due-soft: rgba(149, 39, 15, 0.12);
   --ok: #1f6248;
   --ok-soft: rgba(31, 98, 72, 0.14);
   --plan: #8a5b12;
   --scrim: rgba(17, 19, 24, 0.3);
 
+  /* Heat levels of the defect register — the same signal colour at four opacities,
+     so the scale has one colour and not four. It never stands alone: every
+     cell holds the number it encodes. */
   --heat-1: rgba(34, 68, 168, 0.08);
   --heat-2: rgba(34, 68, 168, 0.2);
   --heat-3: rgba(34, 68, 168, 0.38);
   --heat-4: rgba(34, 68, 168, 0.58);
 
+  /* Typography */
   --font-sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
@@ -44,6 +63,7 @@
   --tracking-caps: 0.14em;
   --tracking-wide: 0.2em;
 
+  /* Grid */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -52,6 +72,7 @@
   --space-6: 28px;
   --space-7: 40px;
 
+  /* Motion — 220–320 ms, the direction of origin carries meaning */
   --motion-ease: cubic-bezier(0.2, 0.75, 0.2, 1);
   --motion-reveal: 0.3s;
   --motion-fade: 0.26s;
@@ -59,6 +80,7 @@
   --motion-hit: 0.2s;
 }
 
+/* Direction of origin: the register comes from below, the detail from the right. */
 @keyframes facet-up {
   from {
     transform: translateY(30px);
@@ -121,6 +143,11 @@
     border-color var(--motion-hit) ease;
 }
 
+/*
+ * Mark geometry: two 44×78 blocks, gap 12, offset 22, resting field 100×100.
+ * Motion uses five bars in a 158×100 field via data-facet-mark-bar.
+ * open-* returns to rest after one pass; load-* repeats until loading ends.
+ */
 @keyframes facet-mark-w2 {
   0%,
   10% {
@@ -604,6 +631,17 @@ input::placeholder {
   color: var(--faint);
 }
 
+/*
+ * Scrollbars in the visual language: a stroke on paper, not a bar with a
+ * border. The thumb gets its narrowness from a transparent border instead
+ * of a smaller track width — so the hit area stays ten pixels wide
+ * while the mark is three.
+ *
+ * Both notations, because they do not overlap: `scrollbar-color` is
+ * what Firefox knows, `::-webkit-scrollbar` what Chromium and Safari
+ * know. Setting only the second meant the bar in Firefox looks like
+ * everywhere else — that is, not like here.
+ */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--line-2) transparent;

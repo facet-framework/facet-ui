@@ -1,3 +1,5 @@
+/** Shapes of the story data. They mirror what the Atlas model provides, in English. */
+
 export type FixtureScenario = { id: string; text: string };
 export type FixtureTest = { kind: string; name: string; proves: string[] };
 export type FixtureAnchor = { path: string; line: number; role: string };
@@ -22,7 +24,7 @@ export type FixtureFeature = {
   dependsOn: string[];
   variants: string[];
   driftFiles: string[];
-
+  /** Five Knowledge slots; an empty string is an open slot. */
   knowledge: string[];
   knowledgeOpen: number;
   observed: boolean;
@@ -64,9 +66,9 @@ export type FixtureMetric = {
 export type FixtureBpmn = {
   file: string;
   name: string;
-
+  /** [kind, label, x, y, width, height] */
   shapes: [string, string, number, number, number, number][];
-
+  /** [kind, label, waypoints] */
   edges: [string, string, [number, number][]][];
 };
 
@@ -85,13 +87,13 @@ export type FixtureRegistry = {
   scan: {
     loc: number;
     files: number;
-    verankert: number;
-    unverankert: number;
-    waisen: unknown[];
+    anchored: number;
+    unanchored: number;
+    orphans: unknown[];
     lastChanged: number;
   };
   calibration: FixtureMetric[];
   hotspots: { path: string; loc: number; dir: string; dirAnchoredPct: number }[];
-  runners: { id: string; cwd: string; command: string; bericht: string }[];
+  runners: { id: string; cwd: string; command: string; report: string }[];
   bpmn: FixtureBpmn[];
 };

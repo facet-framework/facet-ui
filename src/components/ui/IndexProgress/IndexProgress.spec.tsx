@@ -1,19 +1,22 @@
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/IndexProgress/IndexProgress.spec.text";
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import { initialStatus, type IndexStatus } from "../../../core";
 import IndexProgressWithLogic, { IndexProgress, withIndexProgressLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 function status(patch: Partial<IndexStatus> = {}): IndexStatus {
   return { ...initialStatus(), ...patch };
 }
 
+/** The ladder is the first list, the file ticker the second. */
 function tickerOf(lists: HTMLElement[]): HTMLElement {
   return lists[lists.length - 1];
 }
 
 describe("Unit tests for IndexProgress", () => {
-  it("announces an ongoing operation", () => {
+  it("announces itself as a running operation", () => {
     render(
       <IndexProgress
         containerStyle={{}}
@@ -24,12 +27,12 @@ describe("Unit tests for IndexProgress", () => {
         captionStyle={{}}
         tickerStyle={{}}
         tickerRowStyles={[]}
-        title={localized.text2}
+        title="Reading the records"
         origin="/repo"
         phases={[]}
         percent={40}
-        progressLabel={germanLabels.text176}
-        caption={germanLabels.text177}
+        progressLabel="7 of 17"
+        caption="7 of 17 records read"
         ticker={[]}
         busy
       />,
@@ -37,13 +40,13 @@ describe("Unit tests for IndexProgress", () => {
 
     const node = screen.getByRole("status");
     expect(node).toHaveAttribute("aria-busy", "true");
-    expect(screen.getByRole("progressbar", { name: germanLabels.text176 })).toHaveAttribute(
+    expect(screen.getByRole("progressbar", { name: "7 of 17" })).toHaveAttribute(
       "aria-valuenow",
       "40",
     );
   });
 
-  it("omits source details when the host provides none", () => {
+  it("leaves out the origin line when the host names none", () => {
     render(
       <IndexProgress
         containerStyle={{}}
@@ -54,11 +57,11 @@ describe("Unit tests for IndexProgress", () => {
         captionStyle={{}}
         tickerStyle={{}}
         tickerRowStyles={[]}
-        title={germanLabels.text178}
+        title="Waiting for the facet server"
         origin=""
         phases={[]}
         percent={null}
-        progressLabel={germanLabels.text178}
+        progressLabel="Waiting for the facet server"
         caption=""
         ticker={[]}
         busy
@@ -70,42 +73,42 @@ describe("Unit tests for IndexProgress", () => {
 });
 
 describe("Unit tests for withIndexProgressLogic", () => {
-  it("names the current step", () => {
+  it("names the running step", () => {
     render(<IndexProgressWithLogic status={status({ phase: "index" })} />);
-    expect(screen.getByText(localized.text4)).toBeInTheDocument();
+    expect(screen.getByText("Searching the entry points in code")).toBeInTheDocument();
   });
 
-  it("shows measured progress for the current phase", () => {
+  it("shows the measured share of the running phase", () => {
     render(<IndexProgressWithLogic status={status({ phase: "index", done: 300, total: 1200 })} />);
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "25");
   });
 
-  it("stays at zero when the total is unknown", () => {
+  it("stays at zero with an unknown reference size instead of inventing a share", () => {
     render(<IndexProgressWithLogic status={status({ phase: "enumerate", done: 812 })} />);
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
-    expect(screen.getByText(localized.text7)).toBeInTheDocument();
+    expect(screen.getByText("812 files found")).toBeInTheDocument();
   });
 
-  it("formats file counts with thousands separators", () => {
+  it("counts files with a thousands separator", () => {
     render(
       <IndexProgressWithLogic
         status={status({ phase: "index", done: 1204, total: 2481, anchors: 37 })}
       />,
     );
-    expect(screen.getByText(localized.text9)).toBeInTheDocument();
+    expect(screen.getByText("1,204 of 2,481 files searched · 37 anchors")).toBeInTheDocument();
   });
 
-  it("distinguishes completed, running and pending steps", () => {
+  it("marks done, running and open steps differently", () => {
     render(<IndexProgressWithLogic status={status({ phase: "records" })} />);
 
     const rows = screen.getAllByRole("listitem");
-
+    // Connection and configuration come before "Read records", the model after it.
     expect(rows[0]).toHaveTextContent("✓");
     expect(rows[2]).toHaveTextContent("▸");
     expect(rows[5]).toHaveTextContent("·");
   });
 
-  it("lists recently read files with the newest first", () => {
+  it("keeps the most recently read files, newest first", () => {
     const { rerender } = render(
       <IndexProgressWithLogic status={status({ phase: "index", file: "src/a.ts" })} />,
     );
@@ -130,14 +133,14 @@ describe("Unit tests for withIndexProgressLogic", () => {
     expect(tickerOf(screen.getAllByRole("list", { hidden: true })).textContent).toBe("cb");
   });
 
-  it("names the root and registry as sources", () => {
+  it("names root and registry as the origin", () => {
     render(
       <IndexProgressWithLogic status={status()} root="/projects/taskflow" registry="storefront" />,
     );
     expect(screen.getByText("/projects/taskflow · Registry storefront")).toBeInTheDocument();
   });
 
-  it("marks a completed run as no longer running", () => {
+  it("reports the finished run as no longer running", () => {
     render(
       <IndexProgressWithLogic
         status={status({ phase: "ready", records: 17, files: 2481, anchors: 37 })}
@@ -145,18 +148,44 @@ describe("Unit tests for withIndexProgressLogic", () => {
     );
 
     expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "false");
-    expect(screen.getByText(localized.text15)).toBeInTheDocument();
+    expect(screen.getByText("17 records · 2,481 files · 37 anchors")).toBeInTheDocument();
   });
 
-  it("sets a descriptive displayName", () => {
+  it("gives a meaningful displayName", () => {
     expect(withIndexProgressLogic(IndexProgress).displayName).toBe(
       "withIndexProgressLogic(IndexProgress)",
     );
   });
 });
 
+describe("Unit tests for the German locale", () => {
+  it("speaks German under the German locale", () => {
+    renderInGerman(
+      <IndexProgressWithLogic
+        status={status({ phase: "index", done: 1204, total: 2481, anchors: 37 })}
+        registry="storefront"
+        root="/repo"
+      />,
+    );
+    expect(
+      screen.getByText(germanText.t("elements.indexProgress.title.index")),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        germanText.t("elements.indexProgress.caption.indexOf", {
+          done: "1.204",
+          total: "2.481",
+          anchors: "37",
+        }),
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("/repo · Registry storefront")).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("elements.indexProgress.step.index"))).toBeInTheDocument();
+  });
+});
+
 describe("Snapshot tests for IndexProgress", () => {
-  it("reading records", () => {
+  it("records are being read", () => {
     const { container } = render(
       <IndexProgressWithLogic
         status={status({
@@ -172,7 +201,7 @@ describe("Snapshot tests for IndexProgress", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("searching for anchors", () => {
+  it("anchors are being searched", () => {
     const { container } = render(
       <IndexProgressWithLogic
         status={status({

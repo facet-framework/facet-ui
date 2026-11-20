@@ -12,11 +12,15 @@ export type TrailProps = {
   containerStyle: CSSProperties;
   separatorStyle: CSSProperties;
   steps: TrailStepView[];
-
+  /** Label of the trail for screen readers. */
   label: string;
   "data-testid"?: string;
 };
 
+/**
+ * Mechanic 10 · Trail: the visible way back at the foot. Every level is
+ * clickable, Esc goes back exactly one level.
+ */
 export function Trail({ containerStyle, separatorStyle, steps, label, ...rest }: TrailProps) {
   return (
     <nav style={containerStyle} aria-label={label} {...rest}>

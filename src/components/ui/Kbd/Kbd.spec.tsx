@@ -1,15 +1,17 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/Kbd/Kbd.spec.text";
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import KbdWithLogic, { Kbd, withKbdLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 describe("Unit tests for Kbd", () => {
   it("shows the shortcut", () => {
-    render(<Kbd computedStyle={{}} keys="⌘K" label={labelText.text330} />);
+    render(<Kbd computedStyle={{}} keys="⌘K" label="Command K" />);
     expect(screen.getByText("⌘K")).toBeInTheDocument();
   });
 
-  it("outlines empty facets", () => {
+  it("names the spoken name", () => {
     render(<Kbd computedStyle={{}} keys="Esc" label="Escape" />);
     expect(screen.getByLabelText("Escape")).toBeInTheDocument();
   });
@@ -18,27 +20,38 @@ describe("Unit tests for Kbd", () => {
 describe("Unit tests for withKbdLogic", () => {
   it("translates special keys into spoken names", () => {
     render(<KbdWithLogic keys="⌘K" />);
-    expect(screen.getByLabelText(labelText.text330)).toBeInTheDocument();
+    expect(screen.getByLabelText("Command K")).toBeInTheDocument();
   });
 
-  it("combines key sequences", () => {
+  it("joins key sequences", () => {
     render(<KbdWithLogic keys={["→", "←"]} />);
     expect(screen.getByText("→ ←")).toBeInTheDocument();
-    expect(screen.getByLabelText("Pfeil rechts Pfeil links")).toBeInTheDocument();
+    expect(screen.getByLabelText("Arrow right Arrow left")).toBeInTheDocument();
   });
 
-  it("accepts a custom accessible label", () => {
-    render(<KbdWithLogic keys="R" label={localized.text5} />);
-    expect(screen.getByLabelText(localized.text6)).toBeInTheDocument();
+  it("allows a custom plain text", () => {
+    render(<KbdWithLogic keys="R" label="Open register" />);
+    expect(screen.getByLabelText("Open register")).toBeInTheDocument();
   });
 
-  it("bricht nie um", () => {
+  it("never wraps", () => {
     render(<KbdWithLogic keys="⌘K" data-testid="kbd" />);
     expect(screen.getByTestId("kbd")).toHaveStyle({ whiteSpace: "nowrap" });
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withKbdLogic(Kbd).displayName).toBe("withKbdLogic(Kbd)");
+  });
+});
+
+describe("Unit tests for the German locale", () => {
+  it("speaks German key names under the German locale", () => {
+    renderInGerman(<KbdWithLogic keys={["⌘", "→"]} />);
+    expect(
+      screen.getByLabelText(
+        `${germanText.t("elements.kbd.command")} ${germanText.t("elements.kbd.right")}`,
+      ),
+    ).toBeInTheDocument();
   });
 });
 
@@ -48,7 +61,7 @@ describe("Snapshot tests for Kbd", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("Key sequence", () => {
+  it("key sequence", () => {
     const { container } = render(<KbdWithLogic keys={["→", "←"]} />);
     expect(container.firstChild).toMatchSnapshot();
   });

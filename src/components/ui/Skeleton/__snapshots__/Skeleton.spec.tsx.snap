@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for Skeleton lead sentence 1`] = `
+<div
+  aria-busy="true"
+  aria-label="loading"
+  role="status"
+  style="height: 34px; width: 70%; background: var(--tint); flex: 0 0 auto;"
+/>
+`;
+
+exports[`Snapshot tests for Skeleton text line 1`] = `
+<div
+  aria-busy="true"
+  aria-label="loading"
+  role="status"
+  style="height: 14px; width: 100%; background: var(--tint); flex: 0 0 auto;"
+/>
+`;

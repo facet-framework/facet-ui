@@ -8,7 +8,12 @@ const meta: Meta<typeof AnchorMapWithLogic> = {
   title: "FACET UI/AnchorMap",
   component: AnchorMapWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Entry points in the code from the repo scan. Line numbers are marked with a dotted line because they do not come from the record. Drifted anchors come first.",
+      },
+    },
   },
   args: { anchors: model.anchorMap["sync/queue/offline-queue"] ?? [] },
   decorators: [
@@ -25,6 +30,7 @@ type Story = StoryObj<typeof meta>;
 
 export const EntryPoints: Story = {};
 
+/** With drift — the changed file is on top and in red. */
 export const WithDrift: Story = {
   args: {
     anchors: model.anchorMap["sync/conflict/last-write-wins"] ?? [],
@@ -32,8 +38,10 @@ export const WithDrift: Story = {
   },
 };
 
+/** Active but without an entry point — that is a finding, not an empty field. */
 export const WithoutEntryPoint: Story = { args: { anchors: [], lifecycle: "active" } };
 
+/** With a configured repo, paths become links with a line anchor. */
 export const WithRepoLink: Story = {
   args: {
     buildHref: (anchor) =>

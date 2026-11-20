@@ -1,20 +1,24 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { localized } from "../../../i18n/legacy/components/ui/RecordSource/RecordSource.spec.text";
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import RecordSourceWithLogic, { RecordSource, tokenizeYamlLine, withRecordSourceLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
 
-const raw = ["id: tasks/create/quick-add", remainingText.text159, "tags:", "  - offline"].join(
-  "\n",
-);
+const germanText = createGermanText("de");
+
+const raw = [
+  "id: tasks/create/quick-add",
+  "lifecycle: active # active",
+  "tags:",
+  "  - offline",
+].join("\n");
 
 describe("Unit tests for RecordSource", () => {
-  it("renders a number and content for each line", () => {
+  it("renders a number and its content per line", () => {
     const { container } = render(
       <RecordSource
         containerStyle={{}}
         captionStyle={{}}
-        caption={labelText.text313}
+        caption="1 line"
         tokenStyle={{ key: {}, value: {}, punct: {}, comment: {}, marker: {} }}
         lines={[
           {
@@ -38,7 +42,7 @@ describe("Unit tests for RecordSource", () => {
 });
 
 describe("Unit tests for tokenizeYamlLine", () => {
-  it("separates keys and values", () => {
+  it("separates key and value", () => {
     expect(tokenizeYamlLine("id: a/b/c")).toEqual([
       { kind: "key", text: "id" },
       { kind: "punct", text: ": " },
@@ -46,67 +50,76 @@ describe("Unit tests for tokenizeYamlLine", () => {
     ]);
   });
 
-  it("recognizes comments", () => {
-    expect(tokenizeYamlLine(remainingText.text159)).toContainEqual({
+  it("recognises comments", () => {
+    expect(tokenizeYamlLine("lifecycle: active # active")).toContainEqual({
       kind: "comment",
-      text: remainingText.text160,
+      text: "# active",
     });
   });
 
-  it("recognizes list entries", () => {
+  it("recognises list entries", () => {
     expect(tokenizeYamlLine("  - offline")[0]).toEqual({ kind: "marker", text: "  - " });
   });
 
-  it("preserves indentation", () => {
+  it("keeps the indentation", () => {
     expect(tokenizeYamlLine("  summary: x")[0]).toEqual({ kind: "punct", text: "  " });
   });
 
-  it("returns lines without keys as values", () => {
-    expect(tokenizeYamlLine(localized.text7)).toEqual([{ kind: "value", text: localized.text8 }]);
+  it("returns lines without a key as a value", () => {
+    expect(tokenizeYamlLine("text only")).toEqual([{ kind: "value", text: "text only" }]);
   });
 
-  it("preserves empty lines", () => {
+  it("leaves empty lines empty", () => {
     expect(tokenizeYamlLine("   ")).toEqual([]);
   });
 });
 
 describe("Unit tests for withRecordSourceLogic", () => {
-  it("numbers every line", () => {
+  it("numbers all lines", () => {
     const { container } = render(<RecordSourceWithLogic raw={raw} />);
     expect(container.querySelectorAll("[data-line]")).toHaveLength(4);
   });
 
-  it("names the path and line count above the source", () => {
+  it("names path and line count above the source", () => {
     render(<RecordSourceWithLogic raw={raw} path="quick-add.yaml" />);
-    expect(screen.getByText(labelText.text314)).toBeInTheDocument();
+    expect(screen.getByText("quick-add.yaml · 4 lines")).toBeInTheDocument();
   });
 
-  it("highlights the requested line", () => {
+  it("highlights the given line", () => {
     const { container } = render(<RecordSourceWithLogic raw={raw} markLine={2} />);
     expect(container.querySelector('[data-line="2"]')).toHaveStyle({
-      background: "var(--deadline-soft)",
+      background: "var(--due-soft)",
     });
   });
 
-  it("trims the trailing empty line", () => {
+  it("cuts off the trailing empty line", () => {
     const { container } = render(<RecordSourceWithLogic raw={"a: 1\n"} />);
     expect(container.querySelectorAll("[data-line]")).toHaveLength(1);
   });
 
-  it("handles an empty file", () => {
+  it("copes with an empty file", () => {
     render(<RecordSourceWithLogic raw="" />);
-    expect(screen.getByText(labelText.text313)).toBeInTheDocument();
+    expect(screen.getByText("1 line")).toBeInTheDocument();
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withRecordSourceLogic(RecordSource).displayName).toBe(
       "withRecordSourceLogic(RecordSource)",
     );
   });
 });
 
+describe("Unit tests for the German locale", () => {
+  it("speaks German under the German locale", () => {
+    renderInGerman(<RecordSourceWithLogic raw={raw} path="quick-add.yaml" />);
+    expect(
+      screen.getByText(`quick-add.yaml · ${germanText.plural("elements.recordSource.lines", 4)}`),
+    ).toBeInTheDocument();
+  });
+});
+
 describe("Snapshot tests for RecordSource", () => {
-  it("Raw source", () => {
+  it("raw source", () => {
     const { container } = render(<RecordSourceWithLogic raw={raw} path="quick-add.yaml" />);
     expect(container.firstChild).toMatchSnapshot();
   });

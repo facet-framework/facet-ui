@@ -1,4 +1,5 @@
-import { localized } from "../i18n/legacy/core/model";
+import { deCore } from "../facet/i18n/catalog/core";
+/** Build registry-wide summaries, indexes, and diagnostics from normalized records. */
 
 import type { Glossary } from "./glossary";
 import { taxonomyTree } from "./taxonomy";
@@ -43,10 +44,12 @@ export function pct(part: number, total: number): number {
   return total ? Math.round((part / total) * 100) : 0;
 }
 
-export function formatNumber(n: number): string {
-  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+/** A number grouped for the active locale; English is the default. */
+export function formatNumber(n: number, locale = "en"): string {
+  return new Intl.NumberFormat(locale).format(n);
 }
 
+/** Field paths Atlas displays. An entry ending in `.` counts as a prefix. */
 export const RENDERED_PATHS: readonly string[] = [
   "id",
   "schema_version",
@@ -134,6 +137,7 @@ export function isRenderedPath(path: string): boolean {
   return RENDERED_PATHS.some((r) => r.endsWith(".") && path.startsWith(r));
 }
 
+/** Collects every field path that occurs, with its frequency — the basis of the completeness view. */
 export function collectPaths(
   node: YamlValue | undefined,
   prefix: string,
@@ -159,19 +163,37 @@ export function collectPaths(
 
 const SEVERITY_RANK: Record<string, number> = { critical: 0, warning: 1, info: 2 };
 
+/** An edge pair, regardless of direction — for the "already declared" check. */
 function pairKey(a: string, b: string): string {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
+/** Lower-cased, trimmed — the basis of the near-duplicate comparison. */
 function normalizeVocab(value: string): string {
   return value.trim().toLowerCase();
 }
 
+/**
+ * Whether two (already normalised) raw values are a near-duplicate: the
+ * shorter is a prefix of the longer — `warn` in `warning`. This only inspects
+ * the characters that are there anyway; there is no table of known pairs and
+ * no distance estimate that would guess anything. An empty value (an alert
+ * without a severity) never counts as a duplicate of a set value — "missing"
+ * and "written short" are two different findings.
+ */
 function isNearDuplicate(a: string, b: string): boolean {
   if (!a || !b || a === b) return false;
   return a.startsWith(b) || b.startsWith(a);
 }
 
+/**
+ * Builds vocabulary groups from raw-value/record pairs: one entry per raw value
+ * (frequency + affected records), near-duplicates visually merged into one
+ * group through a prefix union-find — also across a chain
+ * (`warn` → `warnin` → `warning`). Within a group and between groups the most
+ * frequent raw value comes first, the same rule as everywhere else in the
+ * model.
+ */
 function buildVocabulary(entries: { value: string; recordId: string }[]): VocabGroup[] {
   const byValue = new Map<string, { count: number; recordIds: Set<string> }>();
   entries.forEach(({ value, recordId }) => {
@@ -234,8 +256,24 @@ function buildVocabulary(entries: { value: string; recordId: string }[]): VocabG
     .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
 }
 
+/**
+ * Recognises one of the four prefixes with which
+ * `canonical_schema.fields[].constraints` describes a controlled value set in a
+ * real corpus: `enum:`, `values:`, `csv:`, `variant:`. The recognition matches
+ * the independently implemented parser in FACET Core.
+ */
 const ENUM_PREFIX = /^(enum|values|csv|variant)\s*:\s*(.*)$/i;
 
+/**
+ * Normalises a `constraints` line to a list of values when it is enum-shaped —
+ * otherwise `null`. Four notations are recognised: `enum: a|b|c`,
+ * `values:a|b|c`, `values:[a,b,c]`, `csv:`/`variant:` prefix variants
+ * (comma-separated). Tolerant rather than strict: the goal is to find real
+ * divergences in an untidy corpus, not to reject every free text that does not
+ * fit exactly — but without one of the four prefixes even a value containing a
+ * comma or pipe is no finding, otherwise e.g. `UTC, optional` would wrongly be
+ * read as an enum.
+ */
 export function parseEnumConstraint(text: string): string[] | null {
   const trimmed = String(text ?? "").trim();
   if (!trimmed) return null;
@@ -261,6 +299,13 @@ export function parseEnumConstraint(text: string): string[] | null {
   return values.length ? values : null;
 }
 
+/**
+ * Collects every enum-shaped `constraints` line across all data objects —
+ * the raw list, before it is aggregated by field name.
+ * A field can carry several free-text constraints (Array<string> per the
+ * schema, in older sets also a single string); the first one that turns out
+ * to be enum-shaped counts.
+ */
 export function collectEnumConstraints(entities: FacetRecord[]): EnumRawConstraint[] {
   const out: EnumRawConstraint[] = [];
   entities.forEach((entity) => {
@@ -285,10 +330,16 @@ export function collectEnumConstraints(entities: FacetRecord[]): EnumRawConstrai
   return out;
 }
 
+/** Order-independent key of a value set — order is not a divergence. */
 function enumValueSetKey(values: string[]): string {
   return Array.from(new Set(values)).sort().join("|");
 }
 
+/**
+ * Builds the ENUM register: one or more value sets per field name. More than
+ * one value set under the same field name is the divergence the register is
+ * meant to make visible.
+ */
 export function buildEnumRegister(entities: FacetRecord[]): EnumRegister {
   const raw = collectEnumConstraints(entities);
   const byField = new Map<string, Map<string, EnumValueSet>>();
@@ -319,6 +370,7 @@ export function buildEnumRegister(entities: FacetRecord[]): EnumRegister {
   };
 }
 
+/** Builds the complete model from all raw files. */
 export function buildModel(
   rc: Record<string, YamlValue>,
   paths: string[],
@@ -409,6 +461,14 @@ export function buildModel(
     r.dependedOnBy.forEach((d) => addEdge(r.id, d));
   });
 
+  // Consistency check: ids that appear in a record's free text
+  // (`intent.summary`, the Gherkin steps of its scenarios) but are declared
+  // neither as `depends_on` nor as `depended_on_by`. A mentioned id without a
+  // declared relation is either a forgotten declaration or a chance hit — both
+  // are a finding, not an error to be silently corrected. The direction of the
+  // mention says nothing about the direction of the dependency, so a pair
+  // counts as declared as soon as any edge exists between the two, in
+  // whichever direction.
   const declaredPairs = new Set<string>();
   edges.forEach((edge) => declaredPairs.add(pairKey(edge.from, edge.to)));
   const undeclaredMentions: UndeclaredMention[] = [];
@@ -444,6 +504,13 @@ export function buildModel(
     outgoing[e.from].push(e.to);
   });
 
+  // Kahn instead of fixed-point relaxation: a node leaves the queue only once
+  // every incoming edge has been processed, so exactly once — and every edge is
+  // relaxed exactly once. A cycle leaves at least one incoming edge open on
+  // each of its nodes, so none of them ever reaches in-degree 0. The old loop
+  // failed to recognise exactly that: it kept running until `ids.length`
+  // passes were reached, and the depth of the cycle nodes grew to a four-digit
+  // value instead of the actually longest chain.
   const remaining: Record<string, number> = {};
   ids.forEach((i) => (remaining[i] = deg[i].up));
   const queue = ids.filter((i) => remaining[i] === 0);
@@ -458,6 +525,12 @@ export function buildModel(
     });
   }
 
+  // Whatever remains sits on a cycle or behind one — a declared or
+  // self-contradicting dependency that never leads back to an origin. Instead
+  // of guessing which of the cycle nodes comes "first", they all get the same
+  // layer, directly behind everything that could be resolved: bounded,
+  // deterministic, and visible as a group instead of as a graph that grows
+  // beyond the screen.
   const cyclic = ids.filter((i) => !resolved.has(i));
   if (cyclic.length) {
     const resolvedMax = ids.reduce((mx, i) => (resolved.has(i) ? Math.max(mx, depth[i]) : mx), -1);
@@ -502,7 +575,9 @@ export function buildModel(
   policies.forEach((p) =>
     p.clauses.forEach((c) => {
       clauseCount++;
-      if (localized.text1.test(String(c.requirement))) mustCount++;
+      // Accept German requirement keywords alongside English MUST.
+      if (new RegExp(deCore["core.requirement.bindingPattern"]).test(String(c.requirement)))
+        mustCount++;
     }),
   );
 
@@ -539,6 +614,9 @@ export function buildModel(
     if (s.query_source) sources[String(s.query_source)] = true;
   });
 
+  // Vocabulary register: three recurring, project-defined vocabularies outside
+  // `canonical_schema` that its ENUM check does not capture — `warn`/`warning`
+  // is the same finding, only invisible because it is not counted there.
   const alertSeverities = buildVocabulary(
     alerts.map((a) => ({ value: asString(a.severity), recordId: a.rec.id })),
   );
@@ -566,15 +644,25 @@ export function buildModel(
   const anchorPairs = Object.keys(anchorMap).flatMap((id) =>
     anchorMap[id].map((a) => ({ ...a, id })),
   );
-
+  // A record can live in several files, and then several of them can have
+  // moved. The earlier version kept the last one and kept quiet about the
+  // rest — a number smaller than the truth.
   const driftIds: Record<string, DriftEntry[]> = {};
   (scan.drift ?? []).forEach((d) => (driftIds[d.id] = [...(driftIds[d.id] ?? []), d]));
 
+  // `activeAnywhere` instead of `f.lifecycle === "active"` — a variants
+  // record (FACET 1.4) has no top-level `lifecycle` by schema construction,
+  // so the scalar comparison silently excluded every variants record from
+  // each of these three signals.
   const unanchored = features.filter((f) => f.activeAnywhere && !(anchorMap[f.id] ?? []).length);
   const noIntent = recs.filter((r) => !r.summary);
   const knowSlots = features.reduce((n, f) => n + f.knowledge.length, 0);
   const knowAnswered = features.reduce((n, f) => n + f.knowledge.filter((s) => s.answer).length, 0);
 
+  // `intent.decision_records` bundled into its distinct targets: the same
+  // population (`features`) that the decision-references count in the
+  // knowledge probe counts over (`probeOf`), so the sum of the rows here
+  // equals exactly the number shown there.
   const decisionTargetEntries = new Map<string, { count: number; recordIds: string[] }>();
   features.forEach((f) => {
     f.adrs.forEach((target) => {
@@ -597,11 +685,18 @@ export function buildModel(
   );
   const noObs = features.filter((f) => f.activeAnywhere && !f.slos.length && !f.alerts.length);
 
+  // A policy covers a core feature directly (via `scope.features` or
+  // `lineage.related_policies`) or via its domain. Both count; whoever counted
+  // only the direct mention would report every feature governed domain-wide as
+  // ungoverned.
   const uncovered = features.filter((f) => !policies.some((p) => coverage(p, f)));
 
   const defectRecords = recs.filter((r) => r.defects.present);
   const defectTotal = defectRecords.reduce((n, r) => n + r.defects.total, 0);
-
+  // The open point is not the frequency — that on its own is no defect, and a
+  // heavily used, well-tested feature stands at the top there. Open is where
+  // something was fixed and not a single promise is proven: defects land where
+  // no test stands.
   const defectsUnproven = defectRecords.filter((r) => r.defects.total > 0 && r.proven === 0);
   const errorCodeRegister = buildErrorCodeRegister(recs);
   const enumRegister = buildEnumRegister(entities);
@@ -681,8 +776,14 @@ export function buildModel(
   };
 }
 
+/**
+ * Default pattern for error codes in the records' free text. The extractor
+ * also accepts a configured pattern. Grouping by leading digit is done by
+ * `errorCodeBand`, independently of the search.
+ */
 export const DEFAULT_ERROR_CODE_PATTERN = /E\d{4}/g;
 
+/** `E1234` → `E1xxx` — the band is the leading digit, the rest masked. */
 export function errorCodeBand(code: string): string {
   const m = code.match(/^(\D*)(\d)(\d*)$/);
   if (!m) return code;
@@ -690,6 +791,12 @@ export function errorCodeBand(code: string): string {
   return `${prefix}${digit}${"x".repeat(rest.length)}`;
 }
 
+/**
+ * The three places error codes are found: the summary, the Gherkin sentences
+ * of every scenario (joined step by step, as in the consistency check above),
+ * and the answer of the knowledge slot `common_pitfalls` — not any knowledge
+ * slot whatsoever.
+ */
 function errorCodeTextFields(record: FacetRecord): string[] {
   const fields: string[] = [];
   if (record.summary) fields.push(record.summary);
@@ -706,6 +813,12 @@ function errorCodeTextFields(record: FacetRecord): string[] {
   return fields;
 }
 
+/**
+ * Searches `pattern` in the free-text fields of every record. Repeated mentions
+ * of the same code in the same record count only once — the first place found
+ * supplies the sentence shown in the table. `records` with more than one entry
+ * is a possible collision: more than one feature id claims the same code.
+ */
 export function extractErrorCodes(
   recs: FacetRecord[],
   pattern: RegExp = DEFAULT_ERROR_CODE_PATTERN,
@@ -723,7 +836,8 @@ export function extractErrorCodes(
         if (!byCode.has(code)) byCode.set(code, new Map());
         const perRecord = byCode.get(code)!;
         if (!perRecord.has(record.id)) perRecord.set(record.id, text.trim());
-
+        // A zero-width match (a pattern that consumes no characters) would
+        // leave `exec` stuck at the same position — an endless loop.
         if (match.index === re.lastIndex) re.lastIndex += 1;
       }
     });
@@ -741,6 +855,12 @@ export function extractErrorCodes(
     );
 }
 
+/**
+ * The smallest free number of a band. The shape (prefix, digit width) comes
+ * from a code that was actually found, not from the band label itself — that
+ * carries a literal `x` for every masked position, and in a digit evaluation
+ * it would only be a source of errors.
+ */
 function nextFreeInBand(codes: string[]): string | null {
   if (!codes.length) return null;
   const sample = codes[0].match(/^(\D*)(\d+)$/);
@@ -757,6 +877,7 @@ function nextFreeInBand(codes: string[]): string | null {
   return null;
 }
 
+/** Builds the grouped register from the records — the basis of `model.errorCodeRegister`. */
 export function buildErrorCodeRegister(
   recs: FacetRecord[],
   pattern: RegExp = DEFAULT_ERROR_CODE_PATTERN,
@@ -786,6 +907,7 @@ export function buildErrorCodeRegister(
   };
 }
 
+/** How a policy covers a core feature — `null` means: not at all. */
 export function coverage(policy: FacetRecord, feature: FacetRecord): "direct" | "area" | null {
   const scope = asRecord(policy.scope);
   if (asArray<string>(scope.features).map(String).includes(feature.id)) return "direct";

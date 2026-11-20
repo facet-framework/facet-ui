@@ -9,13 +9,14 @@ export type WithHairlineProps = Omit<
   "computedStyle" | "role" | "aria-orientation"
 > & {
   orientation?: HairlineOrientation;
-
+  /** `line` for structure, `line2` for the stronger separation. */
   strength?: "line" | "line2";
-
+  /** Space before and after the line. */
   inset?: number;
   style?: CSSProperties;
 };
 
+/** Computes the line and reports its orientation to accessibility. */
 export function withHairlineLogic(Component: ComponentType<HairlineProps>) {
   const Wrapped = ({
     orientation = "horizontal",

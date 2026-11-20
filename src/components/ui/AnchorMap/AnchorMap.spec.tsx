@@ -1,8 +1,10 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { localized } from "../../../i18n/legacy/components/ui/AnchorMap/AnchorMap.spec.text";
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import AnchorMapWithLogic, { AnchorMap, withAnchorMapLogic } from ".";
 import type { Anchor } from "../../../core";
+import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const anchors: Anchor[] = [
   { path: "crates/sync/src/queue.rs", line: 118, role: "primary", excerpt: "pub fn enqueue()" },
@@ -16,12 +18,12 @@ const drift = {
 };
 
 describe("Unit tests for AnchorMap", () => {
-  it("renders the summary and entries", () => {
+  it("renders the answer line and entries", () => {
     const { container } = render(
       <AnchorMap
         containerStyle={{}}
         captionStyle={{}}
-        caption={labelText.text342}
+        caption="1 entry point in 1 file."
         entries={[
           {
             key: "a",
@@ -38,16 +40,16 @@ describe("Unit tests for AnchorMap", () => {
         ]}
       />,
     );
-    expect(screen.getByText(labelText.text342)).toBeInTheDocument();
+    expect(screen.getByText("1 entry point in 1 file.")).toBeInTheDocument();
     expect(container.querySelectorAll("[data-anchor]")).toHaveLength(1);
   });
 
-  it("links the path when a destination exists", () => {
+  it("turns the path into a link when a target exists", () => {
     render(
       <AnchorMap
         containerStyle={{}}
         captionStyle={{}}
-        caption={labelText.text343}
+        caption="1 entry point"
         entries={[
           {
             key: "a",
@@ -75,50 +77,51 @@ describe("Unit tests for AnchorMap", () => {
 describe("Unit tests for withAnchorMapLogic", () => {
   it("counts entry points and files", () => {
     render(<AnchorMapWithLogic anchors={anchors} />);
-    expect(screen.getByText(localized.text4)).toBeInTheDocument();
+    expect(screen.getByText("2 entry points in 2 files.")).toBeInTheDocument();
   });
 
-  it("uses singular wording for one entry point", () => {
+  it("uses the right grammatical number for a single entry point", () => {
     render(<AnchorMapWithLogic anchors={[anchors[0]]} />);
-    expect(screen.getByText(labelText.text342)).toBeInTheDocument();
+    expect(screen.getByText("1 entry point in 1 file.")).toBeInTheDocument();
   });
 
-  it("reports missing anchors for active records", () => {
+  it("turns the absence on active records into a finding", () => {
     render(<AnchorMapWithLogic anchors={[]} lifecycle="active" />);
-    expect(screen.getByText(localized.text7)).toHaveStyle({
-      color: "var(--deadline)",
+    expect(screen.getByText(/Active, but no entry point in code/)).toHaveStyle({
+      color: "var(--due)",
     });
   });
 
-  it("keeps planned records quiet", () => {
+  it("stays quiet for planned records", () => {
     render(<AnchorMapWithLogic anchors={[]} lifecycle="planned" />);
-    expect(screen.getByText(localized.text9)).toHaveStyle({ color: "var(--ink)" });
+    expect(screen.getByText("No entry point in code.")).toHaveStyle({ color: "var(--ink)" });
   });
 
-  it("prioritizes and colors moved anchors", () => {
+  it("moves shifted anchors to the front and colours them", () => {
     const { container } = render(<AnchorMapWithLogic anchors={anchors} drift={[drift]} />);
     const rows = container.querySelectorAll("[data-anchor]");
     expect(rows[0]).toHaveAttribute("data-anchor", "crates/sync/src/quarantine.rs:44");
     expect(screen.getByText("crates/sync/src/quarantine.rs")).toHaveStyle({
-      color: "var(--deadline)",
+      color: "var(--due)",
     });
   });
 
-  it("reports drift in the summary", () => {
+  it("reports the drift in the answer line", () => {
     render(<AnchorMapWithLogic anchors={anchors} drift={[drift]} />);
-    expect(screen.getByText(localized.text12)).toBeInTheDocument();
+    expect(screen.getByText(/1 file changed, the record did not/)).toBeInTheDocument();
   });
 
-  it("counts multiple changed files instead of naming one", () => {
+  it("counts several changed files instead of naming one of them", () => {
     const second = { ...drift, path: anchors[0].path };
     render(<AnchorMapWithLogic anchors={anchors} drift={[drift, second]} />);
-    expect(screen.getByText(localized.text14)).toBeInTheDocument();
+    expect(screen.getByText(/2 files changed, the record did not/)).toBeInTheDocument();
   });
 
-  it("highlights the file rather than its line number", () => {
+  it("marks the file, not the line number", () => {
+    // Drift follows the file path even when anchor lines move.
     const moved = anchors.map((anchor) => ({ ...anchor, line: anchor.line + 12 }));
     render(<AnchorMapWithLogic anchors={moved} drift={[drift]} />);
-    expect(screen.getByText(drift.path)).toHaveStyle({ color: "var(--deadline)" });
+    expect(screen.getByText(drift.path)).toHaveStyle({ color: "var(--due)" });
   });
 
   it("builds links only with a configured tool", () => {
@@ -133,17 +136,33 @@ describe("Unit tests for withAnchorMapLogic", () => {
     expect(screen.getAllByRole("link")).toHaveLength(2);
   });
 
-  it("optionally hides excerpts", () => {
+  it("hides excerpts on request", () => {
     render(<AnchorMapWithLogic anchors={anchors} hideExcerpt />);
     expect(screen.queryByText("pub fn enqueue()")).not.toBeInTheDocument();
   });
 
-  it("identifies line numbers as scan data", () => {
+  it("marks the line number as scan material", () => {
     render(<AnchorMapWithLogic anchors={[anchors[0]]} />);
     expect(screen.getByText(":118")).toHaveStyle({ borderBottomStyle: "dotted" });
   });
 
-  it("sets a descriptive displayName", () => {
+  it("speaks German under the German locale", () => {
+    renderInGerman(<AnchorMapWithLogic anchors={anchors} drift={[drift]} />);
+    expect(
+      screen.getByText(
+        germanText.t("elements.anchorMap.head", {
+          entries: germanText.plural("elements.anchorMap.entryPoints", 2),
+          files: germanText.plural("elements.anchorMap.files", 2),
+        }),
+        { exact: false },
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(germanText.plural("elements.anchorMap.driftedFiles", 1), { exact: false }),
+    ).toBeInTheDocument();
+  });
+
+  it("assigns a descriptive displayName", () => {
     expect(withAnchorMapLogic(AnchorMap).displayName).toBe("withAnchorMapLogic(AnchorMap)");
   });
 });
@@ -154,7 +173,7 @@ describe("Snapshot tests for AnchorMap", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("active record without an entry point", () => {
+  it("without an entry point on an active record", () => {
     const { container } = render(<AnchorMapWithLogic anchors={[]} lifecycle="active" />);
     expect(container.firstChild).toMatchSnapshot();
   });

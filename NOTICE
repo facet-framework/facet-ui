@@ -2,5 +2,5 @@ FACET UI
 Copyright 2026 Pascal Malbranche
 
 Licensed under the Apache License, Version 2.0; see LICENSE.
-Bundled third-party software and its notices are listed in dist/THIRD_PARTY.md
-and dist/licenses/. Source dependency information is in THIRD_PARTY.md.
+Bundled third-party software: react-dom@19.2.8 (MIT), react@19.2.8 (MIT), scheduler@0.27.0 (MIT).
+License texts are included in dist/licenses/. See THIRD_PARTY.md.

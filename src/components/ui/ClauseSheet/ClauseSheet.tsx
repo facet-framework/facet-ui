@@ -2,12 +2,12 @@ import type { CSSProperties } from "react";
 
 export type ClauseView = {
   key: string;
-
+  /** Id of the clause, e.g. "QH-01". */
   id: string;
-
+  /** Obligation as a word: MUST · SHOULD · MAY. */
   obligation: string;
   requirement: string;
-
+  /** What compliance is measured by — or the note that nothing is named. */
   measure: string;
   binding: boolean;
   rowStyle: CSSProperties;
@@ -25,6 +25,10 @@ export type ClauseSheetProps = {
   "data-testid"?: string;
 };
 
+/**
+ * Clauses of a rule set. The obligation stands as a word, not as a colour —
+ * MUST and MAY differ in rank and weight.
+ */
 export function ClauseSheet({
   containerStyle,
   captionStyle,

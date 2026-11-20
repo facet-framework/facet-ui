@@ -1,11 +1,33 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { useHeightVar } from "./bars";
 import { useText, type FacetText } from "../i18n/TextProvider";
 import { Icon, type IconName } from "../primitives/Icon";
 import { Button, IconButton, Kbd, SearchField } from "../primitives/controls";
-import { Menu, Sheet, type MenuItem } from "../primitives/overlay";
+import {
+  Menu,
+  MenuFocusContext,
+  Sheet,
+  useMenuKeyboard,
+  useMenuTrigger,
+  type MenuItem,
+} from "../primitives/overlay";
+import { TooltipLayer } from "../primitives/tooltip";
 
+/* Logo -------------------------------------------------------------------- */
+
+/**
+ * The mark's geometry geometry: two equal blocks
+ * 44 × 78 in a 100 × 100 field, a gap of 12, the right block offset 22 below
+ * the left. Never rounded: rounded corners are on the sheet's "not allowed" list.
+ */
 export const MARK = { block: 44, height: 78, gap: 12, offset: 22 } as const;
 
+/**
+ * The offset the mark shows for a drift share (0–1): level blocks for no
+ * drift, the full brand offset when everything drifted, and at least 6 units
+ * for any drift at all, so one drifting record still reads as offset. `null`
+ * means not measured, which is never drawn as level (that would say zero).
+ */
 export function driftOffset(share: number | null | undefined): number | null {
   if (share == null || !Number.isFinite(share)) return null;
   if (share <= 0) return 0;
@@ -14,18 +36,31 @@ export function driftOffset(share: number | null | undefined): number | null {
 
 export type LogoProps = {
   size?: number;
-
+  /**
+   * The drift share (0–1) the offset follows. Left out, the mark is the brand
+   * mark; `null` is not measured and draws the resting colourway at the brand
+   * offset, so an unmeasured state never reads as "no drift".
+   */
   drift?: number | null;
-
+  /** An accessible name; without one the mark is decoration beside a label. */
   label?: string;
+  /**
+   * The colour of the offset block: the brand signal, or the warning and bad
+   * tones for a measured drift that is light or strong.
+   */
+  tone?: DriftTone;
 };
 
-export function Logo({ size = 20, drift, label }: LogoProps) {
+/** How strongly a measured drift reads in the mark's second block. */
+export type DriftTone = "signal" | "warn" | "bad";
+
+/** Two offset blocks: the reader's mark. With `drift`, the offset is the measured drift. */
+export function Logo({ size = 20, drift, label, tone = "signal" }: LogoProps) {
   const measured = drift === undefined ? MARK.offset : driftOffset(drift);
   const offset = measured ?? MARK.offset;
   const state =
     drift === undefined ? "brand" : measured == null ? "unmeasured" : offset ? "drift" : "level";
-
+  // The pair stays centred in the field whatever the offset.
   const top = (MARK.offset - offset) / 2;
   const resting = state === "unmeasured";
   return (
@@ -37,6 +72,7 @@ export function Logo({ size = 20, drift, label }: LogoProps) {
       data-testid="logo-mark"
       data-state={state}
       data-offset={offset}
+      data-tone={resting ? "resting" : tone}
       {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true })}
     >
       <rect
@@ -55,7 +91,7 @@ export function Logo({ size = 20, drift, label }: LogoProps) {
         width={MARK.block}
         height={MARK.height}
         style={{
-          fill: resting ? "var(--t-faint)" : "var(--t-signal)",
+          fill: resting ? "var(--t-faint)" : `var(--t-${tone})`,
           transform: `translateY(${top + offset}px)`,
         }}
       />
@@ -63,19 +99,24 @@ export function Logo({ size = 20, drift, label }: LogoProps) {
   );
 }
 
+/** The accessible name of a drift mark, in the language of `t`. */
 export function driftMarkLabel(share: number | null, t: FacetText["t"]) {
   if (share == null) return t("shell.mark.unmeasured");
   if (share <= 0) return t("shell.mark.level");
   return t("shell.mark.drift", { value: t("shell.percent", { value: Math.round(share * 100) }) });
 }
 
+/** The mark as a drift indicator: offset by the measured share, named for a screen reader. */
 export function DriftMark({ share, size = 40 }: { share: number | null; size?: number }) {
   const { t } = useText();
   return <Logo size={size} drift={share} label={driftMarkLabel(share, t)} />;
 }
 
+/* History ------------------------------------------------------------------ */
+
+/** What kind of place a history entry is; the visible name comes from the dictionary. */
 export type HistoryKind =
-  "situation" | "area" | "dossier" | "plugin" | "overview" | "content" | "settings";
+  "overviewPage" | "area" | "record" | "plugin" | "overview" | "content" | "settings";
 
 export type HistoryEntry = {
   key: string;
@@ -87,9 +128,9 @@ export type HistoryEntry = {
 };
 
 const KIND_ICON: Record<HistoryKind, IconName> = {
-  situation: "home",
+  overviewPage: "home",
   area: "product",
-  dossier: "records",
+  record: "records",
   plugin: "diamond",
   overview: "layers",
   content: "contents",
@@ -104,6 +145,7 @@ export type HistoryMenuProps = {
   onClear?: () => void;
 };
 
+/** The list behind `‹`: places of this session, newest first, the current one marked. */
 export function HistoryMenu({ entries, filter = "", onFilter, onPick, onClear }: HistoryMenuProps) {
   const { t, plural } = useText();
   const q = filter.trim().toLowerCase();
@@ -162,11 +204,17 @@ export function HistoryMenu({ entries, filter = "", onFilter, onPick, onClear }:
   );
 }
 
+/* Top bar ------------------------------------------------------------------ */
+
+/** `null` means not measured; it shows as a dash, never as zero. */
 export type TopBarStats = {
   features: number | null;
   provenPct: number | null;
   drift: number | null;
-
+  /**
+   * Share of records with drift (0–1); the logo's offset follows it. Left out,
+   * the logo stays the brand mark; with `drift: null` it is not measured.
+   */
   driftShare?: number | null;
 };
 
@@ -187,10 +235,17 @@ export type TopBarProps = {
   onRole?: () => void;
   onTheme?: () => void;
   onSettings?: () => void;
+  /** A settings page the reader has not opened yet: the gear carries a dot. */
+  settingsFresh?: boolean;
   onHome?: () => void;
-
+  /** Mobile form: chevron, logo, search icon, menu. */
   compact?: boolean;
   onMenu?: () => void;
+  /**
+   * Actions the app adds to the bar, e.g. the doors plugins contribute. Drawn
+   * before the command field; the compact bar leaves them to the More sheet.
+   */
+  actions?: ReactNode;
 };
 
 export function TopBar({
@@ -210,13 +265,17 @@ export function TopBar({
   onRole,
   onTheme,
   onSettings,
+  settingsFresh,
   onHome,
   compact,
   onMenu,
+  actions,
 }: TopBarProps) {
   const { t, number } = useText();
-
+  // The logo carries the measured drift; unmeasured is its own state, never level.
   const share = !stats ? undefined : stats.drift == null ? null : stats.driftShare;
+  const historyKeys = useMenuTrigger(!!historyOpen && !!history, onHistory);
+  const roleKeys = useMenuTrigger(!!roleOpen && !!roleMenu, onRole);
   return (
     <header className="t-top" data-compact={compact || undefined}>
       <div className="t-top__history" style={{ position: "relative" }}>
@@ -248,10 +307,15 @@ export function TopBar({
             pressed={historyOpen}
             aria-haspopup="menu"
             aria-expanded={historyOpen}
-            onClick={onHistory}
+            onClick={historyKeys.onClick}
+            onKeyDown={historyKeys.onKeyDown}
           />
         ) : null}
-        {historyOpen && history ? <HistoryMenu {...history} /> : null}
+        {historyOpen && history ? (
+          <MenuFocusContext.Provider value={historyKeys.focus}>
+            <HistoryMenu {...history} />
+          </MenuFocusContext.Provider>
+        ) : null}
       </div>
       <button
         type="button"
@@ -289,6 +353,11 @@ export function TopBar({
         </dl>
       ) : null}
       <span className="t-spacer" />
+      {actions && !compact ? (
+        <div className="t-top__actions" data-testid="top-actions">
+          {actions}
+        </div>
+      ) : null}
       {compact ? (
         <>
           <IconButton icon="search" label={t("shell.top.goTo")} onClick={onCommand} />
@@ -311,19 +380,46 @@ export function TopBar({
               iconAfter="chevronDown"
               aria-haspopup="menu"
               aria-expanded={roleOpen}
-              onClick={onRole}
+              onClick={roleKeys.onClick}
+              onKeyDown={roleKeys.onKeyDown}
             >
               {roleName}
             </Button>
-            {roleOpen ? roleMenu : null}
+            {roleOpen ? (
+              <MenuFocusContext.Provider value={roleKeys.focus}>
+                {roleMenu}
+              </MenuFocusContext.Provider>
+            ) : null}
           </div>
           <IconButton icon={theme.icon} label={theme.label} onClick={onTheme} />
-          <IconButton icon="settings" label={t("shell.top.settings")} onClick={onSettings} />
+          <SettingsDoor fresh={settingsFresh} onSettings={onSettings} />
         </>
       )}
     </header>
   );
 }
+
+/** The gear, with a dot while a settings page waits unopened. */
+function SettingsDoor({ fresh, onSettings }: { fresh?: boolean; onSettings?: () => void }) {
+  const { t } = useText();
+  const button = (
+    <IconButton icon="settings" label={t("shell.top.settings")} onClick={onSettings} />
+  );
+  if (!fresh) return button;
+  return (
+    <span className="t-d-glow-anchor">
+      {button}
+      <span
+        className="t-d-glow"
+        role="img"
+        aria-label={t("shell.top.settingsNew")}
+        data-testid="settings-fresh"
+      />
+    </span>
+  );
+}
+
+/* Role menu ------------------------------------------------------------------ */
 
 export type RoleOption = { key: string; name: string; purpose: string };
 
@@ -337,12 +433,17 @@ export function RoleMenu({
   onPick?: (key: string) => void;
 }) {
   const { t } = useText();
+  const ref = useRef<HTMLDivElement>(null);
+  const onKeyDown = useMenuKeyboard(ref);
   return (
     <div
+      ref={ref}
       className="t-popover t-float"
       role="menu"
       aria-label={t("shell.role.label")}
       style={{ top: "calc(100% + 8px)", right: 0, width: 380 }}
+      tabIndex={-1}
+      onKeyDown={onKeyDown}
     >
       <div className="t-menu-label">{t("shell.role.who")}</div>
       {roles.map((r) => (
@@ -366,12 +467,14 @@ export function RoleMenu({
   );
 }
 
+/* Navigation --------------------------------------------------------------------- */
+
 export type NavItem = {
   key: string;
   label: string;
   icon: IconName;
   current?: boolean;
-
+  /** A plugin area — marked with a diamond, kept after a divider. */
   plugin?: boolean;
   badge?: number;
 };
@@ -436,6 +539,10 @@ export function MobileTabBar({
   );
 }
 
+/**
+ * Everything the mobile tab bar has no room for: the remaining areas, the
+ * reader role, the palette and the settings.
+ */
 export function MoreSheet({
   open,
   items,
@@ -447,10 +554,14 @@ export function MoreSheet({
   onRole,
   onTheme,
   onSettings,
+  settingsFresh,
   onClose,
+  actions,
 }: {
   open: boolean;
   items: NavItem[];
+  /** The actions the desktop top bar carries beside its command field. */
+  actions?: ReactNode;
   roleName: string;
   roles?: RoleOption[];
   currentRole?: string;
@@ -459,6 +570,8 @@ export function MoreSheet({
   onRole?: (key: string) => void;
   onTheme?: () => void;
   onSettings?: () => void;
+  /** A settings page the reader has not opened yet: the settings button carries a dot. */
+  settingsFresh?: boolean;
   onClose?: () => void;
 }) {
   const { t } = useText();
@@ -479,9 +592,19 @@ export function MoreSheet({
             ) : null}
             <span className="t-spacer" />
             {onSettings ? (
-              <Button icon="settings" onClick={onSettings}>
-                {t("shell.top.settings")}
-              </Button>
+              <span className="t-d-glow-anchor">
+                <Button icon="settings" onClick={onSettings}>
+                  {t("shell.top.settings")}
+                </Button>
+                {settingsFresh ? (
+                  <span
+                    className="t-d-glow"
+                    role="img"
+                    aria-label={t("shell.top.settingsNew")}
+                    data-testid="more-settings-fresh"
+                  />
+                ) : null}
+              </span>
             ) : null}
           </div>
         ) : undefined
@@ -506,6 +629,11 @@ export function MoreSheet({
           </div>
         </div>
       ) : null}
+      {actions ? (
+        <div className="t-row t-row--wrap t-more-actions" data-testid="more-actions">
+          {actions}
+        </div>
+      ) : null}
       <div className="t-more-grid">
         {items.map((i) => (
           <button
@@ -527,6 +655,8 @@ export function MoreSheet({
   );
 }
 
+/* App shell ---------------------------------------------------------------------- */
+
 export type AppShellProps = {
   top: ReactNode;
   nav?: ReactNode;
@@ -534,12 +664,21 @@ export type AppShellProps = {
   children: ReactNode;
   overlay?: ReactNode;
   chat?: ReactNode;
-
+  /** Without a theme the shell inherits the palette of its ancestor. */
   theme?: { theme: "facet" | "paper"; mode: "dark" | "light" };
-
+  /** Mobile layout: no nav bar, a tab bar at the bottom. */
   mobile?: boolean;
-
+  /** Focus mode: a wide page in larger type; what has neither pointer nor focus blurs. */
   focus?: boolean;
+  /** Spacing of the whole shell: the `--t-s-*` steps shrink or grow; absent is normal. */
+  density?: "compact" | "normal" | "spacious";
+  /** Reduced: nothing in the shell animates or transitions. */
+  reducedMotion?: boolean;
+  /**
+   * A modal overlay is open (the palette): the bars, the page, the tab bar and
+   * the chat are inert — neither focusable nor read — until it closes.
+   */
+  modal?: boolean;
 };
 
 export function AppShell({
@@ -552,28 +691,48 @@ export function AppShell({
   theme,
   mobile,
   focus,
+  density,
+  reducedMotion,
+  modal,
 }: AppShellProps) {
+  // The head's real height, for everything that sticks or lands below it.
+  const shell = useRef<HTMLDivElement>(null);
+  const head = useRef<HTMLDivElement>(null);
+  useHeightVar("--t-bars-h", head, shell, mobile);
   return (
     <div
+      ref={shell}
       className="t-app t-shell"
       data-testid="app-shell"
       data-t-theme={theme?.theme}
       data-t-mode={theme?.mode}
       data-layout={mobile ? "mobile" : "desktop"}
       data-focus={focus ? "on" : undefined}
+      data-density={density && density !== "normal" ? density : undefined}
+      data-motion={reducedMotion ? "reduced" : undefined}
     >
-      <div className="t-shell__head">
+      <div className="t-shell__head" ref={head} data-testid="shell-head" inert={modal}>
         {top}
         {!mobile && nav ? <div className="t-shell__nav">{nav}</div> : null}
       </div>
-      <main className="t-shell__main t-dotted">{children}</main>
-      {mobile ? tabbar : null}
-      {chat}
+      <main className="t-shell__main t-dotted" inert={modal}>
+        {children}
+      </main>
+      {/* Contents-only wrappers: they carry inertness without a box of their own. */}
+      <div className="t-shell__part" data-testid="shell-chrome" inert={modal}>
+        {mobile ? tabbar : null}
+        {chat}
+      </div>
       {overlay}
+      {/* Every `title` inside the shell, an IconButton's label included, gets a tooltip the keyboard reaches. */}
+      <TooltipLayer />
     </div>
   );
 }
 
+/* Boot ----------------------------------------------------------------------------- */
+
+/** The boot phases in order; each one's visible name is `shell.boot.phase.<id>`. */
 export const BOOT_PHASES = [
   "connect",
   "config",
@@ -586,6 +745,7 @@ export const BOOT_PHASES = [
 
 export type BootPhase = (typeof BOOT_PHASES)[number];
 
+/** The five-bar wave of the loading indicator: ink, signal, three resting. */
 export function LoadMark({ size = 158 }: { size?: number }) {
   const { t } = useText();
   const bars: [number, string, string][] = [
@@ -613,10 +773,10 @@ export function LoadMark({ size = 158 }: { size?: number }) {
 export type BootScreenProps = {
   phase: BootPhase;
   file?: string;
-
+  /** 0–100, or null while counting has no denominator yet. */
   progress: number | null;
   counts: { records: number | null; files: number | null; anchors: number | null };
-
+  /** "ready" plays the flight of the mark into the logo. */
   leaving?: boolean;
   error?: { title: string; reason: string; onRetry?: () => void };
 };
@@ -683,15 +843,21 @@ export function BootScreen({ phase, file, progress, counts, leaving, error }: Bo
             </div>
             <div className="t-boot__counts">
               <span>
-                {t("shell.boot.records")} <b>{show(counts.records)}</b>
+                {t("shell.boot.records")}{" "}
+                <b data-testid="boot-count-records">{show(counts.records)}</b>
               </span>
               <span>
-                {t("shell.boot.files")} <b>{show(counts.files)}</b>
+                {t("shell.boot.files")} <b data-testid="boot-count-files">{show(counts.files)}</b>
               </span>
               <span>
-                {t("shell.boot.anchors")} <b>{show(counts.anchors)}</b>
+                {t("shell.boot.anchors")}{" "}
+                <b data-testid="boot-count-anchors">{show(counts.anchors)}</b>
               </span>
-              {progress == null ? <span className="t-muted">{t("shell.boot.noShare")}</span> : null}
+              {progress == null ? (
+                <span className="t-muted" data-testid="boot-no-share">
+                  {t("shell.boot.noShare")}
+                </span>
+              ) : null}
             </div>
           </>
         )}

@@ -1,4 +1,3 @@
-import { labelText } from "../i18n/legacy/labels";
 import {
   AnchorMap,
   Bar,
@@ -96,12 +95,20 @@ import {
   type WithTextProps,
   type WithTimelineProps,
   type WithTrailProps,
-} from "../index";
+} from "./components";
 import { defineFacetElement } from "./defineFacetElement";
 
 export { defineFacetElement };
 export type { AttributeKind, FacetElementDefinition } from "./defineFacetElement";
 
+/**
+ * Every element this library registers.
+ *
+ * The list lives here so a host can read it and a test can count it against
+ * the components: whoever adds a component and forgets its element would
+ * otherwise ship a library that is smaller in the standalone bundle than in
+ * the import.
+ */
 export const FACET_ELEMENT_TAGS = [
   "facet-anchor-map",
   "facet-bar",
@@ -153,6 +160,7 @@ export const FACET_ELEMENT_TAGS = [
   "facet-trail",
 ] as const;
 
+/** Registers every FACET element. Called automatically on import. */
 export function defineFacetElements(): void {
   defineFacetElement<WithSealProps>({
     tag: "facet-seal",
@@ -225,7 +233,7 @@ export function defineFacetElements(): void {
       total: { prop: "total", kind: "number" },
       label: { prop: "label", kind: "string" },
     },
-    defaults: { value: 0, total: 0, label: labelText.text252 },
+    defaults: { value: 0, total: 0, label: "Share" },
   });
 
   defineFacetElement<WithSegmentBandProps>({
@@ -250,6 +258,8 @@ export function defineFacetElements(): void {
     },
     defaults: { label: "", value: "" },
   });
+
+  /* --- Atoms and values -------------------------------------------------- */
 
   defineFacetElement<WithTextProps>({
     tag: "facet-text",
@@ -389,6 +399,8 @@ export function defineFacetElements(): void {
     children: true,
   });
 
+  /* --- Controls ----------------------------------------------------- */
+
   defineFacetElement<WithButtonProps>({
     tag: "facet-button",
     component: Button,
@@ -492,6 +504,8 @@ export function defineFacetElements(): void {
     defaults: { items: [] },
   });
 
+  /* --- Surfaces that come from outside ------------------------------------ */
+
   defineFacetElement<WithSheetProps>({
     tag: "facet-sheet",
     component: Sheet,
@@ -515,6 +529,8 @@ export function defineFacetElements(): void {
     events: { onClose: "facet-close" },
     children: true,
   });
+
+  /* --- States ------------------------------------------------------------- */
 
   defineFacetElement<WithEmptyStateProps>({
     tag: "facet-empty-state",
@@ -548,6 +564,8 @@ export function defineFacetElements(): void {
       "history-length": { prop: "historyLength", kind: "number" },
     },
   });
+
+  /* --- FACET-Organismen --------------------------------------------------- */
 
   defineFacetElement<WithScenarioLedgerProps>({
     tag: "facet-scenario-ledger",

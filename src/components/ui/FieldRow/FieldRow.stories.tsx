@@ -1,4 +1,3 @@
-import { localized } from "../../../i18n/legacy/components/ui/FieldRow/FieldRow.stories.text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import FieldRowWithLogic from ".";
 
@@ -6,9 +5,14 @@ const meta: Meta<typeof FieldRowWithLogic> = {
   title: "Atoms/FieldRow",
   component: FieldRowWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "One field, one row. The factual label on the left, the value from the record on the right.",
+      },
+    },
   },
-  args: { label: "Rhythm", value: "quarterly" },
+  args: { label: "Cadence", value: "quarterly" },
   decorators: [
     (Story) => (
       <dl style={{ margin: 0, width: 420 }}>
@@ -23,14 +27,16 @@ type Story = StoryObj<typeof meta>;
 
 export const Field: Story = {};
 
-export const Emphasized: Story = {
+/** The field that is currently missing — emphasised, not red. */
+export const Emphasised: Story = {
   args: {
     label: "Guide",
-    value: localized.text2,
+    value: "missing — when this alert fires there is no described way forward",
     emphasis: true,
   },
 };
 
+/** Multi-line values keep their line breaks. */
 export const MultiLine: Story = {
   args: {
     label: "Used by",
@@ -39,12 +45,13 @@ export const MultiLine: Story = {
   },
 };
 
+/** A detail view consists of rows like these. */
 export const Block: Story = {
   render: () => (
     <dl style={{ margin: 0, width: 420 }}>
-      <FieldRowWithLogic label={localized.text3} value="quiet-hours-audit" />
-      <FieldRowWithLogic label="Rhythm" value="quarterly" />
-      <FieldRowWithLogic label="Recent" value="2026-04-12" />
+      <FieldRowWithLogic label="Check" value="quiet-hours-audit" />
+      <FieldRowWithLogic label="Cadence" value="quarterly" />
+      <FieldRowWithLogic label="Last" value="2026-04-12" />
       <FieldRowWithLogic label="Evidence" value="docs/audits/2026-Q1.pdf" />
     </dl>
   ),

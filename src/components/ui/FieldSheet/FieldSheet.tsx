@@ -4,11 +4,11 @@ export type FieldView = {
   key: string;
   name: string;
   type: string;
-
+  /** Sensitivity as a word, e.g. "personal data". */
   sensitivity: string;
-
+  /** Retention — or the note that none is set. */
   retention: string;
-
+  /** Personal data without retention: the finding of this compartment. */
   open: boolean;
   rowStyle: CSSProperties;
   nameStyle: CSSProperties;
@@ -25,6 +25,10 @@ export type FieldSheetProps = {
   "data-testid"?: string;
 };
 
+/**
+ * Data fields of a data object: name, type, sensitivity, retention. A
+ * personal-data field without a retention period is an open item.
+ */
 export function FieldSheet({
   containerStyle,
   captionStyle,

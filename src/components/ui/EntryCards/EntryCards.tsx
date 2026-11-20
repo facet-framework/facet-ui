@@ -1,21 +1,22 @@
 import type { CSSProperties, ReactNode } from "react";
 
+/** An entry point — a large area that answers a question and leads on. */
 export type EntryCard = {
   key: string;
-
+  /** Subject term above the title, e.g. `PROMISES`. */
   tag: string;
   title: string;
-
+  /** The number that matters, already formatted. */
   value: string;
-
+  /** What it consists of — the number alone is not a statement. */
   valueMeta: string;
-
+  /** One sentence: what there is to do here, or that there is nothing to do. */
   lead: string;
-
+  /** Where the area leads. Empty means: it leads nowhere. */
   action: string;
-
+  /** Custom drawing below the number — a bar, a band, a ring. */
   figure?: ReactNode;
-
+  /** Open means: something is outstanding here. Carries rank, not only colour. */
   open: boolean;
   onOpen?: () => void;
   cardStyle: CSSProperties;
@@ -36,6 +37,14 @@ export type EntryCardsProps = {
   "data-testid"?: string;
 };
 
+/**
+ * Entry points as large areas.
+ *
+ * "Card" here means area, not a little card: paper instead of shadow, hairline
+ * instead of frame, no rounding. What makes an area stand out is its size and
+ * the mark before the title — not its colour, because a colour alone tells
+ * nobody that something is outstanding.
+ */
 export function EntryCards({
   containerStyle,
   gridStyle,

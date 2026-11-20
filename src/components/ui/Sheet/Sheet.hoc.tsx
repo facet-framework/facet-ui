@@ -15,12 +15,17 @@ export type WithSheetProps = Omit<
   SheetProps,
   "scrimStyle" | "panelStyle" | "onScrimClick" | "onKeyDown" | "panelRef"
 > & {
+  /** Esc closes — exactly one level back. */
   onClose?: () => void;
-
+  /** Share of the height the register takes up. */
   height?: string;
   style?: CSSProperties;
 };
 
+/**
+ * Owns focus takeover and Escape handling. On opening the register gets the
+ * focus, so the keyboard continues right there.
+ */
 export function withSheetLogic(Component: ComponentType<SheetProps>) {
   const Wrapped = ({ open, onClose, height = "86%", style, ...rest }: WithSheetProps) => {
     const panelRef = useRef<HTMLDivElement | null>(null);

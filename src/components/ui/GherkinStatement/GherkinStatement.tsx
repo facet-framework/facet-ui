@@ -3,9 +3,9 @@ import type { GherkinToken } from "../../../core";
 
 export type GherkinStepView = {
   key: string;
-
+  /** Keyword in the original, e.g. `Given`. */
   keyword: string;
-
+  /** Role in capitals, e.g. `GIVEN`; localized by the active text language. */
   role: string;
   tokens: GherkinToken[];
   keywordStyle: CSSProperties;
@@ -22,6 +22,11 @@ export type GherkinStatementProps = {
   "data-testid"?: string;
 };
 
+/**
+ * Gherkin as Gherkin: Given · When · Then · And · But with a localized role label,
+ * coloured rail and token highlighting (quotes, `<placeholders>`,
+ * `snake_case`, literals, numbers with a unit).
+ */
 export function GherkinStatement({
   containerStyle,
   textStyle,

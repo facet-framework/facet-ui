@@ -1,10 +1,18 @@
-import { remainingText } from "../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../i18n/legacy/shared";
-import { localized } from "../i18n/legacy/core/knowledge.spec.text";
 import { buildModel } from "./model";
 import type { RawRecord } from "./types";
 import { KNOWLEDGE_SLOT_KEYS, knowledgeCoverage, slotStateFor } from "./knowledge";
 
+/**
+ * A hand-built set, so every cell can be checked against a known result
+ * instead of being guessed against real data — the same approach as in
+ * `DomainMatrix.spec.tsx` and `DomainDetail.spec.tsx`.
+ *
+ * wallet/core/settle   — all five slots answered
+ * wallet/core/refund   — two slots answered, `discoverability` only with
+ *                        `derive_from` (no answer — counts as "question only")
+ * wallet/payouts/export — no `knowledge` block at all (missing entirely)
+ * billing/core/invoice — planned, not active: counts nowhere
+ */
 function knowledgeBlock(
   entries: Record<string, { question?: string; answer?: string; derive_from?: string[] }>,
 ) {
@@ -26,17 +34,20 @@ const raw = (
 });
 
 const fullSlots = knowledgeBlock({
-  prerequisite_knowledge: { question: remainingText.text25, answer: "Nichts." },
-  not_for: { question: localized.text1, answer: localized.text2 },
-  success_signal: { question: "Woran erkennbar?", answer: remainingText.text26 },
-  common_pitfalls: { question: remainingText.text27, answer: localized.text3 },
-  discoverability: { question: germanLabels.text124, answer: germanLabels.text125 },
+  prerequisite_knowledge: { question: "What do you need to know?", answer: "Nothing." },
+  not_for: { question: "Not for what?", answer: "Not for partial payments." },
+  success_signal: { question: "How do you notice it?", answer: "The balance updates at once." },
+  common_pitfalls: { question: "What goes wrong?", answer: "Double execution on retry." },
+  discoverability: { question: "Where in the code?", answer: "settle() call in checkout." },
 });
 
 const partialSlots = knowledgeBlock({
-  prerequisite_knowledge: { question: remainingText.text25, answer: "Auszahlungslimit kennen." },
-  not_for: { question: localized.text4, answer: localized.text5 },
-  discoverability: { question: germanLabels.text124, derive_from: ["anchors", "tests"] },
+  prerequisite_knowledge: {
+    question: "What do you need to know?",
+    answer: "Know the payout limit.",
+  },
+  not_for: { question: "Not for what?", answer: "Not for advances." },
+  discoverability: { question: "Where in the code?", derive_from: ["anchors", "tests"] },
 });
 
 const raws = [
@@ -61,19 +72,20 @@ describe("Unit tests for slotStateFor", () => {
     expect(slotStateFor(settle, "prerequisite_knowledge")).toBe("answered");
   });
 
-  it("reports a question without an answer as question-only", () => {
+  it("reports a slot with a question but no answer as 'question only'", () => {
+    // derive_from requests derivation; it does not supply an answer.
     expect(slotStateFor(refund, "discoverability")).toBe("question");
   });
 
-  it("reports derive_from without a local answer as question-only", () => {
+  it("also reports a `derive_from` slot without its own answer as 'question only', not as answered", () => {
     expect(slotStateFor(refund, "discoverability")).not.toBe("answered");
   });
 
-  it("reports empty slots as missing", () => {
+  it("reports a slot without any entry as missing", () => {
     expect(slotStateFor(refund, "common_pitfalls")).toBe("missing");
   });
 
-  it("reports all slots as missing without a knowledge block", () => {
+  it("reports every slot as missing when the record has no `knowledge` block at all", () => {
     KNOWLEDGE_SLOT_KEYS.forEach((key) => expect(slotStateFor(missing, key)).toBe("missing"));
   });
 });
@@ -81,12 +93,12 @@ describe("Unit tests for slotStateFor", () => {
 describe("Unit tests for knowledgeCoverage", () => {
   const coverage = knowledgeCoverage(model);
 
-  it("groups by area and capability rather than individual records", () => {
+  it("groups by domain and capability, not by individual record", () => {
     const keys = coverage.map((group) => `${group.domain}/${group.capability}`);
     expect(keys).toEqual(["wallet/core", "wallet/payouts"]);
   });
 
-  it("keeps capabilities without knowledge visible with zero counts", () => {
+  it("keeps a capability with no knowledge at all in the list — with zeros, not vanished", () => {
     const payouts = coverage.find((group) => group.capability === "payouts");
     expect(payouts).toBeDefined();
     expect(payouts!.answered).toBe(0);
@@ -95,31 +107,38 @@ describe("Unit tests for knowledgeCoverage", () => {
     expect(payouts!.noKnowledge).toHaveLength(1);
   });
 
-  it("combines answered and open counts across a capability's records", () => {
+  it("sums answered and open across both records of a capability", () => {
     const core = coverage.find((group) => group.capability === "core")!;
-
+    // settle: 5 answered. refund: 2 answered, 1 question only, 2 missing.
     expect(core.answered).toBe(7);
     expect(core.total).toBe(2 * KNOWLEDGE_SLOT_KEYS.length);
     expect(core.slots.discoverability).toEqual({ answered: 1, question: 1, missing: 0 });
     expect(core.slots.common_pitfalls).toEqual({ answered: 1, question: 0, missing: 1 });
   });
 
-  it("excludes planned records from answered-knowledge requirements", () => {
+  it("leaves a planned record out — it has no claim to answered knowledge yet", () => {
     expect(coverage.some((group) => group.domain === "billing")).toBe(false);
   });
 
-  it("matches the model's global answered count without exceeding it", () => {
+  it("the answered slots agree with the model's global count without exceeding it", () => {
+    // model.knowAnswered counts over *all* core features, not only the active
+    // ones — the sum here (active only) may therefore be smaller or equal, but
+    // never larger. `total`, on the other hand, is not a fitting comparison:
+    // model.knowSlots counts only entries actually present in the YAML, while
+    // `total` here counts through the five canonical slots per record — the
+    // missing ones too, because those are exactly what this view is meant to
+    // make visible.
     const totalAnswered = coverage.reduce((sum, group) => sum + group.answered, 0);
     expect(totalAnswered).toBeLessThanOrEqual(model.knowAnswered);
   });
 
-  it("counts five slots per record including missing slots", () => {
+  it("`total` of a capability is always records times five — missing slots count too", () => {
     coverage.forEach((group) => {
       expect(group.total).toBe(group.records.length * KNOWLEDGE_SLOT_KEYS.length);
     });
   });
 
-  it("sorts areas before capabilities alphabetically", () => {
+  it("sorts area before capability, alphabetically", () => {
     const raws2 = [
       raw("z/b", "active", fullSlots),
       raw("a/c", "active", fullSlots),

@@ -1,6 +1,6 @@
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import {
-  GHERKIN_LABEL,
+  gherkinLabel,
   parseGherkin,
   tokenizeGherkin,
   type GherkinKeyword,
@@ -8,26 +8,29 @@ import {
   type ScenarioStep,
 } from "../../../core";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { GherkinStatementProps, GherkinStepView } from "./GherkinStatement";
 
 export type WithGherkinStatementProps = Omit<
   GherkinStatementProps,
   "containerStyle" | "textStyle" | "tokenStyle" | "steps"
 > & {
+  /** Raw `statement` text from the record. */
   statement?: string;
-
+  /** Steps already parsed — takes precedence over `statement`. */
   steps?: ScenarioStep[];
-
+  /** Compact form for lists: smaller type, tighter lines. */
   compact?: boolean;
   style?: CSSProperties;
 };
 
+/** Colour per keyword: the outcome carries weight, And/But inherit their role. */
 const KEYWORD_COLOR: Record<GherkinKeyword, string> = {
   GIVEN: color.ok,
   WHEN: color.signal,
   THEN: color.plan,
   AND: color.dim,
-  BUT: color.deadline,
+  BUT: color.due,
 };
 
 const KEYWORD_SOURCE: Record<GherkinKeyword, string> = {
@@ -38,15 +41,17 @@ const KEYWORD_SOURCE: Record<GherkinKeyword, string> = {
   BUT: "But",
 };
 
+/** Parses the statement, assigns colours and prepares the tokens. */
 export function withGherkinStatementLogic(Component: ComponentType<GherkinStatementProps>) {
   const Wrapped = ({ statement, steps, compact, style, ...rest }: WithGherkinStatementProps) => {
+    const text = useText();
     const parsed = useMemo(() => steps ?? parseGherkin(statement), [statement, steps]);
 
     const views = useMemo<GherkinStepView[]>(
       () =>
         parsed.map((step, index) => {
           const keyword = (step.keyword || "AND") as GherkinKeyword;
-
+          // And/But inherit the colour of the parent step.
           const inherited = (step.parent || keyword) as GherkinKeyword;
           const tone =
             keyword === "AND" || keyword === "BUT"
@@ -56,7 +61,7 @@ export function withGherkinStatementLogic(Component: ComponentType<GherkinStatem
           return {
             key: `${index}-${step.keyword}`,
             keyword: step.keyword ? KEYWORD_SOURCE[keyword] : "",
-            role: step.keyword ? GHERKIN_LABEL[keyword] : "",
+            role: step.keyword ? gherkinLabel(keyword, text) : "",
             tokens: tokenizeGherkin(step.text),
             rowStyle: {
               display: "grid",
@@ -91,7 +96,7 @@ export function withGherkinStatementLogic(Component: ComponentType<GherkinStatem
             },
           };
         }),
-      [compact, parsed],
+      [compact, parsed, text],
     );
 
     const containerStyle = useMemo<CSSProperties>(
@@ -114,7 +119,7 @@ export function withGherkinStatementLogic(Component: ComponentType<GherkinStatem
     const tokenStyle = useMemo<Record<GherkinToken["kind"], CSSProperties>>(
       () => ({
         quoted: { fontFamily: font.mono, fontSize: "0.92em", color: color.signal },
-        placeholder: { fontFamily: font.mono, fontSize: "0.92em", color: color.deadline },
+        placeholder: { fontFamily: font.mono, fontSize: "0.92em", color: color.due },
         identifier: { fontFamily: font.mono, fontSize: "0.92em", color: color.dim },
         literal: { fontFamily: font.mono, fontSize: "0.92em", color: color.dim },
         number: { fontFamily: font.mono, fontVariantNumeric: "tabular-nums", color: color.ink },

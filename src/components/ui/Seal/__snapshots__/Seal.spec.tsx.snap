@@ -1,0 +1,99 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for Seal empty 1`] = `
+<span
+  aria-label="no facet filled"
+  role="img"
+  style="display: inline-flex; align-items: center; gap: 2px;"
+>
+  <span
+    data-facet="intent"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Purpose — empty"
+  />
+  <span
+    data-facet="contract"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Promise — empty"
+  />
+  <span
+    data-facet="verification"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Test coverage — empty"
+  />
+  <span
+    data-facet="observation"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Operations — empty"
+  />
+  <span
+    data-facet="knowledge"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Knowledge — empty"
+  />
+  <span
+    data-facet="lineage"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Origin — empty"
+  />
+  <span
+    data-facet="anchors"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Entry points in code — empty"
+  />
+  <span
+    style="display: inline; margin-left: 6px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--dim);"
+  >
+    0/7
+  </span>
+</span>
+`;
+
+exports[`Snapshot tests for Seal partially filled 1`] = `
+<span
+  aria-label="3 of 7 facets filled: Purpose, Promise, Test coverage"
+  role="img"
+  style="display: inline-flex; align-items: center; gap: 2px;"
+>
+  <span
+    data-facet="intent"
+    style="display: inline-block; width: 3px; height: 14px; background: var(--ink);"
+    title="Purpose — filled"
+  />
+  <span
+    data-facet="contract"
+    style="display: inline-block; width: 3px; height: 14px; background: var(--ink);"
+    title="Promise — filled"
+  />
+  <span
+    data-facet="verification"
+    style="display: inline-block; width: 3px; height: 14px; background: var(--ink);"
+    title="Test coverage — filled"
+  />
+  <span
+    data-facet="observation"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Operations — empty"
+  />
+  <span
+    data-facet="knowledge"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Knowledge — empty"
+  />
+  <span
+    data-facet="lineage"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Origin — empty"
+  />
+  <span
+    data-facet="anchors"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Entry points in code — empty"
+  />
+  <span
+    style="display: inline; margin-left: 6px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--dim);"
+  >
+    3/7
+  </span>
+</span>
+`;

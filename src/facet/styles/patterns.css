@@ -1,3 +1,5 @@
+/* FACET — composed patterns: finding, distribution, deck, toolbar, pager, crumbs. */
+
 .t-finding {
   display: flex;
   flex-direction: column;
@@ -10,7 +12,7 @@
 .t-finding__aside {
   margin-top: var(--t-s-4);
 }
-
+/* The drift mark stands beside the number at the number's cap height. */
 .t-finding__figure {
   display: flex;
   align-items: center;
@@ -220,7 +222,7 @@
 .t-crumbs__find .t-search {
   min-height: 34px;
 }
-
+/* On a phone the list spans the path's width under it, never past the screen. */
 @media (max-width: 767px) {
   .t-crumbs {
     position: relative;
@@ -236,7 +238,7 @@
     max-width: none;
   }
 }
-
+/* The field's ring is the box's (`.t-search:focus-within`), not a second one. */
 .t-crumbs__find input:focus-visible {
   outline: none;
 }
@@ -261,7 +263,7 @@
   .t-hide-mobile {
     display: none !important;
   }
-
+  /* Tables become cards: each cell shows its column name. */
   .t-table thead {
     display: none;
   }

@@ -4,15 +4,19 @@ export type EmptyStateProps = {
   containerStyle: CSSProperties;
   headlineStyle: CSSProperties;
   bodyStyle: CSSProperties;
-
+  /** What is missing — as a sentence, not as an empty panel. */
   headline: string;
-
+  /** What it depends on and what it means. */
   body?: string;
-
+  /** Optional way forward. */
   action?: ReactNode;
   "data-testid"?: string;
 };
 
+/**
+ * Empty state: a field is not filled. The best screen in this field is the
+ * empty one — it needs a sentence, not axes without data.
+ */
 export function EmptyState({
   containerStyle,
   headlineStyle,

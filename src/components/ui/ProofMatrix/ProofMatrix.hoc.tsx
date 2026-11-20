@@ -1,8 +1,7 @@
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/ProofMatrix/ProofMatrix.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
-import type { Scenario, TestRef } from "../../../core";
-import { color, font, fontSize, TEST_KIND_LABEL, TEST_KINDS } from "../../../design-system/tokens";
+import { testKindLabel, type Scenario, type TestRef } from "../../../core";
+import { color, font, fontSize, TEST_KINDS } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { ProofMatrixProps, ProofRow } from "./ProofMatrix";
 
 export type WithProofMatrixProps = Omit<
@@ -15,14 +14,16 @@ export type WithProofMatrixProps = Omit<
   | "rows"
   | "caption"
 > & {
+  /** Promises from `contract.scenarios[]`. */
   scenarios: Scenario[];
-
+  /** Test levels that appear as columns. */
   kinds?: readonly string[];
-
+  /** Show only promises without a test mapping. */
   onlyGaps?: boolean;
   style?: CSSProperties;
 };
 
+/** Counts test mappings per promise and level and phrases the answer line. */
 export function withProofMatrixLogic(Component: ComponentType<ProofMatrixProps>) {
   const Wrapped = ({
     scenarios,
@@ -31,6 +32,8 @@ export function withProofMatrixLogic(Component: ComponentType<ProofMatrixProps>)
     style,
     ...rest
   }: WithProofMatrixProps) => {
+    const text = useText();
+    const { t, plural } = text;
     const visible = useMemo(
       () => (onlyGaps ? scenarios.filter((scenario) => !scenario.proven) : scenarios),
       [onlyGaps, scenarios],
@@ -63,8 +66,10 @@ export function withProofMatrixLogic(Component: ComponentType<ProofMatrixProps>)
             return {
               key: `${scenario.id}:${kind}`,
               count,
-              title: `${scenario.id} · ${TEST_KIND_LABEL[kind] ?? kind}: ${
-                count === 0 ? localized.text1 : count === 1 ? "1 Test" : `${count} Tests`
+              title: `${scenario.id} · ${testKindLabel(kind, text)}: ${
+                count === 0
+                  ? t("elements.proofMatrix.noTest")
+                  : plural("elements.proofMatrix.tests", count)
               }`,
               style: {
                 display: "grid",
@@ -80,20 +85,20 @@ export function withProofMatrixLogic(Component: ComponentType<ProofMatrixProps>)
             };
           }),
         })),
-      [kinds, visible],
+      [kinds, plural, t, text, visible],
     );
 
     const caption = useMemo(() => {
       const proven = scenarios.filter((scenario) => scenario.proven).length;
-      if (!scenarios.length) return localized.text2;
+      if (!scenarios.length) return t("elements.proofMatrix.empty");
       if (proven === scenarios.length)
-        return `${germanLabels.text152}${scenarios.length}${localized.text3}`;
-      return `${proven}${germanLabels.text109}${scenarios.length}${localized.text4}${
-        scenarios.length - proven === 1
-          ? localized.text5
-          : `${scenarios.length - proven}${localized.text6}`
-      }.`;
-    }, [scenarios]);
+        return t("elements.proofMatrix.allMapped", { count: scenarios.length });
+      return t("elements.proofMatrix.someMapped", {
+        proven,
+        total: scenarios.length,
+        gap: plural("elements.proofMatrix.gap", scenarios.length - proven),
+      });
+    }, [plural, scenarios, t]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({ display: "grid", gap: 4, minWidth: 0, ...style }),
@@ -142,7 +147,7 @@ export function withProofMatrixLogic(Component: ComponentType<ProofMatrixProps>)
         headerStyle={headerStyle}
         headCellStyle={headCellStyle}
         captionStyle={captionStyle}
-        columns={kinds.map((kind) => TEST_KIND_LABEL[kind] ?? kind)}
+        columns={kinds.map((kind) => testKindLabel(kind, text))}
         rows={rows}
         caption={caption}
         {...rest}

@@ -7,7 +7,12 @@ const meta: Meta<typeof IndexProgressWithLogic> = {
   title: "States/IndexProgress",
   component: IndexProgressWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Atlas's loading state while `facet ui` reads the repo. Every number is counted: records read, files found, files searched, anchors found. No bar guesses the time.",
+      },
+    },
   },
   args: { status: initialStatus() },
 };
@@ -15,8 +20,10 @@ const meta: Meta<typeof IndexProgressWithLogic> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** The server has not answered yet — nothing is counted. */
 export const Connection: Story = {};
 
+/** Records are being read; the reference size is known, and so is the share. */
 export const Records: Story = {
   args: {
     root: "/projects/taskflow",
@@ -31,7 +38,8 @@ export const Records: Story = {
   },
 };
 
-export const Count: Story = {
+/** While counting, the reference size is still unknown — the bar stays empty. */
+export const Counting: Story = {
   args: {
     status: {
       ...initialStatus(),
@@ -60,6 +68,7 @@ export const Anchor: Story = {
   },
 };
 
+/** Done: all steps completed, the totals are in. */
 export const Done: Story = {
   args: {
     status: {
@@ -72,7 +81,8 @@ export const Done: Story = {
   },
 };
 
-export const Walkthrough: Story = {
+/** A whole run in time-lapse — this is what the state looks like in motion. */
+export const FullRun: Story = {
   render: () => {
     const Demo = () => {
       const [status, setStatus] = useState<IndexStatus>(initialStatus());
@@ -95,6 +105,7 @@ export const Walkthrough: Story = {
   },
 };
 
+/** A run as the host reports it — only for demonstration in Storybook. */
 function scriptedRun(): IndexStatus[] {
   const base = initialStatus();
   const steps: IndexStatus[] = [{ ...base, phase: "config", file: ".facetrc.yaml" }];

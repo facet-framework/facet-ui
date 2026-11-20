@@ -2,13 +2,14 @@ import type { CSSProperties } from "react";
 import Bar from "../Bar";
 import Mark from "../Mark";
 
+/** A step of the run, as it appears in the ladder. */
 export type IndexPhaseRow = {
   key: string;
-
+  /** Plain text of the step, e.g. "Find anchors". */
   label: string;
-
+  /** Count or path for the step — empty as long as there is nothing to show. */
   detail: string;
-
+  /** Glyph of the left column: done, running, pending. */
   mark: string;
   rowStyle: CSSProperties;
   markStyle: CSSProperties;
@@ -25,24 +26,32 @@ export type IndexProgressProps = {
   captionStyle: CSSProperties;
   tickerStyle: CSSProperties;
   tickerRowStyles: CSSProperties[];
-
+  /** What is happening right now, in one sentence. */
   title: string;
-
+  /** Root and registry of the run — the origin of the numbers beside it. */
   origin: string;
   phases: IndexPhaseRow[];
-
+  /** Share of the running phase; `null` as long as its reference total is missing. */
   percent: number | null;
-
+  /** Plain text of the bar, e.g. "1204 of 2481 files searched". */
   progressLabel: string;
-
+  /** Counts of the run below the bar. */
   caption: string;
-
+  /** Most recently read files, newest first. */
   ticker: string[];
-
+  /** The run is not finished yet. */
   busy: boolean;
   "data-testid"?: string;
 };
 
+/**
+ * Loading state of the corpus — the only place where Atlas waits.
+ *
+ * It shows no spinning ring but the run itself: which step is up, how many
+ * files it has read out of how many, and which one is passing through its
+ * hands right now. A bar that guesses the time would be an invented number;
+ * here every one is counted.
+ */
 export function IndexProgress({
   containerStyle,
   brandMarkStyle,

@@ -1,9 +1,8 @@
-import { labelText } from "../../../i18n/legacy/labels";
 import { fireEvent, render, screen } from "@testing-library/react";
 import MarkWithLogic, { Mark, withMarkLogic } from ".";
 
 describe("Unit tests for Mark", () => {
-  it("renders the static mark as a labeled image", () => {
+  it("renders the resting mark as an image with a label", () => {
     render(
       <Mark
         size={20}
@@ -26,17 +25,17 @@ describe("Unit tests for Mark", () => {
         viewBoxWidth={158}
         viewBoxHeight={100}
         bars={[]}
-        label={labelText.text326}
+        label="Facet Atlas — replay"
         interactive
         wrapperStyle={{}}
         onClick={onClick}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: labelText.text326 }));
+    fireEvent.click(screen.getByRole("button", { name: "Facet Atlas — replay" }));
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
-  it("calculates height from the field's aspect ratio", () => {
+  it("computes the height from the field's aspect ratio", () => {
     const { container } = render(
       <Mark
         size={158}
@@ -53,7 +52,7 @@ describe("Unit tests for Mark", () => {
     expect(svg).toHaveAttribute("height", "100");
   });
 
-  it("gives each bar its animation identifier", () => {
+  it("carries every bar with its animation id", () => {
     const { container } = render(
       <Mark
         size={20}
@@ -72,14 +71,14 @@ describe("Unit tests for Mark", () => {
 });
 
 describe("Unit tests for withMarkLogic", () => {
-  it("shows two static bars by default", () => {
+  it("shows two resting bars without animation by default", () => {
     const { container } = render(<MarkWithLogic />);
     expect(container.querySelectorAll("rect")).toHaveLength(2);
     expect(container.querySelector("[data-facet-mark-bar]")).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Facet Atlas" })).toBeInTheDocument();
   });
 
-  it("splits into five bars while loading", () => {
+  it("splits into five bars for the loading animation", () => {
     const { container } = render(<MarkWithLogic variant="loading" />);
     const bars = container.querySelectorAll("[data-facet-mark-bar]");
     expect(bars).toHaveLength(5);
@@ -87,7 +86,7 @@ describe("Unit tests for withMarkLogic", () => {
     expect(bars[4]).toHaveAttribute("data-facet-mark-bar", "load-5");
   });
 
-  it("replays the brand animation when clicked", () => {
+  it("is a button for the brand animation and replays on click", () => {
     const { container } = render(<MarkWithLogic variant="brand" />);
     const before = container.querySelector("svg");
     expect(container.querySelectorAll("[data-facet-mark-bar^='open-']")).toHaveLength(5);
@@ -95,11 +94,12 @@ describe("Unit tests for withMarkLogic", () => {
     fireEvent.click(screen.getByRole("button"));
 
     const after = container.querySelector("svg");
-
+    // A new node - not a class to toggle - is what makes the animation start
+    // again at 0 %.
     expect(after).not.toBe(before);
   });
 
-  it("accepts a custom size, label and style", () => {
+  it("accepts its own size, label and style", () => {
     const { container } = render(
       <MarkWithLogic size={40} label="Atlas" style={{ opacity: 0.5 }} />,
     );
@@ -108,7 +108,7 @@ describe("Unit tests for withMarkLogic", () => {
     expect(screen.getByRole("img")).toHaveStyle({ opacity: "0.5" });
   });
 
-  it("uses the static mark with reduced motion", () => {
+  it("falls back to the resting mark with reduced motion", () => {
     const original = window.matchMedia;
     window.matchMedia = ((query: string) => ({
       matches: query.includes("reduce"),
@@ -121,30 +121,30 @@ describe("Unit tests for withMarkLogic", () => {
       onchange: null,
     })) as unknown as typeof window.matchMedia;
 
-    const { container } = render(<MarkWithLogic variant="loading" data-testid={"quiet"} />);
+    const { container } = render(<MarkWithLogic variant="loading" data-testid="calm" />);
     expect(container.querySelectorAll("rect")).toHaveLength(2);
     expect(container.querySelector("[data-facet-mark-bar]")).not.toBeInTheDocument();
 
     window.matchMedia = original;
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withMarkLogic(Mark).displayName).toBe("withMarkLogic(Mark)");
   });
 });
 
 describe("Snapshot tests for Mark", () => {
-  it("idle", () => {
+  it("resting", () => {
     const { container } = render(<MarkWithLogic />);
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("Loading animation", () => {
+  it("loading animation", () => {
     const { container } = render(<MarkWithLogic variant="loading" />);
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("Brand animation", () => {
+  it("brand animation", () => {
     const { container } = render(<MarkWithLogic variant="brand" />);
     expect(container.firstChild).toMatchSnapshot();
   });

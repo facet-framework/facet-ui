@@ -19,6 +19,7 @@ const VALUE_SIZE: Record<StatSize, string> = {
   stage: fontSize.hero,
 };
 
+/** Sets size and meaning colour of the key figure. */
 export function withStatValueLogic(Component: ComponentType<StatValueProps>) {
   const Wrapped = ({
     meaning = "neutral",

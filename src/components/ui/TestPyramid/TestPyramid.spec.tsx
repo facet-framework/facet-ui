@@ -1,7 +1,9 @@
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { localized } from "../../../i18n/legacy/components/ui/TestPyramid/TestPyramid.spec.text";
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import TestPyramidWithLogic, { TestPyramid, withTestPyramidLogic } from ".";
+import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 describe("Unit tests for TestPyramid", () => {
   it("renders one row per level", () => {
@@ -9,11 +11,11 @@ describe("Unit tests for TestPyramid", () => {
       <TestPyramid
         containerStyle={{}}
         captionStyle={{}}
-        caption="10 Tests"
+        caption="10 tests"
         levels={[
           {
             key: "unit",
-            label: remainingText.text18,
+            label: "Unit",
             count: 8,
             share: 80,
             rowStyle: {},
@@ -25,7 +27,7 @@ describe("Unit tests for TestPyramid", () => {
       />,
     );
     expect(container.querySelectorAll("[data-level]")).toHaveLength(1);
-    expect(screen.getByText(remainingText.text18)).toBeInTheDocument();
+    expect(screen.getByText("Unit")).toBeInTheDocument();
     expect(screen.getByText("8")).toBeInTheDocument();
   });
 });
@@ -33,56 +35,75 @@ describe("Unit tests for TestPyramid", () => {
 describe("Unit tests for withTestPyramidLogic", () => {
   const counts = { unit: 42, property: 6, integration: 18, e2e: 7 };
 
-  it("shows all levels including empty ones", () => {
+  it("shows all levels, the empty ones too", () => {
     const { container } = render(<TestPyramidWithLogic counts={{ unit: 3 }} />);
     expect(container.querySelectorAll("[data-level]")).toHaveLength(4);
   });
 
-  it("marks the value with a dotted underline", () => {
+  it("turns shares into bar widths", () => {
     const { container } = render(<TestPyramidWithLogic counts={{ unit: 3, e2e: 1 }} />);
     const bar = container.querySelector('[data-level="unit"] span:nth-child(2)');
     expect(bar).toHaveStyle({ width: "75%" });
   });
 
-  it("counts tests and populated levels", () => {
+  it("counts tests and occupied levels", () => {
     render(<TestPyramidWithLogic counts={counts} />);
-    expect(screen.getByText(localized.text4)).toBeInTheDocument();
+    expect(screen.getByText(/73 tests across 4 levels/)).toBeInTheDocument();
   });
 
   it("reports a broad base", () => {
     render(<TestPyramidWithLogic counts={counts} />);
-    expect(screen.getByText(localized.text6)).toBeInTheDocument();
+    expect(screen.getByText(/The base is wider than the top/)).toBeInTheDocument();
   });
 
   it("reports a top-heavy distribution", () => {
     render(<TestPyramidWithLogic counts={{ unit: 2, e2e: 19 }} />);
-    expect(screen.getByText(localized.text8)).toBeInTheDocument();
+    expect(screen.getByText(/expensive tests carry the load/)).toBeInTheDocument();
   });
 
-  it("reports when no tests are named", () => {
+  it("says so when no tests are named", () => {
     render(<TestPyramidWithLogic counts={{}} />);
-    expect(screen.getByText(localized.text10)).toBeInTheDocument();
+    expect(screen.getByText("No tests named.")).toBeInTheDocument();
   });
 
-  it("uses singular wording for one test", () => {
+  it("uses the right grammatical number for a single test", () => {
     render(<TestPyramidWithLogic counts={{ unit: 1 }} />);
-    expect(screen.getByText(localized.text12)).toBeInTheDocument();
+    expect(screen.getByText(/1 test across 1 levels/)).toBeInTheDocument();
   });
 
-  it("converts shares into bar widths", () => {
+  it("accepts custom levels", () => {
     const { container } = render(
       <TestPyramidWithLogic counts={{ unit: 2 }} kinds={["unit", "e2e"]} />,
     );
     expect(container.querySelectorAll("[data-level]")).toHaveLength(2);
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withTestPyramidLogic(TestPyramid).displayName).toBe("withTestPyramidLogic(TestPyramid)");
   });
 });
 
+describe("Unit tests for the German locale", () => {
+  it("speaks German under the German locale", () => {
+    renderInGerman(<TestPyramidWithLogic counts={{ unit: 2, e2e: 19 }} />);
+    expect(
+      screen.getByText(germanText.t("elements.testPyramid.topWider"), { exact: false }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        germanText.t("elements.testPyramid.caption", {
+          tests: germanText.plural("elements.testPyramid.tests", 21),
+          levels: 2,
+          shape: germanText.t("elements.testPyramid.topWider"),
+        }),
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("core.label.testKind.unit"))).toBeInTheDocument();
+  });
+});
+
 describe("Snapshot tests for TestPyramid", () => {
-  it("accepts custom levels", () => {
+  it("broad base", () => {
     const { container } = render(
       <TestPyramidWithLogic counts={{ unit: 42, property: 6, integration: 18, e2e: 7 }} />,
     );

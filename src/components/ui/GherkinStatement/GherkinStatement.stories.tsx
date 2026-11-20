@@ -1,4 +1,3 @@
-import { localized } from "../../../i18n/legacy/components/ui/GherkinStatement/GherkinStatement.stories.text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { taskflowRecord } from "../../../core/fixtures";
 import GherkinStatementWithLogic from ".";
@@ -7,10 +6,20 @@ const meta: Meta<typeof GherkinStatementWithLogic> = {
   title: "FACET UI/GherkinStatement",
   component: GherkinStatementWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "`contract.scenarios[].statement` as Gherkin: keyword, German role, coloured rail and token highlighting. And and But inherit the colour of their step.",
+      },
+    },
   },
   args: {
-    statement: [localized.text2, localized.text3, localized.text4, localized.text5].join("\n"),
+    statement: [
+      'Given a list "Groceries" exists',
+      'When the user enters "Buy milk tomorrow 9:00 #groceries"',
+      "Then the task is created with a due date and a list",
+      "And it appears at the top of the list immediately",
+    ].join("\n"),
   },
   decorators: [
     (Story) => (
@@ -26,14 +35,22 @@ type Story = StoryObj<typeof meta>;
 
 export const Promise: Story = {};
 
+/** Compact, for lists and preview rows. */
 export const Compact: Story = { args: { compact: true } };
 
+/** With `But` — the only place where red appears outside of deadlines. */
 export const WithException: Story = {
   args: {
-    statement: [localized.text6, localized.text7, localized.text8, localized.text9].join("\n"),
+    statement: [
+      "Given the queue contains 3 changes",
+      "When the connection returns",
+      "Then all changes are transferred",
+      "But one change with conflict_state stays in quarantine",
+    ].join("\n"),
   },
 };
 
+/** Straight from the demo corpus. */
 export const FromTheRecord: Story = {
   args: { steps: taskflowRecord("tasks/create/quick-add").scenarios[0].steps },
 };

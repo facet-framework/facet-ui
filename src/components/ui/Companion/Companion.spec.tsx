@@ -1,17 +1,17 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { remainingText } from "../../../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/Companion/Companion.spec.text";
+import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import CompanionWithLogic, { Companion, type CompanionEntry } from ".";
 import type { CompanionPlan } from "../../../core";
+import { renderInGerman } from "../../../facet/i18n/testing";
+
+const germanText = createGermanText("de");
 
 const plan: CompanionPlan = {
-  text: localized.text1,
+  text: "Two promises without a test.\n\nOpen: two promises without a test.",
   facts: [
-    { label: "TEST ZUGEORDNET", value: "3/5", meaning: "neutral" },
-    { label: localized.text2, value: "2", meaning: "signal" },
+    { label: "TEST MAPPED", value: "3/5", meaning: "neutral" },
+    { label: "WITHOUT TEST", value: "2", meaning: "signal" },
   ],
   reads: ["docs/facets/a.yaml", "src/a.ts"],
   sources: [
@@ -20,18 +20,18 @@ const plan: CompanionPlan = {
   ],
   openId: "a/b/c",
   section: "promises",
-  follow: [localized.text3],
+  follow: ["Who is responsible?"],
 };
 
 const entries: CompanionEntry[] = [
-  { kind: "ask", id: "1", text: labelText.text322 },
+  { kind: "ask", id: "1", text: "What is the state of a?" },
   { kind: "answer", id: "2", plan },
 ];
 
 const base = {
-  scope: remainingText.text153,
-  intro: localized.text4,
-  foot: germanLabels.text169,
+  scope: "sees: 8 records · src · 21,581 lines\nrole OPERATIONS",
+  intro: "I have read the records.",
+  foot: "answers from the records it has read",
   suggestions: [],
   draft: "",
   busy: false,
@@ -45,57 +45,57 @@ const base = {
 };
 
 describe("Unit tests for withCompanionLogic", () => {
-  it("shows the opening sentence before a question", () => {
+  it("shows the opening sentence as long as nothing has been asked", () => {
     render(<CompanionWithLogic {...base} entries={[]} />);
-    expect(screen.getByText(localized.text6)).toBeInTheDocument();
+    expect(screen.getByText("I have read the records.")).toBeInTheDocument();
   });
 
-  it("hides the opening sentence once messages exist", () => {
+  it("drops the opening sentence as soon as something is there", () => {
     render(<CompanionWithLogic {...base} entries={entries} />);
-    expect(screen.queryByText(localized.text8)).not.toBeInTheDocument();
+    expect(screen.queryByText("I have read the records.")).not.toBeInTheDocument();
   });
 
-  it("renders the question and answer as separate messages", () => {
+  it("renders question and answer as separate entries", () => {
     const { container } = render(<CompanionWithLogic {...base} entries={entries} />);
     expect(container.querySelectorAll("[data-message='question']")).toHaveLength(1);
     expect(container.querySelectorAll("[data-message='answer']")).toHaveLength(1);
   });
 
-  it("names the sources read for each answer", () => {
+  it("names, for each answer, what was read", () => {
     render(<CompanionWithLogic {...base} entries={entries} />);
-    expect(screen.getByText("GELESEN")).toBeInTheDocument();
+    expect(screen.getByText("READ")).toBeInTheDocument();
     expect(screen.getByText("docs/facets/a.yaml")).toBeInTheDocument();
     expect(screen.getByText("src/a.ts:12")).toBeInTheDocument();
   });
 
-  it("opens the record from a cited passage", async () => {
+  it("jumps from a read location into the record", async () => {
     const onOpenRecord = jest.fn();
     render(<CompanionWithLogic {...base} entries={entries} onOpenRecord={onOpenRecord} />);
     await userEvent.click(screen.getByRole("button", { name: "Record" }));
     expect(onOpenRecord).toHaveBeenCalledWith("a/b/c");
   });
 
-  it("offers no record navigation for other sources", () => {
+  it("offers no jump where the location is not a record", () => {
     render(<CompanionWithLogic {...base} entries={entries} />);
-
+    // Exactly one source carries an id, the other is a code location.
     expect(screen.getAllByRole("button", { name: "Record" })).toHaveLength(1);
   });
 
-  it("opens the answer's register section", async () => {
+  it("leads into the register section of the answer", async () => {
     const onOpenSection = jest.fn();
     render(<CompanionWithLogic {...base} entries={entries} onOpenSection={onOpenSection} />);
-    await userEvent.click(screen.getByRole("button", { name: localized.text13 }));
+    await userEvent.click(screen.getByRole("button", { name: "IN THE REGISTER ↑" }));
     expect(onOpenSection).toHaveBeenCalledWith("promises");
   });
 
-  it("forwards a follow-up question", async () => {
+  it("passes a follow-up question on", async () => {
     const onAsk = jest.fn();
     render(<CompanionWithLogic {...base} entries={entries} onAsk={onAsk} />);
-    await userEvent.click(screen.getByRole("button", { name: localized.text15 }));
-    expect(onAsk).toHaveBeenCalledWith(localized.text16);
+    await userEvent.click(screen.getByRole("button", { name: "Who is responsible?" }));
+    expect(onAsk).toHaveBeenCalledWith("Who is responsible?");
   });
 
-  it("shows each file as it is read", () => {
+  it("shows every file that comes up while reading", () => {
     render(
       <CompanionWithLogic
         {...base}
@@ -104,51 +104,91 @@ describe("Unit tests for withCompanionLogic", () => {
         reads={["docs/facets/a.yaml", "src/a.ts"]}
       />,
     );
-    expect(screen.getByText(localized.text18)).toBeInTheDocument();
+    expect(screen.getByText("READING")).toBeInTheDocument();
     expect(screen.getByText("src/a.ts")).toBeInTheDocument();
   });
 
-  it("withholds suggestions while reading", () => {
+  it("holds suggestions back while reading", () => {
     render(
       <CompanionWithLogic
         {...base}
         entries={[]}
         busy
         reads={["a"]}
-        suggestions={[{ key: "s", text: labelText.text323, onAsk: jest.fn() }]}
+        suggestions={[{ key: "s", text: "Where to start?", onAsk: jest.fn() }]}
       />,
     );
-    expect(screen.queryByRole("button", { name: labelText.text323 })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Where to start?" })).not.toBeInTheDocument();
   });
 
-  it("offers clearing only when content exists", () => {
+  it("offers “clear” only when there is something to clear", () => {
     const { rerender } = render(<CompanionWithLogic {...base} entries={[]} />);
-    expect(screen.queryByRole("button", { name: remainingText.text151 })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "clear" })).not.toBeInTheDocument();
     rerender(<CompanionWithLogic {...base} entries={entries} />);
-    expect(screen.getByRole("button", { name: remainingText.text151 })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "clear" })).toBeInTheDocument();
   });
 
-  it("sends the question on submission", async () => {
+  it("sends the question on submit", async () => {
     const onSend = jest.fn();
-    render(<CompanionWithLogic {...base} entries={[]} draft={localized.text22} onSend={onSend} />);
-    await userEvent.click(screen.getByRole("button", { name: localized.text23 }));
+    render(<CompanionWithLogic {...base} entries={[]} draft="What is open?" onSend={onSend} />);
+    await userEvent.click(screen.getByRole("button", { name: "Ask" }));
     expect(onSend).toHaveBeenCalled();
   });
 
-  it("explains the field's purpose below it", () => {
+  it("says below the field what is behind it", () => {
     render(<CompanionWithLogic {...base} entries={[]} />);
-    expect(screen.getByText(germanLabels.text169)).toBeInTheDocument();
+    expect(screen.getByText("answers from the records it has read")).toBeInTheDocument();
+  });
+});
+
+describe("Unit tests for the German locale", () => {
+  it("speaks German in the header, the answer and the composer under the German locale", () => {
+    renderInGerman(<CompanionWithLogic {...base} entries={entries} />);
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.companion.clear") }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.companion.close") }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: germanText.t("shell.tab.ask") })).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("core.companion.fact.read"))).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.companion.openDetail") }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.companion.inRegister") }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(germanText.t("elements.companion.placeholder")),
+    ).toBeInTheDocument();
+  });
+
+  it("speaks German while it is working under the German locale", () => {
+    renderInGerman(
+      <CompanionWithLogic
+        {...base}
+        entries={entries}
+        busy
+        reads={["src/a.ts"]}
+        onStop={jest.fn()}
+      />,
+    );
+    expect(screen.getByText(germanText.t("elements.companion.working"))).toBeInTheDocument();
+    expect(screen.getByText(germanText.t("elements.companion.reading"))).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: germanText.t("elements.companion.stop") }),
+    ).toBeInTheDocument();
   });
 });
 
 describe("Unit tests for Companion", () => {
-  it("names the column for discovery", () => {
+  it("names itself so the column stays findable", () => {
     render(<CompanionWithLogic {...base} entries={[]} />);
     const panel = screen.getByRole("complementary", { name: "Companion" });
     expect(within(panel).getByText("Companion")).toBeInTheDocument();
   });
 
-  it("accepts an empty conversation", () => {
+  it("accepts the plain version without entries", () => {
     render(
       <Companion
         containerStyle={{}}
@@ -189,7 +229,7 @@ describe("Unit tests for Companion", () => {
         clearLabel=""
         onClear={jest.fn()}
         onClose={jest.fn()}
-        intro="nichts gefragt"
+        intro="nothing asked yet"
         showIntro
         messages={[]}
         reads={[]}
@@ -198,29 +238,34 @@ describe("Unit tests for Companion", () => {
         draft=""
         onDraft={jest.fn()}
         onSend={jest.fn()}
-        placeholder={germanLabels.text48}
-        sendLabel={localized.text27}
+        placeholder="Question"
+        sendLabel="Ask"
         foot=""
       />,
     );
-    expect(screen.getByText("nichts gefragt")).toBeInTheDocument();
+    expect(screen.getByText("nothing asked yet")).toBeInTheDocument();
   });
 });
 
-describe("chat height limits", () => {
-  it("preserves scrolling and zero minimum height with many long messages", () => {
+describe("Unit tests for the height limit of the chat", () => {
+  // The companion does not grow without bound: the page around it sets
+  // 'height: 100vh; overflow: hidden', and this column resolves its own
+  // overflow with 'flex: 1; minHeight: 0; overflowY: auto' on the message log.
+  // This test pins the second half: even with many long messages the column
+  // keeps those properties.
+  it("keeps 'overflowY: auto' and 'minHeight: 0' on the message log, even with many long entries", () => {
     const longEntries: CompanionEntry[] = Array.from({ length: 40 }, (_, index) => {
       const askEntry: CompanionEntry = {
         kind: "ask",
         id: `f${index}`,
-        text: `${germanLabels.text170}${index}: ${localized.text30.repeat(4)}`,
+        text: `Question number ${index}: ${"a very long question text without a break point ".repeat(4)}`,
       };
       const answerEntry: CompanionEntry = {
         kind: "answer",
         id: `a${index}`,
         plan: {
           ...plan,
-          text: `${remainingText.text154}${index}.\n\n${localized.text31.repeat(12)}`,
+          text: `Answer number ${index}.\n\n${"A long paragraph with many sentences. ".repeat(12)}`,
         },
       };
       return index % 2 === 0 ? askEntry : answerEntry;
@@ -234,8 +279,8 @@ describe("chat height limits", () => {
   });
 });
 
-describe("background agent activity", () => {
-  it("shows active tools and their targets", () => {
+describe("Unit tests for what the agent does in the background", () => {
+  it("shows the tools with their target while it works", () => {
     render(
       <CompanionWithLogic
         {...base}
@@ -249,11 +294,11 @@ describe("background agent activity", () => {
       />,
     );
 
-    expect(screen.getByText(labelText.text321)).toBeInTheDocument();
+    expect(screen.getByText("TOOLS")).toBeInTheDocument();
     expect(screen.getByText("Read · src/reader.ts")).toBeInTheDocument();
   });
 
-  it("shows expandable reasoning and its token count", async () => {
+  it("shows the thinking with counted tokens and expands it", async () => {
     const onThinkingToggle = jest.fn();
     render(
       <CompanionWithLogic
@@ -261,14 +306,14 @@ describe("background agent activity", () => {
         entries={entries}
         busy
         reads={[]}
-        thinking={localized.text35}
+        thinking="First find the file, then read the constant."
         thinkingTokens={42}
         thinkingOpen={false}
         onThinkingToggle={onThinkingToggle}
       />,
     );
 
-    const toggle = screen.getByRole("button", { name: /DENKT/ });
+    const toggle = screen.getByRole("button", { name: /THINKING/ });
     expect(toggle).toHaveTextContent("42");
     expect(toggle).toHaveAttribute("aria-expanded", "false");
 
@@ -276,59 +321,58 @@ describe("background agent activity", () => {
     expect(onThinkingToggle).toHaveBeenCalled();
   });
 
-  it("explains how to sign in", () => {
+  // A notice without a way out leaves the reader at a loss, so it carries the
+  // command that fixes it.
+  it("says what to do when the login is missing", () => {
     render(
       <CompanionWithLogic
         {...base}
         entries={[]}
         notice={{
-          text: localized.text37,
-          hint: localized.text38,
+          text: "Nobody is signed in to Claude Code.",
+          hint: "Sign in from a terminal: `claude auth login`.",
         }}
       />,
     );
 
-    expect(screen.getByText(localized.text39)).toBeInTheDocument();
+    expect(screen.getByText("NOT READY")).toBeInTheDocument();
     expect(screen.getByText(/claude auth login/)).toBeInTheDocument();
   });
 
-  it("lists models and reports selection", async () => {
+  it("offers the models to choose from and reports the choice", async () => {
     const onModel = jest.fn();
     render(
       <CompanionWithLogic
         {...base}
         entries={[]}
         models={[
-          { id: "", label: labelText.text122 },
-          { id: "haiku", label: "Haiku", note: labelText.text324 },
+          { id: "", label: "Default" },
+          { id: "haiku", label: "Haiku", note: "economical" },
         ]}
         model=""
         onModel={onModel}
       />,
     );
 
-    await userEvent.selectOptions(screen.getByLabelText(germanLabels.text36), "haiku");
+    await userEvent.selectOptions(screen.getByLabelText("Model"), "haiku");
     expect(onModel).toHaveBeenCalledWith("haiku");
   });
 
-  it("opens full screen and labels its state", async () => {
+  it("switches to full screen and says which state it is in", async () => {
     const onFullscreen = jest.fn();
     render(
       <CompanionWithLogic {...base} entries={[]} fullscreen={false} onFullscreen={onFullscreen} />,
     );
 
-    const button = screen.getByRole("button", { name: labelText.text318 });
+    const button = screen.getByRole("button", { name: "fullscreen" });
     expect(button).toHaveAttribute("aria-pressed", "false");
     await userEvent.click(button);
     expect(onFullscreen).toHaveBeenCalled();
   });
 
-  it("names the return action in full screen", () => {
+  it("names the way back when it is already in full screen", () => {
     render(<CompanionWithLogic {...base} entries={[]} fullscreen onFullscreen={jest.fn()} />);
 
-    expect(screen.getByRole("button", { name: labelText.text317 })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(screen.getByRole("button", { name: "shrink" })).toHaveAttribute("aria-pressed", "true");
   });
 });

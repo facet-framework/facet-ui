@@ -1,5 +1,3 @@
-import { germanText as germanLabels } from "../i18n/legacy/shared";
-import { localized } from "../i18n/legacy/core/model.spec.text";
 import { taskflowModel, taskflowRecord } from "./fixtures";
 import {
   buildErrorCodeRegister,
@@ -19,42 +17,44 @@ import type { RawRecord } from "./types";
 import type { YamlValue } from "./yaml";
 
 describe("Unit tests for model helpers", () => {
-  it("makes filenames readable without inventing content", () => {
+  it("makes file names readable without inventing anything", () => {
     expect(humanize("quick-add")).toBe("Quick add");
     expect(humanize("last_write_wins")).toBe("Last write wins");
     expect(humanize("")).toBe("");
   });
 
-  it("calculates shares and handles zero totals", () => {
+  it("computes shares and guards against zero", () => {
     expect(pct(31, 38)).toBe(82);
     expect(pct(5, 0)).toBe(0);
   });
 
   it("separates thousands", () => {
-    expect(formatNumber(84200)).toBe("84 200");
+    expect(formatNumber(84200)).toBe("84,200");
+    expect(formatNumber(1000, "en")).toBe("1,000");
+    expect(formatNumber(1000, "de")).toBe("1.000");
   });
 
-  it("derives record kinds from identifiers", () => {
+  it("derives the record kind from the id", () => {
     expect(recordKindOf("tasks/create/quick-add")).toBe("feature");
     expect(recordKindOf("policy/notifications/quiet-hours")).toBe("policy");
     expect(recordKindOf("assumption/sync/clock-skew")).toBe("assumption");
     expect(recordKindOf("data/tasks/task-item")).toBe("entity");
   });
 
-  it("recognizes rendered field paths including prefixes", () => {
+  it("recognises rendered field paths, also via prefixes", () => {
     expect(isRenderedPath("intent.summary")).toBe(true);
     expect(isRenderedPath("contract.scenarios[].pre_state.count")).toBe(true);
     expect(isRenderedPath("intent.unbekanntes_feld")).toBe(false);
   });
 
-  it("collects field paths and frequencies", () => {
+  it("collects field paths with their frequency", () => {
     const out: Record<string, number> = {};
     collectPaths({ intent: { summary: "a" }, tags: ["x", "y"] }, "", out);
     expect(out["intent.summary"]).toBe(1);
     expect(out["tags[]"]).toBe(2);
   });
 
-  it("generalizes knowledge slots and test levels into patterns", () => {
+  it("collapses knowledge slots and test levels into patterns", () => {
     const out: Record<string, number> = {};
     collectPaths(
       {
@@ -68,7 +68,10 @@ describe("Unit tests for model helpers", () => {
     expect(out["verification.*_tests[].id"]).toBe(1);
   });
 
-  it("generalizes variant keys into a pattern", () => {
+  // variants carries arbitrary variant names as keys, just as knowledge
+  // carries arbitrary slot names: both are collapsed to "*", otherwise every
+  // variant name would be its own path that never recurs.
+  it("collapses variants keys into one pattern", () => {
     const out: Record<string, number> = {};
     collectPaths(
       { variants: { web: { lifecycle: "active" }, native: { lifecycle: "planned" } } },
@@ -78,7 +81,7 @@ describe("Unit tests for model helpers", () => {
     expect(out["variants.*.lifecycle"]).toBe(2);
   });
 
-  it("recognizes variants, flags, dashboards and observability as rendered", () => {
+  it("recognises variants, flags, observation.dashboards and observability as rendered", () => {
     expect(isRenderedPath("variants.*.lifecycle")).toBe(true);
     expect(isRenderedPath("flags[].key")).toBe(true);
     expect(isRenderedPath("observation.dashboards[].url")).toBe(true);
@@ -96,7 +99,7 @@ describe("Unit tests for shapeRecord", () => {
         doc: {
           id: "tasks/create/quick-add",
           lifecycle: "active",
-          contract: { scenarios: [{ id: "task-added", statement: localized.text11 }] },
+          contract: { scenarios: [{ id: "task-added", statement: "Then it is created" }] },
           verification: { unit_tests: [{ id: "creates_task", proves: ["task-added"] }] },
         },
       },
@@ -110,7 +113,7 @@ describe("Unit tests for shapeRecord", () => {
     expect(record.tests[0].kind).toBe("unit");
   });
 
-  it("treats missing backing as backed", () => {
+  it("reads backing — a missing block counts as backed", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -119,12 +122,12 @@ describe("Unit tests for shapeRecord", () => {
           id: "a/b/c",
           contract: {
             scenarios: [
-              { id: "without-block" },
+              { id: "no-block" },
               {
-                id: "explizit-unbacked",
+                id: "explicit-unbacked",
                 backing: {
                   state: "unbacked",
-                  reason: localized.text14,
+                  reason: "Column is still missing.",
                   unblocked_by: "billing/categories/assign-category",
                 },
               },
@@ -138,12 +141,12 @@ describe("Unit tests for shapeRecord", () => {
     expect(record.scenarios[0].backing).toEqual({ state: "backed", reason: "", unblockedBy: "" });
     expect(record.scenarios[1].backing).toEqual({
       state: "unbacked",
-      reason: localized.text15,
+      reason: "Column is still missing.",
       unblockedBy: "billing/categories/assign-category",
     });
   });
 
-  it("makes no deviation claim without a block", () => {
+  it("reads deviation — a missing block claims nothing", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -152,13 +155,13 @@ describe("Unit tests for shapeRecord", () => {
           id: "a/b/c",
           contract: {
             scenarios: [
-              { id: "without-block" },
+              { id: "no-block" },
               {
                 id: "full",
                 deviation: {
-                  reason: localized.text18,
+                  reason: "A tenant filter is built and never applied.",
                   confirmed_by: "code-review",
-                  tracked_as: "#212",
+                  tracked_as: "issue-example",
                 },
               },
             ],
@@ -168,15 +171,17 @@ describe("Unit tests for shapeRecord", () => {
       {},
     );
 
+    // No block means: nobody has declared this behaviour a defect — not that
+    // somebody vouches for it. Hence `null` and not an empty block.
     expect(record.scenarios[0].deviation).toBeNull();
     expect(record.scenarios[1].deviation).toEqual({
-      reason: localized.text19,
+      reason: "A tenant filter is built and never applied.",
       confirmedBy: "code-review",
-      trackedAs: "#212",
+      trackedAs: "issue-example",
     });
   });
 
-  it("reads deviation without confirmed_by and with null tracked_as", () => {
+  it("reads deviation also without confirmed_by and with tracked_as: null", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -187,7 +192,7 @@ describe("Unit tests for shapeRecord", () => {
             scenarios: [
               {
                 id: "sparse",
-                deviation: { reason: localized.text21, tracked_as: null },
+                deviation: { reason: "The bar never ends at 100 %.", tracked_as: null },
               },
             ],
           },
@@ -196,14 +201,17 @@ describe("Unit tests for shapeRecord", () => {
       {},
     );
 
+    // Both are missing in the same way: not written down. Inventing a word for
+    // this ("unconfirmed", "not tracked") would be a measurement nobody has
+    // taken.
     expect(record.scenarios[0].deviation).toEqual({
-      reason: localized.text22,
+      reason: "The bar never ends at 100 %.",
       confirmedBy: "",
       trackedAs: "",
     });
   });
 
-  it("reads audience without inventing it when absent", () => {
+  it("reads audience — and a missing field assigns nobody", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -212,7 +220,7 @@ describe("Unit tests for shapeRecord", () => {
           id: "a/b/c",
           contract: {
             scenarios: [
-              { id: "without-field" },
+              { id: "no-field" },
               { id: "for-product", audience: "product" },
               { id: "for-engineering", audience: "engineering" },
             ],
@@ -222,12 +230,15 @@ describe("Unit tests for shapeRecord", () => {
       {},
     );
 
+    // The case the field was built for in the first place: every record ever
+    // written omits it. If `null` became `product` here, the registry would
+    // claim, in a thousand places, an audience nobody vouches for.
     expect(record.scenarios[0].audience).toBeNull();
     expect(record.scenarios[1].audience).toBe("product");
     expect(record.scenarios[2].audience).toBe("engineering");
   });
 
-  it("rejects audiences unknown to the schema", () => {
+  it("accepts no audience the schema does not know", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -242,14 +253,20 @@ describe("Unit tests for shapeRecord", () => {
       {},
     );
 
+    // A value outside the two is a schema error; `facet lint` reports it.
+    // Passing it through here would turn it into a third audience, and the
+    // same filter would mean something different in this registry than elsewhere.
     expect(record.scenarios[0].audience).toBeNull();
   });
 
-  it("marks audience as rendered for completeness", () => {
+  it("renders audience — otherwise completeness would list the field as not shown", () => {
+    // The reader writes the audience out at depth 3. If the path were missing
+    // here, "fields, complete" would report a field as not rendered that sits
+    // right next to it.
     expect(isRenderedPath("contract.scenarios[].audience")).toBe(true);
   });
 
-  it("marks unproven promises", () => {
+  it("marks unbacked promises", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -262,7 +279,7 @@ describe("Unit tests for shapeRecord", () => {
     expect(record.scenarios[0].proven).toBe(false);
   });
 
-  it("reads the defect register and calculates totals and file counts", () => {
+  it("reads the defect register and computes the total and the per-file count", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -275,14 +292,14 @@ describe("Unit tests for shapeRecord", () => {
                 commit: "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
                 date: "2026-01-09",
                 files: ["src/list.ts"],
-                subject: localized.text30,
+                subject: "fix: the empty list showed a zero row",
                 recorded_by: "manual",
               },
               {
                 commit: "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
                 date: "2026-03-02",
                 files: ["src/list.ts", "src/page.ts"],
-                issue: "#42",
+                issue: "issue-fix-example",
                 recorded_by: "git-history",
               },
             ],
@@ -294,23 +311,24 @@ describe("Unit tests for shapeRecord", () => {
 
     expect(record.defects.present).toBe(true);
     expect(record.defects.total).toBe(2);
-
+    // Newest first — the question is what broke most recently.
     expect(record.defects.fixes[0].date).toBe("2026-03-02");
-    expect(record.defects.fixes[0].issue).toBe("#42");
+    expect(record.defects.fixes[0].issue).toBe("issue-fix-example");
     expect(record.defects.lastFix).toBe("2026-03-02");
-
+    // The per-file count is computed, not read: list.ts in both.
     expect(record.defects.byFile).toEqual([
       { path: "src/list.ts", count: 2 },
       { path: "src/page.ts", count: 1 },
     ]);
   });
 
-  it("treats a missing register as unchecked rather than zero", () => {
+  it("reads a missing register as “nobody looked”, not as zero", () => {
     const record = shapeRecord({ path: "a.yaml", raw: "", doc: { id: "a/b/c" } }, {});
     expect(record.defects.present).toBe(false);
     expect(record.defects.total).toBe(0);
     expect(record.defects.fixes).toEqual([]);
 
+    // An empty block is the other statement: somebody looked here.
     const looked = shapeRecord(
       { path: "b.yaml", raw: "", doc: { id: "a/b/d", defects: { fixes: [] } } },
       {},
@@ -319,7 +337,7 @@ describe("Unit tests for shapeRecord", () => {
     expect(looked.defects.total).toBe(0);
   });
 
-  it("skips entries without a commit as they lack evidence", () => {
+  it("skips an entry without a commit — no evidence, no count", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -340,14 +358,14 @@ describe("Unit tests for shapeRecord", () => {
     expect(record.defects.fixes[0].commit).toBe("c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3");
   });
 
-  it("handles an empty document", () => {
+  it("copes with an empty document", () => {
     const record = shapeRecord({ path: "empty.yaml", raw: "", doc: {} }, {});
     expect(record.id).toBe("empty.yaml");
     expect(record.lifecycle).toBe("—");
     expect(record.present.intent).toBe(false);
   });
 
-  it("takes anchors from the scan rather than the record", () => {
+  it("takes anchors from the scan, not from the record", () => {
     const record = shapeRecord(
       { path: "a.yaml", raw: "", doc: { id: "a/b/c" } },
       { anchors: { "a/b/c": [{ path: "src/a.ts", line: 12, role: "primary" }] } },
@@ -356,8 +374,11 @@ describe("Unit tests for shapeRecord", () => {
     expect(record.present.anchors).toBe(true);
   });
 
+  // FACET 1.4 `variants` replaces the top-level `lifecycle` for multi-client
+  // features with one map per variant; the schema forbids carrying both. A
+  // variants record therefore never carries a `lifecycle`.
   describe("variants (FACET 1.4)", () => {
-    it("reads variants without inventing an aggregate lifecycle", () => {
+    it("reads variants and leaves lifecycle raw at '—' — no invented aggregate", () => {
       const record = shapeRecord(
         {
           path: "a.yaml",
@@ -366,7 +387,7 @@ describe("Unit tests for shapeRecord", () => {
             id: "web/auth/login",
             variants: {
               web: { lifecycle: "active" },
-              native: { lifecycle: "planned", notes: localized.text36 },
+              native: { lifecycle: "planned", notes: "not started yet" },
             },
           },
         },
@@ -376,7 +397,7 @@ describe("Unit tests for shapeRecord", () => {
       expect(record.lifecycle).toBe("—");
       expect(record.variants).toEqual({
         web: { lifecycle: "active", notes: undefined },
-        native: { lifecycle: "planned", notes: localized.text37 },
+        native: { lifecycle: "planned", notes: "not started yet" },
       });
     });
 
@@ -405,7 +426,7 @@ describe("Unit tests for shapeRecord", () => {
       expect(activeOnNone.activeAnywhere).toBe(false);
     });
 
-    it("uses scalar lifecycle for ordinary records", () => {
+    it("falls back to the scalar lifecycle for an ordinary record", () => {
       const active = shapeRecord(
         { path: "a.yaml", raw: "", doc: { id: "a/b/c", lifecycle: "active" } },
         {},
@@ -421,7 +442,7 @@ describe("Unit tests for shapeRecord", () => {
     });
   });
 
-  it("reads exposure flags independently of lifecycle", () => {
+  it("reads flags (FACET 1.4) — exposure, orthogonal to the lifecycle", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -429,12 +450,7 @@ describe("Unit tests for shapeRecord", () => {
         doc: {
           id: "a/b/c",
           flags: [
-            {
-              key: "new-inbox",
-              system: "launchdarkly",
-              default: false,
-              rollout: "10% internal",
-            },
+            { key: "new-inbox", system: "launchdarkly", default: false, rollout: "10% internal" },
           ],
         },
       },
@@ -452,7 +468,7 @@ describe("Unit tests for shapeRecord", () => {
     ]);
   });
 
-  it("reads dashboard URLs", () => {
+  it("reads observation.dashboards[].url", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -467,7 +483,7 @@ describe("Unit tests for shapeRecord", () => {
     expect(record.dashboards).toEqual([{ url: "https://grafana.example/d/1" }]);
   });
 
-  it("reads observability alongside observation", () => {
+  it("reads observability (metrics, spans, log events) — a peer of observation", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -500,8 +516,8 @@ describe("Unit tests for shapeRecord", () => {
   });
 });
 
-describe("scenario implementation through implementedBy", () => {
-  it("binds an anchor to the scenario named in proves", () => {
+describe("Unit tests for the implementation of a scenario (implementedBy)", () => {
+  it("binds an anchor to the scenario its `proves` names", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -527,7 +543,7 @@ describe("scenario implementation through implementedBy", () => {
     });
   });
 
-  it("binds an anchor to every scenario named in proves", () => {
+  it("binds an anchor to several scenarios when `proves` names several", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -548,7 +564,7 @@ describe("scenario implementation through implementedBy", () => {
     expect(record.scenarios[1].implementedBy).toHaveLength(1);
   });
 
-  it("uses an empty list for scenarios without implementing anchors", () => {
+  it("leaves a scenario without a fulfilling anchor with an empty list, not undefined", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -561,7 +577,7 @@ describe("scenario implementation through implementedBy", () => {
     expect(record.scenarios[0].implementedBy).toEqual([]);
   });
 
-  it("keeps anchorsAdopted false when no scan anchor has proves", () => {
+  it("reports `anchorsAdopted: false` as long as no anchor in the whole scan carries `proves`", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -574,7 +590,7 @@ describe("scenario implementation through implementedBy", () => {
     expect(record.scenarios[0].anchorsAdopted).toBe(false);
   });
 
-  it("sets anchorsAdopted when any scan anchor has proves", () => {
+  it("reports `anchorsAdopted: true` as soon as any anchor in the scan carries `proves` — even in another record", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -592,7 +608,7 @@ describe("scenario implementation through implementedBy", () => {
     expect(record.scenarios[0].anchorsAdopted).toBe(true);
   });
 
-  it("keeps implementedBy empty and anchorsAdopted false without scan anchors", () => {
+  it("copes without scan anchors — `implementedBy` stays empty, `anchorsAdopted` stays false", () => {
     const record = shapeRecord(
       {
         path: "a.yaml",
@@ -607,10 +623,10 @@ describe("scenario implementation through implementedBy", () => {
   });
 });
 
-describe("buildModel integration with the demo corpus", () => {
+describe("Integration tests for buildModel over the demo corpus", () => {
   const model = taskflowModel();
 
-  it("reads all seventeen records", () => {
+  it("reads all 17 records", () => {
     expect(model.recs).toHaveLength(17);
     expect(
       model.features.length +
@@ -620,7 +636,7 @@ describe("buildModel integration with the demo corpus", () => {
     ).toBe(17);
   });
 
-  it("groups core functions by area", () => {
+  it("groups core features by area", () => {
     expect(model.domains.length).toBeGreaterThan(1);
     expect(model.domains.every((domain) => domain.items.length > 0)).toBe(true);
   });
@@ -631,63 +647,67 @@ describe("buildModel integration with the demo corpus", () => {
     expect(model.scnProven).toBeLessThanOrEqual(model.scnTotal);
   });
 
-  it("checks overdue reviews against the scan date", () => {
+  it("detects overdue reviews against the scan date", () => {
     expect(model.overdue).toBe(model.overdueList.length);
     model.overdueList.forEach((entry) => expect(entry.check.overdue).toBe(true));
   });
 
-  it("finds references without records as ghosts", () => {
+  it("finds references without a record as ghosts", () => {
     model.ghosts.forEach((ghost) => expect(model.byId[ghost]).toBeUndefined());
   });
 
-  it("calculates depth and degree for each node", () => {
+  it("computes depth and degree for every node", () => {
     model.edges.forEach((edge) => {
       expect(model.depth[edge.to]).toBeGreaterThanOrEqual(model.depth[edge.from] + 1);
     });
     expect(model.maxDepth).toBeGreaterThan(0);
   });
 
-  it("keeps every rendered field path auditable", () => {
+  it("keeps every rendered field path verifiable", () => {
     expect(model.fieldPaths.length).toBeGreaterThan(0);
     expect(model.notRendered.every((field) => !field.rendered)).toBe(true);
   });
 
-  it("tracks team ownership", () => {
+  it("lists ownership per team", () => {
     Object.values(model.teams).forEach((team) => expect(team.items.length).toBeGreaterThan(0));
   });
 
-  it("finds a record by identifier", () => {
+  it("returns a single record by its id", () => {
     const record = taskflowRecord("tasks/create/quick-add");
     expect(record.summary).not.toBe("");
     expect(record.adrs.length).toBeGreaterThan(0);
   });
 
-  it("throws for unknown identifiers", () => {
-    expect(() => taskflowRecord(localized.text65)).toThrow(localized.text66);
+  it("throws when an id does not exist", () => {
+    expect(() => taskflowRecord("does/not/exist")).toThrow(/not found/);
   });
 });
 
-describe("three lifecycle filters for variants", () => {
+describe("Unit tests for the three lifecycle filters with variants", () => {
+  // Reproduction from the issue: a variants record, active on "web", without
+  // an anchor for "web/auth/login". `f.lifecycle === "active"` always excludes
+  // such a record, because by the schema it carries no `lifecycle` at all —
+  // the three signals below must find it anyway.
   const variantsRaw = (path: string, id: string): RawRecord => ({
     path,
     raw: "",
     doc: {
       id,
       variants: { web: { lifecycle: "active" }, native: { lifecycle: "planned" } },
-      intent: { summary: localized.text68 },
-      contract: { scenarios: [{ id: "login-ok", statement: localized.text69 }] },
+      intent: { summary: "Signs in through the web interface." },
+      contract: { scenarios: [{ id: "login-ok", statement: "Then they are signed in" }] },
       verification: { unit_tests: [{ id: "logs_in", proves: ["login-ok"] }] },
     },
   });
 
-  it("counts an active variant without anchors as unanchored", () => {
+  it("counts an active, unanchored variants record as unanchored", () => {
     const raws = [variantsRaw("a.yaml", "web/auth/login")];
     const model = buildModel({}, [raws[0].path], raws, {});
 
     expect(model.unanchored.map((f) => f.id)).toContain("web/auth/login");
   });
 
-  it("counts a fully proven anchored active variant as complete", () => {
+  it("counts an active, anchored and fully proven variants record as complete", () => {
     const raws = [variantsRaw("a.yaml", "web/auth/login")];
     const model = buildModel({}, [raws[0].path], raws, {
       anchors: { "web/auth/login": [{ path: "src/login.ts", line: 3, role: "primary" }] },
@@ -697,14 +717,14 @@ describe("three lifecycle filters for variants", () => {
     expect(model.complete.map((f) => f.id)).toContain("web/auth/login");
   });
 
-  it("counts an active variant without SLOs or alerts as noObs", () => {
+  it("counts an active variants record without SLOs/alerts as noObs", () => {
     const raws = [variantsRaw("a.yaml", "web/auth/login")];
     const model = buildModel({}, [raws[0].path], raws, {});
 
     expect(model.noObs.map((f) => f.id)).toContain("web/auth/login");
   });
 
-  it("triggers none of the three signals for planned-only variants", () => {
+  it("lets a merely planned variant trigger none of the three signals", () => {
     const plannedOnly: RawRecord = {
       path: "b.yaml",
       raw: "",
@@ -717,6 +737,11 @@ describe("three lifecycle filters for variants", () => {
   });
 });
 
+/**
+ * `decisionTargets` collapses the references from `intent.decision_records`
+ * across the whole registry into distinct targets, descending by frequency.
+ * Each entry names the records that point at that target.
+ */
 describe("Unit tests for decisionTargets", () => {
   const raw = (path: string, decisionRecords: string[] = []): RawRecord => ({
     path,
@@ -724,6 +749,9 @@ describe("Unit tests for decisionTargets", () => {
     doc: { id: path, intent: { decision_records: decisionRecords } },
   });
 
+  // a names ADR-1 and ADR-2, b names only ADR-1, c names ADR-3 and ADR-2, d
+  // names nothing. ADR-1 and ADR-2 are thus tied at two mentions — this
+  // checks both the frequency branch and the tie branch of the sort.
   const raws = [
     raw("a", ["ADR-1", "ADR-2"]),
     raw("b", ["ADR-1"]),
@@ -736,30 +764,32 @@ describe("Unit tests for decisionTargets", () => {
     raws,
   );
 
-  it("counts distinct targets rather than strings per record", () => {
+  it("counts each distinct target, not the strings per record", () => {
     expect(model.decisionTargets).toHaveLength(3);
     expect(model.decisionTargets.reduce((sum, entry) => sum + entry.count, 0)).toBe(5);
   });
 
-  it("sorts by descending frequency and then target", () => {
+  it("sorts descending by frequency, by target on a tie", () => {
     expect(model.decisionTargets.map((entry) => entry.target)).toEqual(["ADR-1", "ADR-2", "ADR-3"]);
     expect(model.decisionTargets.map((entry) => entry.count)).toEqual([2, 2, 1]);
   });
 
-  it("lists the records referencing each target", () => {
+  it("names, for each target, the records that reference it", () => {
     const adr1 = model.decisionTargets.find((entry) => entry.target === "ADR-1");
     const adr3 = model.decisionTargets.find((entry) => entry.target === "ADR-3");
     expect(adr1?.recordIds).toEqual(["a", "b"]);
     expect(adr3?.recordIds).toEqual(["c"]);
   });
 
-  it("stays empty without decision references", () => {
+  it("stays empty when no record names a decision reference", () => {
     const empty = buildModel({}, ["d"], [raw("d")]);
     expect(empty.decisionTargets).toEqual([]);
   });
 });
 
-describe("depth calculation for cycles", () => {
+describe("Unit tests for the depth in a cycle", () => {
+  // Two records with a mutual `depends_on` form a cycle.
+  // Its depth must not grow with the number of loop iterations.
   const raw = (path: string, dependsOn: string[]): RawRecord => ({
     path,
     raw: "",
@@ -777,21 +807,26 @@ describe("depth calculation for cycles", () => {
     raws,
   );
 
-  it("bounds depth by chain length rather than iteration count", () => {
+  it("does not let the depth grow with the loop count instead of the chain length", () => {
+    // Root has no dependency (depth 0); the cycle does not depend on Root but
+    // still gets a place — bounded, not the number of nodes or a multiple of it.
     expect(model.maxDepth).toBeLessThanOrEqual(raws.length);
   });
 
-  it("reports cycle nodes instead of silently processing them", () => {
+  it("reports the cycle nodes instead of silently computing through them", () => {
     expect(new Set(model.cyclic)).toEqual(new Set(["tasks/a/cycle-one", "tasks/a/cycle-two"]));
     expect(model.cyclic).not.toContain("tasks/a/root");
   });
 
-  it("places both cycle nodes on the same layer", () => {
+  it("puts both cycle nodes on the same layer", () => {
+    // A cycle has no distinguished entry point — so both nodes get the same
+    // depth, instead of inventing an arbitrary order between them.
     expect(model.depth["tasks/a/cycle-one"]).toBe(model.depth["tasks/a/cycle-two"]);
   });
 });
 
-describe("mentioned but undeclared identifiers", () => {
+describe("Unit tests for mentioned but undeclared ids", () => {
+  // Mention an id in prose without declaring lineage, exposing undocumented coupling.
   const raw = (path: string, summary: string, dependsOn: string[] = []): RawRecord => ({
     path,
     raw: "",
@@ -802,10 +837,10 @@ describe("mentioned but undeclared identifiers", () => {
     },
   });
 
-  it("finds identifiers in prose without an edge", () => {
+  it("finds an id in free text that has no edge", () => {
     const raws = [
-      raw("billing/plans/upgrade", localized.text84),
-      raw("identity/access/role-check", localized.text85),
+      raw("billing/plans/upgrade", "Uses the same session check as identity/access/role-check."),
+      raw("identity/access/role-check", "Checks whether the role allows access."),
     ];
     const model = buildModel(
       {},
@@ -817,10 +852,12 @@ describe("mentioned but undeclared identifiers", () => {
     ]);
   });
 
-  it("ignores mentions with an existing edge in either direction", () => {
+  it("reports nothing when the mention already has a declared edge — in whichever direction", () => {
     const raws = [
-      raw("billing/plans/upgrade", localized.text87, ["identity/access/role-check"]),
-      raw("identity/access/role-check", localized.text88),
+      raw("billing/plans/upgrade", "Uses the same session check as identity/access/role-check.", [
+        "identity/access/role-check",
+      ]),
+      raw("identity/access/role-check", "Checks whether the role allows access."),
     ];
     const model = buildModel(
       {},
@@ -830,10 +867,10 @@ describe("mentioned but undeclared identifiers", () => {
     expect(model.undeclaredMentions).toEqual([]);
   });
 
-  it("reports nothing without another identifier in the text", () => {
+  it("reports nothing when no other id appears in the text", () => {
     const raws = [
-      raw("billing/plans/upgrade", localized.text90),
-      raw("identity/access/role-check", localized.text91),
+      raw("billing/plans/upgrade", "Raises the limit."),
+      raw("identity/access/role-check", "Checks the role."),
     ];
     const model = buildModel(
       {},
@@ -843,7 +880,7 @@ describe("mentioned but undeclared identifiers", () => {
     expect(model.undeclaredMentions).toEqual([]);
   });
 
-  it("reads scenario steps as well as the summary", () => {
+  it("also reads the Gherkin steps of the scenarios, not just the summary", () => {
     const raws: RawRecord[] = [
       {
         path: "billing/plans/upgrade",
@@ -854,13 +891,13 @@ describe("mentioned but undeclared identifiers", () => {
             scenarios: [
               {
                 id: "upgrade-checks-role",
-                statement: localized.text93,
+                statement: "Given identity/access/role-check has agreed\nThen it is upgraded",
               },
             ],
           },
         },
       },
-      raw("identity/access/role-check", localized.text94),
+      raw("identity/access/role-check", "Checks the role."),
     ];
     const model = buildModel(
       {},
@@ -873,7 +910,10 @@ describe("mentioned but undeclared identifiers", () => {
   });
 });
 
-describe("error code register", () => {
+describe("Unit tests for the error code register", () => {
+  // One record per field mentioned, so that each of the three locations can be
+  // cross-checked on its own: `intent.summary`,
+  // `contract.scenarios[].statement`, `knowledge.common_pitfalls`.
   const withSummary = (id: string, summary: string): RawRecord => ({
     path: id,
     raw: "",
@@ -892,20 +932,32 @@ describe("error code register", () => {
     doc: { id, knowledge: { common_pitfalls: { answer } } },
   });
 
-  it("finds codes in intent.summary", () => {
-    const raws = [withSummary("api/errors/reject", localized.text97)];
+  it("finds a code in intent.summary", () => {
+    const raws = [
+      withSummary("api/errors/reject", "Rejects with E2042 when the file name is missing."),
+    ];
     const entries = extractErrorCodes(raws.map((r) => shapeRecord(r, {})));
     expect(entries).toEqual([
       {
         code: "E2042",
         band: "E2xxx",
-        records: [{ id: "api/errors/reject", statement: localized.text98 }],
+        records: [
+          {
+            id: "api/errors/reject",
+            statement: "Rejects with E2042 when the file name is missing.",
+          },
+        ],
       },
     ]);
   });
 
-  it("finds codes across Gherkin scenario steps", () => {
-    const raws = [withScenario("storage/errors/open", localized.text100)];
+  it("finds a code in contract.scenarios[].statement, also across Gherkin steps", () => {
+    const raws = [
+      withScenario(
+        "storage/errors/open",
+        "Given an unreadable file\nThen the store answers with E1010",
+      ),
+    ];
     const entries = extractErrorCodes(raws.map((r) => shapeRecord(r, {})));
     expect(entries).toHaveLength(1);
     expect(entries[0].code).toBe("E1010");
@@ -913,15 +965,15 @@ describe("error code register", () => {
     expect(entries[0].records[0].statement).toMatch(/E1010/);
   });
 
-  it("finds codes in common pitfalls but not other knowledge slots", () => {
+  it("finds a code in knowledge.common_pitfalls, but not in other knowledge slots", () => {
     const raws = [
-      withPitfall("catalog/errors/rate-limit", localized.text102),
+      withPitfall("catalog/errors/rate-limit", "Easily confuses E4090 with the global limit."),
       {
         path: "catalog/errors/other-slot",
         raw: "",
         doc: {
           id: "catalog/errors/other-slot",
-          knowledge: { rollout: { answer: localized.text103 } },
+          knowledge: { rollout: { answer: "Concerns E4099, but not as a pitfall." } },
         },
       } satisfies RawRecord,
     ];
@@ -929,21 +981,21 @@ describe("error code register", () => {
     expect(entries.map((e) => e.code)).toEqual(["E4090"]);
   });
 
-  it("counts repeated mentions within one record only once", () => {
-    const raws = [withSummary("api/errors/reject", localized.text105)];
+  it("counts a repeated mention in the same record only once", () => {
+    const raws = [withSummary("api/errors/reject", "E2042 occurs when E2042 is returned.")];
     const entries = extractErrorCodes(raws.map((r) => shapeRecord(r, {})));
     expect(entries).toHaveLength(1);
     expect(entries[0].records).toHaveLength(1);
   });
 
-  it("groups by leading digit and masks the remainder", () => {
+  it("groups by band — leading numeral, rest masked", () => {
     expect(errorCodeBand("E1042")).toBe("E1xxx");
     expect(errorCodeBand("E2999")).toBe("E2xxx");
     expect(errorCodeBand("E9000")).toBe("E9xxx");
   });
 
-  it("accepts a configurable matching pattern", () => {
-    const raws = [withSummary("market/errors/checkout", localized.text108)];
+  it("accepts a configurable pattern instead of the default pattern", () => {
+    const raws = [withSummary("market/errors/checkout", "Answers with W-42 instead of E1042.")];
     const entries = extractErrorCodes(
       raws.map((r) => shapeRecord(r, {})),
       /W-\d{2}/g,
@@ -951,10 +1003,13 @@ describe("error code register", () => {
     expect(entries.map((e) => e.code)).toEqual(["W-42"]);
   });
 
-  it("marks collisions when multiple feature IDs name a code", () => {
+  it("marks a code as a collision as soon as more than one feature id names it", () => {
     const raws = [
-      withSummary("api/errors/reject", localized.text110),
-      withSummary("catalog/errors/import-reject", localized.text111),
+      withSummary("api/errors/reject", "Rejects with E2042."),
+      withSummary(
+        "catalog/errors/import-reject",
+        "Reports the same E2042 on import as the file API.",
+      ),
     ];
     const entries = extractErrorCodes(raws.map((r) => shapeRecord(r, {})));
     expect(entries).toHaveLength(1);
@@ -964,11 +1019,11 @@ describe("error code register", () => {
     ]);
   });
 
-  it("builds a grouped and sorted register with a visible gap", () => {
+  it("builds the register via buildModel — grouped, sorted, with a visible gap", () => {
     const raws = [
-      withSummary("api/errors/a", "E2042 tritt auf."),
-      withSummary("api/errors/b", "E2010 tritt ebenfalls auf."),
-      withSummary("storage/errors/a", "E1010 tritt auf."),
+      withSummary("api/errors/a", "E2042 occurs."),
+      withSummary("api/errors/b", "E2010 occurs as well."),
+      withSummary("storage/errors/a", "E1010 occurs."),
     ];
     const model = buildModel(
       {},
@@ -982,16 +1037,19 @@ describe("error code register", () => {
 
     const e2xxx = model.errorCodeRegister.bands.find((b) => b.band === "E2xxx")!;
     expect(e2xxx.codes.map((c) => c.code)).toEqual(["E2010", "E2042"]);
-
+    // E2000-E2009 are free before E2010 starts taking numbers.
     expect(e2xxx.nextFree).toBe("E2000");
 
     expect(model.errorCodeRegister.collisions).toEqual([]);
   });
 
-  it("reports no free number in a full band", () => {
+  it("reports no free number once a band is full", () => {
+    // A two-place pattern whose leading numeral stays 0 (X-00 … X-09): the
+    // whole band can be filled completely with ten records, without having to
+    // rebuild a four-place range.
     const digits = Array.from({ length: 10 }, (_, n) => n);
     const raws = digits.map((n) =>
-      withSummary(`market/errors/x${n}`, `${localized.text114}${String(n).padStart(2, "0")}.`),
+      withSummary(`market/errors/x${n}`, `Answers with X-${String(n).padStart(2, "0")}.`),
     );
     const entries = extractErrorCodes(
       raws.map((r) => shapeRecord(r, {})),
@@ -1007,10 +1065,10 @@ describe("error code register", () => {
     expect(bands[0].nextFree).toBeNull();
   });
 
-  it("finds the lowest free number including internal gaps", () => {
+  it("finds the smallest free number, even when a gap sits in the middle", () => {
     const raws = [
-      withSummary("market/errors/a", localized.text116),
-      withSummary("market/errors/b", localized.text117),
+      withSummary("market/errors/a", "Answers with X-01."),
+      withSummary("market/errors/b", "Answers with X-03."),
     ];
     const bands = buildErrorCodeRegister(
       raws.map((r) => shapeRecord(r, {})),
@@ -1022,6 +1080,10 @@ describe("error code register", () => {
 });
 
 describe("Unit tests for vocabulary aggregation", () => {
+  // Three recurring, project-defined vocabularies that lie outside
+  // `canonical_schema` and are therefore not covered by its ENUM check: alert
+  // severities, SLO sources, retention periods.
+
   describe("model.alertSeverities", () => {
     const raw = (path: string, alerts: Record<string, YamlValue>[]): RawRecord => ({
       path,
@@ -1029,7 +1091,7 @@ describe("Unit tests for vocabulary aggregation", () => {
       doc: { id: path, observation: { alerts } },
     });
 
-    it("counts each raw value with frequency and affected records", () => {
+    it("counts each raw value on its own, with frequency and affected records", () => {
       const raws = [
         raw("ops/alerts/a", [{ severity: "critical" }]),
         raw("ops/alerts/b", [{ severity: "critical" }, { severity: "info" }]),
@@ -1052,7 +1114,7 @@ describe("Unit tests for vocabulary aggregation", () => {
       expect(info?.recordIds).toEqual(["ops/alerts/b"]);
     });
 
-    it("groups near-duplicates while retaining both raw values", () => {
+    it("collapses near-duplicates (`warn`/`warning`) into one group but keeps both raw values", () => {
       const raws = [
         raw("ops/alerts/a", [{ severity: "warning" }, { severity: "warning" }]),
         raw("ops/alerts/b", [{ severity: "warn" }]),
@@ -1063,6 +1125,7 @@ describe("Unit tests for vocabulary aggregation", () => {
         raws,
       );
 
+      // The most frequent raw value determines the group key.
       const group = model.alertSeverities.find((g) => g.key === "warning");
       expect(group).toBeDefined();
       expect(group!.merged).toBe(true);
@@ -1072,11 +1135,11 @@ describe("Unit tests for vocabulary aggregation", () => {
         { value: "warning", count: 2, recordIds: ["ops/alerts/a"] },
         { value: "warn", count: 1, recordIds: ["ops/alerts/b"] },
       ]);
-
+      // No second, separate entry for "warn".
       expect(model.alertSeverities.some((g) => g.key === "warn")).toBe(false);
     });
 
-    it("keeps distinct meanings separate despite similar short names", () => {
+    it("keeps real differences apart, even when they are short and sound similar", () => {
       const raws = [
         raw("ops/alerts/a", [{ severity: "info" }]),
         raw("ops/alerts/b", [{ severity: "page" }]),
@@ -1090,7 +1153,7 @@ describe("Unit tests for vocabulary aggregation", () => {
       expect(model.alertSeverities.map((g) => g.key).sort()).toEqual(["info", "page"]);
     });
 
-    it("groups alerts without severity explicitly", () => {
+    it("records alerts without a severity as their own group instead of hiding them", () => {
       const raws = [raw("ops/alerts/a", [{ severity: "critical" }, {}])];
       const model = buildModel(
         {},
@@ -1110,7 +1173,7 @@ describe("Unit tests for vocabulary aggregation", () => {
       doc: { id: path, observation: { slos } },
     });
 
-    it("separates SLOs with and without sources", () => {
+    it("separates SLOs with a source from SLOs without one", () => {
       const raws = [
         raw("ops/slo/d", [{ query_source: "prometheus" }]),
         raw("ops/slo/e", [{ query_source: "prometheus" }, {}]),
@@ -1136,7 +1199,7 @@ describe("Unit tests for vocabulary aggregation", () => {
       expect(signoz?.recordIds).toEqual(["ops/slo/f"]);
     });
 
-    it("reports no missing sources when all SLOs have one", () => {
+    it("reports no missing source when every SLO carries one", () => {
       const raws = [raw("ops/slo/d", [{ query_source: "prometheus" }])];
       const model = buildModel(
         {},
@@ -1157,7 +1220,7 @@ describe("Unit tests for vocabulary aggregation", () => {
       },
     });
 
-    it("collects raw spellings with their data entities", () => {
+    it("collects every raw spelling with its data entities", () => {
       const raws = [
         entity("data/x/h", "30d"),
         entity("data/x/i", "30d"),
@@ -1179,7 +1242,10 @@ describe("Unit tests for vocabulary aggregation", () => {
       expect(indefinite?.count).toBe(1);
     });
 
-    it("keeps ISO durations and free-text retention periods separate", () => {
+    it("keeps ISO-8601 and free-text spellings of the same period apart instead of guessing", () => {
+      // `30d` and `P30D` mean the same, but are not near-duplicates in the
+      // sense of the prefix heuristic (neither value is a prefix of the other)
+      // — Atlas guesses nothing, it only shows what is written.
       const raws = [entity("data/x/h", "30d"), entity("data/x/g", "P30D")];
       const model = buildModel(
         {},
@@ -1190,7 +1256,7 @@ describe("Unit tests for vocabulary aggregation", () => {
       expect(model.retentionSpellings.map((g) => g.key).sort()).toEqual(["30d", "p30d"]);
     });
 
-    it("skips entities without retention information", () => {
+    it("skips data entities without any retention statement", () => {
       const raws = [entity("data/x/h", "30d"), entity("data/x/k", undefined)];
       const model = buildModel(
         {},
@@ -1203,11 +1269,11 @@ describe("Unit tests for vocabulary aggregation", () => {
 });
 
 describe("Unit tests for parseEnumConstraint", () => {
-  it("recognizes pipe-separated enum constraints", () => {
+  it("recognises `enum: a|b|c`", () => {
     expect(parseEnumConstraint("enum: free|pro|enterprise")).toEqual(["free", "pro", "enterprise"]);
   });
 
-  it("recognizes pipe-separated values constraints", () => {
+  it("recognises `values:a|b|c`", () => {
     expect(parseEnumConstraint("values:free|pro|enterprise")).toEqual([
       "free",
       "pro",
@@ -1215,7 +1281,7 @@ describe("Unit tests for parseEnumConstraint", () => {
     ]);
   });
 
-  it("recognizes bracketed values constraints", () => {
+  it("recognises `values:[a,b,c]`", () => {
     expect(parseEnumConstraint("values:[free, pro, enterprise]")).toEqual([
       "free",
       "pro",
@@ -1223,7 +1289,7 @@ describe("Unit tests for parseEnumConstraint", () => {
     ]);
   });
 
-  it("recognizes CSV and variant prefixes", () => {
+  it("recognises the `csv:` and `variant:` prefix variants", () => {
     expect(parseEnumConstraint("csv:free,pro,enterprise")).toEqual(["free", "pro", "enterprise"]);
     expect(parseEnumConstraint("variant: free, pro, enterprise")).toEqual([
       "free",
@@ -1232,24 +1298,24 @@ describe("Unit tests for parseEnumConstraint", () => {
     ]);
   });
 
-  it("accepts case variations in prefixes", () => {
+  it("is case-tolerant for the prefix", () => {
     expect(parseEnumConstraint("ENUM: a|b")).toEqual(["a", "b"]);
     expect(parseEnumConstraint("Values: a|b")).toEqual(["a", "b"]);
   });
 
-  it("strips quotes from individual values", () => {
+  it("strips quotes around single values", () => {
     expect(parseEnumConstraint("values:[\"free\", 'pro']")).toEqual(["free", "pro"]);
   });
 
-  it("rejects free text without a recognized prefix", () => {
+  it("rejects free text without one of the four prefixes, even with a comma or pipe in it", () => {
     expect(parseEnumConstraint("primary key")).toBeNull();
-    expect(parseEnumConstraint("1..200 Zeichen")).toBeNull();
+    expect(parseEnumConstraint("1..200 characters")).toBeNull();
     expect(parseEnumConstraint("UTC, optional")).toBeNull();
-    expect(parseEnumConstraint(germanLabels.text136)).toBeNull();
+    expect(parseEnumConstraint("user_id to role")).toBeNull();
     expect(parseEnumConstraint("")).toBeNull();
   });
 
-  it("rejects prefixes without values", () => {
+  it("rejects a prefix with no values after it", () => {
     expect(parseEnumConstraint("enum:")).toBeNull();
     expect(parseEnumConstraint("values:   ")).toBeNull();
   });
@@ -1274,7 +1340,7 @@ describe("Unit tests for model.enumRegister", () => {
     },
   });
 
-  it("groups equal value sets across entities without divergence", () => {
+  it("groups the same value set across several entities into one entry, without divergence", () => {
     const raws = [
       entityRaw("data/billing/plan-a", [
         { name: "tier", constraints: "enum: free|pro|enterprise" },
@@ -1298,7 +1364,7 @@ describe("Unit tests for model.enumRegister", () => {
     ]);
   });
 
-  it("lists every policy", () => {
+  it("marks different value sets of the same field name as divergence", () => {
     const raws = [
       entityRaw("data/billing/plan-a", [
         { name: "tier", constraints: "enum: free|pro|enterprise" },
@@ -1319,7 +1385,7 @@ describe("Unit tests for model.enumRegister", () => {
     expect(model.enumRegister.divergentFieldCount).toBe(1);
   });
 
-  it("ignores value order within a set", () => {
+  it("is insensitive to the order of values within a value set", () => {
     const raws = [
       entityRaw("data/billing/plan-a", [
         { name: "tier", constraints: "enum: free|pro|enterprise" },
@@ -1338,7 +1404,7 @@ describe("Unit tests for model.enumRegister", () => {
     expect(entry!.valueSets).toHaveLength(1);
   });
 
-  it("counts distinct field names in fieldCount", () => {
+  it("counts fieldCount as the number of distinct field names", () => {
     const raws = [
       entityRaw("data/billing/plan-a", [{ name: "tier", constraints: "enum: free|pro" }]),
       entityRaw("data/services/status-log", [
@@ -1354,11 +1420,11 @@ describe("Unit tests for model.enumRegister", () => {
     expect(model.enumRegister.divergentFieldCount).toBe(0);
   });
 
-  it("ignores constraints that are not enumerations", () => {
+  it("ignores constraints that are not enum-shaped", () => {
     const raws = [
       entityRaw("data/tasks/task-item", [
         { name: "id", constraints: "primary key" },
-        { name: "title", constraints: "1..200 Zeichen" },
+        { name: "title", constraints: "1..200 characters" },
       ]),
     ];
     const model = buildModel(
@@ -1370,10 +1436,10 @@ describe("Unit tests for model.enumRegister", () => {
     expect(model.enumRegister.fieldCount).toBe(0);
   });
 
-  it("accepts constraints as an array of strings", () => {
+  it("tolerates `constraints` as an array of strings", () => {
     const raws = [
       entityRaw("data/services/subscription", [
-        { name: "status", constraints: [localized.text140, "enum: active|past_due"] },
+        { name: "status", constraints: ["free text without meaning", "enum: active|past_due"] },
       ]),
     ];
     const model = buildModel(
@@ -1385,7 +1451,7 @@ describe("Unit tests for model.enumRegister", () => {
     expect(entry!.valueSets[0].values).toEqual(["active", "past_due"]);
   });
 
-  it("finds the extra suspended tier against three entities without it", () => {
+  it("finds the divergence: `tier` with `suspended` against three entities without it", () => {
     const raws = [
       entityRaw("data/billing/plan", [{ name: "tier", constraints: "enum: free|pro|enterprise" }]),
       entityRaw("data/billing/seat", [{ name: "tier", constraints: "enum: free|pro|enterprise" }]),

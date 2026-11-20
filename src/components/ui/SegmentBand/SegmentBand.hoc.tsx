@@ -1,6 +1,6 @@
-import { localized } from "../../../i18n/legacy/components/ui/SegmentBand/SegmentBand.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import { color } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { SegmentBandProps, SegmentView } from "./SegmentBand";
 
 export type Segment = {
@@ -16,13 +16,15 @@ export type WithSegmentBandProps = Omit<
 > & {
   segments: Segment[];
   height?: number;
-
+  /** Own plain words; otherwise they are built from the segments. */
   label?: string;
   style?: CSSProperties;
 };
 
+/** Turns absolute values into shares and phrases the plain words. */
 export function withSegmentBandLogic(Component: ComponentType<SegmentBandProps>) {
   const Wrapped = ({ segments, height = 4, label, style, ...rest }: WithSegmentBandProps) => {
+    const { t } = useText();
     const total = useMemo(
       () => segments.reduce((sum, segment) => sum + Math.max(0, segment.value), 0),
       [segments],
@@ -49,8 +51,8 @@ export function withSegmentBandLogic(Component: ComponentType<SegmentBandProps>)
               .filter((segment) => segment.value > 0)
               .map((segment) => `${segment.label} ${segment.value}`)
               .join(" · ")
-          : localized.text1),
-      [label, segments, total],
+          : t("elements.segmentBand.empty")),
+      [label, segments, t, total],
     );
 
     const containerStyle = useMemo<CSSProperties>(

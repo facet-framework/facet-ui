@@ -1,12 +1,23 @@
-import { labelText } from "../i18n/legacy/labels";
-import { remainingText } from "../i18n/legacy/remaining";
-import { germanText as germanLabels } from "../i18n/legacy/shared";
-import { localized } from "../i18n/legacy/core/lead";
+/**
+ * The lead sentence — the one statement the overview opens with.
+ *
+ * There are eight of them, one per role. That is the entire effect of
+ * choosing a role: it takes nothing away and unlocks nothing, it decides which
+ * four or five numbers stand first. An operations person does not want to
+ * read how many domains there are, and management does not want to read how
+ * many alerts have no runbook.
+ *
+ * Every number in the sentence is a probe: it leads into the calculation it
+ * comes from (see `probeOf`).
+ */
 
+import type { TextKey } from "../facet/i18n/en";
+import { ENGLISH_TEXT, type FacetText } from "../facet/i18n/text";
 import { focusItems } from "./focus";
-import { formatNumber, pct } from "./model";
+import { pct } from "./model";
 import type { AtlasModel, RoleKey } from "./types";
 
+/** The calculations a number of the lead sentence leads into. */
 export type ProbeKey =
   | "features"
   | "coverage"
@@ -22,123 +33,116 @@ export type ProbeKey =
 export type LeadSegment =
   { kind: "text"; text: string } | { kind: "probe"; text: string; probe: ProbeKey };
 
-const t = (text: string): LeadSegment => ({ kind: "text", text });
-const n = (value: number | string, probe: ProbeKey): LeadSegment => ({
-  kind: "probe",
-  text: typeof value === "number" ? formatNumber(value) : value,
-  probe,
-});
+type Slot = { value: number | string; probe: ProbeKey };
 
-export function leadFor(model: AtlasModel, role: RoleKey | null | undefined): LeadSegment[] {
-  const coverage = pct(model.scnProven, model.scnTotal);
-  const open = focusItems(model).length;
+/**
+ * Splits the sentence at its `{{slots}}`: the words around them become text
+ * segments, every slot a probe. Word order is the dictionary's, so a language
+ * may put the numbers wherever its grammar wants them.
+ */
+function segments(
+  template: string,
+  slots: Record<string, Slot>,
+  number: FacetText["number"],
+): LeadSegment[] {
+  const out: LeadSegment[] = [];
+  let last = 0;
+  for (const match of template.matchAll(/\{\{(\w+)\}\}/g)) {
+    if (match.index > last) out.push({ kind: "text", text: template.slice(last, match.index) });
+    const slot = slots[match[1]];
+    out.push(
+      slot
+        ? {
+            kind: "probe",
+            text: typeof slot.value === "number" ? number(slot.value) : slot.value,
+            probe: slot.probe,
+          }
+        : { kind: "text", text: match[0] },
+    );
+    last = match.index + match[0].length;
+  }
+  if (last < template.length) out.push({ kind: "text", text: template.slice(last) });
+  return out;
+}
+
+/** The lead sentence for a role. Without a choice, the management one applies. */
+export function leadFor(
+  model: AtlasModel,
+  role: RoleKey | null | undefined,
+  text: FacetText = ENGLISH_TEXT,
+): LeadSegment[] {
+  const coverage = text.t("shell.percent", { value: pct(model.scnProven, model.scnTotal) });
+  const open = focusItems(model, text).length;
   const untested = model.scnTotal - model.scnProven;
+  const say = (key: TextKey, slots: Record<string, Slot>) =>
+    segments(text.t(key), slots, text.number);
 
   switch (role) {
     case "arch":
-      return [
-        t(localized.text1),
-        n(model.edges.length, "edges"),
-        t(localized.text2),
-        n(model.maxDepth, "edges"),
-        t(remainingText.text47),
-        n(model.ghosts.length, "edges"),
-        t(remainingText.text48),
-        n(model.superseded.length, "edges"),
-        t(localized.text3),
-      ];
+      return say("core.lead.arch", {
+        edges: { value: model.edges.length, probe: "edges" },
+        depth: { value: model.maxDepth, probe: "edges" },
+        ghosts: { value: model.ghosts.length, probe: "edges" },
+        superseded: { value: model.superseded.length, probe: "edges" },
+      });
 
     case "delivery":
-      return [
-        t(germanLabels.text132),
-        n(model.features.length, "features"),
-        t(localized.text4),
-        n(model.complete.length, "coverage"),
-        t(localized.text5),
-        n(untested, "coverage"),
-        t(localized.text6),
-        n(Object.keys(model.teams).length, "teams"),
-        t(" Teams."),
-      ];
+      return say("core.lead.delivery", {
+        features: { value: model.features.length, probe: "features" },
+        complete: { value: model.complete.length, probe: "coverage" },
+        untested: { value: untested, probe: "coverage" },
+        teams: { value: Object.keys(model.teams).length, probe: "teams" },
+      });
 
     case "eng":
-      return [
-        t(localized.text7),
-        n(model.anchorPairs.length, "anchors"),
-        t(germanLabels.text133),
-        n(Object.keys(model.anchorMap).length, "anchors"),
-        t(" Kernfunktionen. "),
-        n(model.unanchored.length, "anchors"),
-        t(localized.text8),
-        n(untested, "coverage"),
-        t(localized.text9),
-      ];
+      return say("core.lead.eng", {
+        anchors: { value: model.anchorPairs.length, probe: "anchors" },
+        anchored: { value: Object.keys(model.anchorMap).length, probe: "anchors" },
+        unanchored: { value: model.unanchored.length, probe: "anchors" },
+        untested: { value: untested, probe: "coverage" },
+      });
 
     case "qa":
-      return [
-        n(`${coverage} %`, "coverage"),
-        t(localized.text10),
-        n(model.scnProven, "coverage"),
-        t(germanLabels.text109),
-        n(model.scnTotal, "coverage"),
-        t(localized.text11),
-        n(untested, "coverage"),
-        t("."),
-      ];
+      return say("core.lead.qa", {
+        coverage: { value: coverage, probe: "coverage" },
+        proven: { value: model.scnProven, probe: "coverage" },
+        total: { value: model.scnTotal, probe: "coverage" },
+        untested: { value: untested, probe: "coverage" },
+      });
 
     case "po":
-      return [
-        n(model.lifecycles.active ?? 0, "features"),
-        t(localized.text12),
-        n(model.lifecycles.planned ?? 0, "features"),
-        t(remainingText.text49),
-        n(model.knowAnswered, "know"),
-        t(germanLabels.text109),
-        n(model.knowSlots, "know"),
-        t(localized.text13),
-        n(model.slos.length, "ops"),
-        t(localized.text14),
-      ];
+      return say("core.lead.po", {
+        live: { value: model.lifecycles.active ?? 0, probe: "features" },
+        planned: { value: model.lifecycles.planned ?? 0, probe: "features" },
+        answered: { value: model.knowAnswered, probe: "know" },
+        slots: { value: model.knowSlots, probe: "know" },
+        slos: { value: model.slos.length, probe: "ops" },
+      });
 
     case "gov":
-      return [
-        n(model.clauseCount, "overdue"),
-        t(labelText.text409),
-        n(model.mustCount, "overdue"),
-        t(" davon verpflichtend. "),
-        n(model.overdue, "overdue"),
-        t(localized.text15),
-        n(model.pii, "pii"),
-        t(localized.text16),
-        n(model.stale, "overdue"),
-        t(localized.text17),
-      ];
+      return say("core.lead.gov", {
+        clauses: { value: model.clauseCount, probe: "overdue" },
+        must: { value: model.mustCount, probe: "overdue" },
+        overdue: { value: model.overdue, probe: "overdue" },
+        pii: { value: model.pii, probe: "pii" },
+        stale: { value: model.stale, probe: "overdue" },
+      });
 
     case "ops":
-      return [
-        n(model.slos.length, "ops"),
-        t(localized.text18),
-        n(model.alerts.length, "ops"),
-        t(localized.text19),
-        n(model.noRunbook, "ops"),
-        t(localized.text20),
-        n(model.noObs.length, "ops"),
-        t(localized.text21),
-      ];
+      return say("core.lead.ops", {
+        slos: { value: model.slos.length, probe: "ops" },
+        alerts: { value: model.alerts.length, probe: "ops" },
+        noRunbook: { value: model.noRunbook, probe: "ops" },
+        noObs: { value: model.noObs.length, probe: "ops" },
+      });
 
     default:
-      return [
-        t(germanLabels.text134),
-        n(model.features.length, "features"),
-        t(" Kernfunktionen in "),
-        n(model.domains.length, "features"),
-        t(remainingText.text50),
-        n(`${coverage} %`, "coverage"),
-        t(localized.text22),
-        n(model.overdue, "overdue"),
-        t(localized.text23),
-        n(open, "open"),
-        t(" Punkte warten auf jemanden."),
-      ];
+      return say("core.lead.default", {
+        features: { value: model.features.length, probe: "features" },
+        domains: { value: model.domains.length, probe: "features" },
+        coverage: { value: coverage, probe: "coverage" },
+        overdue: { value: model.overdue, probe: "overdue" },
+        open: { value: open, probe: "open" },
+      });
   }
 }

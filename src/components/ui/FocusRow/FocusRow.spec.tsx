@@ -1,4 +1,3 @@
-import { localized } from "../../../i18n/legacy/components/ui/FocusRow/FocusRow.spec.text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import FocusRowWithLogic, { FocusRow, withFocusRowLogic } from ".";
@@ -14,13 +13,13 @@ const styles = {
 };
 
 describe("Unit tests for FocusRow", () => {
-  it("shows the rank, title and reason", () => {
+  it("shows rank, title and reason", () => {
     render(
       <FocusRow
         {...styles}
         rank="01"
         title="Quiet hours"
-        why={localized.text2}
+        why="Check overdue"
         open={false}
         onToggle={jest.fn()}
         onKeyDown={jest.fn()}
@@ -28,10 +27,10 @@ describe("Unit tests for FocusRow", () => {
     );
     expect(screen.getByText("01")).toBeInTheDocument();
     expect(screen.getByText("Quiet hours")).toBeInTheDocument();
-    expect(screen.getByText(localized.text3)).toBeInTheDocument();
+    expect(screen.getByText("Check overdue")).toBeInTheDocument();
   });
 
-  it("omits metadata when none is provided", () => {
+  it("drops the meta column when nothing is given", () => {
     const { container } = render(
       <FocusRow
         {...styles}
@@ -46,7 +45,7 @@ describe("Unit tests for FocusRow", () => {
     expect(container.querySelectorAll("span")).toHaveLength(3);
   });
 
-  it("shows content only while open", () => {
+  it("shows the content only when open", () => {
     const { rerender } = render(
       <FocusRow
         {...styles}
@@ -57,10 +56,10 @@ describe("Unit tests for FocusRow", () => {
         onToggle={jest.fn()}
         onKeyDown={jest.fn()}
       >
-        <p>{localized.text6}</p>
+        <p>Evidence</p>
       </FocusRow>,
     );
-    expect(screen.queryByText(localized.text7)).not.toBeInTheDocument();
+    expect(screen.queryByText("Evidence")).not.toBeInTheDocument();
 
     rerender(
       <FocusRow
@@ -72,13 +71,13 @@ describe("Unit tests for FocusRow", () => {
         onToggle={jest.fn()}
         onKeyDown={jest.fn()}
       >
-        <p>{localized.text8}</p>
+        <p>Evidence</p>
       </FocusRow>,
     );
-    expect(screen.getByText(localized.text9)).toBeInTheDocument();
+    expect(screen.getByText("Evidence")).toBeInTheDocument();
   });
 
-  it("exposes state through aria-expanded", () => {
+  it("reports the state via aria-expanded", () => {
     render(
       <FocusRow
         {...styles}
@@ -95,9 +94,9 @@ describe("Unit tests for FocusRow", () => {
 });
 
 describe("Unit tests for withFocusRowLogic", () => {
-  const base = { id: "a", rank: 3, title: "Quiet hours", why: localized.text11 };
+  const base = { id: "a", rank: 3, title: "Quiet hours", why: "Check overdue" };
 
-  it("renders its children", () => {
+  it("renders the rank with two places", () => {
     render(<FocusRowWithLogic {...base} />);
     expect(screen.getByText("03")).toBeInTheDocument();
   });
@@ -109,7 +108,7 @@ describe("Unit tests for withFocusRowLogic", () => {
     expect(onOpenChange).toHaveBeenCalledWith("a");
   });
 
-  it("closes an already open row", async () => {
+  it("closes the row that is already open", async () => {
     const onOpenChange = jest.fn();
     render(<FocusRowWithLogic {...base} openId="a" onOpenChange={onOpenChange} />);
     await userEvent.click(screen.getByRole("button"));
@@ -128,7 +127,7 @@ describe("Unit tests for withFocusRowLogic", () => {
     expect(onOpenChange).toHaveBeenLastCalledWith(null);
   });
 
-  it("opens with ArrowRight before advancing a level", async () => {
+  it("with arrow right first opens, then goes one level deeper", async () => {
     const onOpenChange = jest.fn();
     const onDeeper = jest.fn();
     const { rerender } = render(
@@ -146,7 +145,7 @@ describe("Unit tests for withFocusRowLogic", () => {
     expect(onDeeper).toHaveBeenCalledWith("a");
   });
 
-  it("moves back with ArrowLeft", async () => {
+  it("goes back with arrow left", async () => {
     const onOpenChange = jest.fn();
     render(<FocusRowWithLogic {...base} openId="a" onOpenChange={onOpenChange} />);
     await userEvent.tab();
@@ -154,48 +153,48 @@ describe("Unit tests for withFocusRowLogic", () => {
     expect(onOpenChange).toHaveBeenCalledWith(null);
   });
 
-  it("dims unrelated rows but keeps the open row clear", () => {
+  it("dims uninvolved rows, but not the open one", () => {
     const { rerender, container } = render(<FocusRowWithLogic {...base} dimmed />);
     expect(container.firstChild).toHaveStyle({ opacity: "0.42" });
     rerender(<FocusRowWithLogic {...base} dimmed openId="a" />);
     expect(container.firstChild).toHaveStyle({ opacity: "1" });
   });
 
-  it("colors only the deadline reason red", () => {
+  it("colours only the reason of a deadline red", () => {
     render(<FocusRowWithLogic {...base} overdue />);
-    expect(screen.getByText(localized.text19)).toHaveStyle({ color: "var(--deadline)" });
+    expect(screen.getByText("Check overdue")).toHaveStyle({ color: "var(--due)" });
     expect(screen.getByText("Quiet hours")).toHaveStyle({ color: "var(--ink)" });
   });
 
-  it("handles missing callbacks", async () => {
+  it("copes without callbacks", async () => {
     render(<FocusRowWithLogic {...base} />);
     await userEvent.click(screen.getByRole("button"));
     expect(screen.getByRole("button")).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("sets a descriptive displayName", () => {
+  it("assigns a descriptive displayName", () => {
     expect(withFocusRowLogic(FocusRow).displayName).toBe("withFocusRowLogic(FocusRow)");
   });
 });
 
 describe("Snapshot tests for FocusRow", () => {
-  it("compact", () => {
+  it("closed", () => {
     const { container } = render(
-      <FocusRowWithLogic rank={1} id="a" title="Quiet hours" why={localized.text22} />,
+      <FocusRowWithLogic rank={1} id="a" title="Quiet hours" why="Check overdue" />,
     );
     expect(container.firstChild).toMatchSnapshot();
   });
 
   it("open with evidence", () => {
     const { container } = render(
-      <FocusRowWithLogic rank={1} id="a" openId="a" title="Quiet hours" why={localized.text24}>
-        <p>{localized.text25}</p>
+      <FocusRowWithLogic rank={1} id="a" openId="a" title="Quiet hours" why="Check overdue">
+        <p>Evidence</p>
       </FocusRowWithLogic>,
     );
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("muted neighboring row", () => {
+  it("dimmed neighbouring row", () => {
     const { container } = render(
       <FocusRowWithLogic
         rank={2}
@@ -203,7 +202,7 @@ describe("Snapshot tests for FocusRow", () => {
         openId="a"
         dimmed
         title="Task search"
-        why={localized.text27}
+        why="no entry point"
       />,
     );
     expect(container.firstChild).toMatchSnapshot();

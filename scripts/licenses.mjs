@@ -87,6 +87,15 @@ const rows = (values) =>
     .join("\n") + "\n";
 writeFileSync("THIRD_PARTY.md", header + table + rows(list));
 writeFileSync("dist/THIRD_PARTY.md", header + table + rows(list.filter((p) => p.shipped)));
+writeFileSync(
+  "NOTICE",
+  "FACET UI\nCopyright 2026 Pascal Malbranche\n\nLicensed under the Apache License, Version 2.0; see LICENSE.\nBundled third-party software: " +
+    list
+      .filter((p) => p.shipped)
+      .map((p) => `${p.name}@${p.version} (${p.license})`)
+      .join(", ") +
+    ".\nLicense texts are included in dist/licenses/. See THIRD_PARTY.md.\n",
+);
 copyFileSync("NOTICE", "dist/NOTICE");
 console.log(
   `${list.length} dependency versions verified; bundled: ${[...bundled].sort().join(", ")}`,

@@ -8,7 +8,12 @@ const meta: Meta<typeof DependencyFanWithLogic> = {
   title: "FACET/DependencyFan",
   component: DependencyFanWithLogic,
   parameters: {
-    docs: {},
+    docs: {
+      description: {
+        component:
+          "Dependencies fanned out: one row per record, on the left what it depends on, on the right what depends on it. As an edge list, the reader would have to assemble the graph in their head.",
+      },
+    },
   },
   args: { edges: model.edges, depth: model.depth, ghosts: model.ghosts },
 };
@@ -16,13 +21,16 @@ const meta: Meta<typeof DependencyFanWithLogic> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** The demo corpus, ordered by depth. */
 export const Corpus: Story = {};
 
-export const WithName: Story = {
+/** With readable names instead of ids. */
+export const WithNames: Story = {
   args: { labelOf: (id: string) => model.byId[id]?.label ?? id },
 };
 
-export const OpenReference: Story = {
+/** A reference points at an id that no record carries. */
+export const DanglingReference: Story = {
   args: {
     edges: [
       { from: "tasks/edit/inline-edit", to: "tasks/create/quick-add" },
@@ -33,4 +41,5 @@ export const OpenReference: Story = {
   },
 };
 
+/** Nothing depends on anything. */
 export const Empty: Story = { args: { edges: [], ghosts: [] } };

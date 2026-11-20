@@ -2,14 +2,14 @@ import type { CSSProperties } from "react";
 
 export type SignalEntry = {
   key: string;
-
+  /** Kind of signal: SLO or alert. */
   kind: "slo" | "alert";
   name: string;
-
+  /** Target or condition as plain text. */
   detail: string;
-
+  /** Time window or severity. */
   meta: string;
-
+  /** Runbook for when the alert fires — or the note that none is named. */
   runbook: string;
   open: boolean;
   rowStyle: CSSProperties;
@@ -27,6 +27,11 @@ export type SignalStackProps = {
   "data-testid"?: string;
 };
 
+/**
+ * Operations: SLOs (`observation.slos`) and alerts (`observation.alerts`) in
+ * one stack. An alert without a runbook is an open point — when it actually
+ * fires, there is no described way to respond.
+ */
 export function SignalStack({
   containerStyle,
   captionStyle,

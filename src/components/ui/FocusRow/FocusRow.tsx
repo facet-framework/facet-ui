@@ -8,20 +8,25 @@ export type FocusRowProps = {
   whyStyle: CSSProperties;
   metaStyle: CSSProperties;
   bodyStyle: CSSProperties;
-
+  /** Rank of the row, two digits, e.g. "01". */
   rank: string;
   title: string;
-
+  /** A reason in plain words — it turns opening into a decision. */
   why: string;
   meta?: string;
   open: boolean;
-
+  /** Content that grows downwards when opening. */
   children?: ReactNode;
   onToggle: () => void;
   onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void;
   "data-testid"?: string;
 };
 
+/**
+ * Mechanic 2 · solo focus: exactly one open row, neighbours muted, the opened
+ * row snaps into place at its position. The closed row is complete enough
+ * that opening is a decision and not a duty.
+ */
 export function FocusRow({
   containerStyle,
   headerStyle,

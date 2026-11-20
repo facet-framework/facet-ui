@@ -1,7 +1,7 @@
-import { localized } from "../../../i18n/legacy/components/ui/RoleGate/RoleGate.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
-import { ROLES, type RoleKey } from "../../../core";
+import { rolesIn, type RoleKey } from "../../../core";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { RoleChoice, RoleGateProps } from "./RoleGate";
 
 export type WithRoleGateProps = Omit<
@@ -19,16 +19,19 @@ export type WithRoleGateProps = Omit<
   | "onSkip"
 > & {
   onPick?: (key: RoleKey) => void;
-
+  /** What "continue without choosing" picks; by default the first role. */
   fallback?: RoleKey;
   style?: CSSProperties;
 };
 
+/** Numbers the eight roles and passes them through as the choice. */
 export function withRoleGateLogic(Component: ComponentType<RoleGateProps>) {
   const Wrapped = ({ onPick, fallback = "c", style, ...rest }: WithRoleGateProps) => {
+    const text = useText();
+    const { t } = text;
     const roles = useMemo<RoleChoice[]>(
       () =>
-        ROLES.map((role, index) => ({
+        rolesIn(text).map((role, index) => ({
           key: role.key,
           number: String(index + 1).padStart(2, "0"),
           title: role.title,
@@ -39,7 +42,7 @@ export function withRoleGateLogic(Component: ComponentType<RoleGateProps>) {
           titleStyle: TITLE_STYLE,
           hintStyle: HINT_STYLE,
         })),
-      [onPick],
+      [onPick, text],
     );
 
     const containerStyle = useMemo<CSSProperties>(
@@ -65,9 +68,9 @@ export function withRoleGateLogic(Component: ComponentType<RoleGateProps>) {
         listStyle={LIST_STYLE}
         skipStyle={SKIP_STYLE}
         roles={roles}
-        headline={localized.text1}
-        sub={localized.text2}
-        skipLabel={localized.text3}
+        headline={t("elements.roleGate.headline")}
+        sub={t("elements.roleGate.sub")}
+        skipLabel={t("elements.roleGate.skip")}
         onSkip={() => onPick?.(fallback)}
         {...rest}
       />

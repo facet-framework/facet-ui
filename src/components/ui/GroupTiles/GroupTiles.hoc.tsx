@@ -1,19 +1,18 @@
-import { labelText } from "../../../i18n/legacy/labels";
-import { germanText as germanLabels } from "../../../i18n/legacy/shared";
-import { localized } from "../../../i18n/legacy/components/ui/GroupTiles/GroupTiles.hoc";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
-import { formatNumber, pct } from "../../../core";
+import { pct } from "../../../core";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { GroupTile, GroupTilesProps } from "./GroupTiles";
 
+/** A group as the caller knows it. */
 export type GroupInput = {
   key: string;
   label: string;
-
+  /** The tile's number — records, promises, whatever was counted. */
   count: number;
-
+  /** Second line: what the number is made of. Without a value it stays empty. */
   meta?: string;
-
+  /** Reached out of … for the share bar. Without `total` there is no bar. */
   proven?: number;
   total?: number;
 };
@@ -23,36 +22,51 @@ export type WithGroupTilesProps = Omit<
   "containerStyle" | "gridStyle" | "captionStyle" | "tiles" | "caption" | "emptyText"
 > & {
   groups: GroupInput[];
-
+  /** What the tiles are about, for the answer line: "areas", "teams". */
   noun?: string;
-
+  /** What the number counts: "records". */
   unit?: string;
-
+  /** What the share stands for: "promises with a mapped test". */
   shareNoun?: string;
   onOpen?: (key: string) => void;
   emptyText?: string;
-
+  /** Minimum width of a tile; the grid fills the rest by itself. */
   tileWidth?: number;
   style?: CSSProperties;
 };
 
+/**
+ * Turns groups into tiles: number, subtitle, share.
+ *
+ * Sorted by number, descending — whoever skims a field of tiles reads the top
+ * left first, and that is where the largest belongs. With equal numbers the
+ * name decides, so the order stays put between two runs.
+ */
 export function withGroupTilesLogic(Component: ComponentType<GroupTilesProps>) {
   const Wrapped = ({
     groups,
-    noun = labelText.text447,
-    unit = "Records",
-    shareNoun = localized.text1,
+    noun: nounProp,
+    unit: unitProp,
+    shareNoun: shareNounProp,
     onOpen,
-    emptyText = germanLabels.text153,
+    emptyText: emptyTextProp,
     tileWidth = 190,
     style,
     ...rest
   }: WithGroupTilesProps) => {
+    const { t, number } = useText();
+    const noun = nounProp ?? t("elements.groupTiles.noun");
+    const unit = unitProp ?? t("elements.groupTiles.unit");
+    const shareNoun = shareNounProp ?? t("elements.groupTiles.shareNoun");
+    const emptyText = emptyTextProp ?? t("elements.groupTiles.empty");
     const sorted = useMemo(
       () => [...groups].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label)),
       [groups],
     );
 
+    // If no group has anything to measure, the share line is dropped entirely.
+    // A field of nothing but "nothing measured" answers a
+    // question nobody asked and makes every tile one line taller.
     const anyMeasured = useMemo(
       () => groups.some((group) => typeof group.total === "number" && group.total > 0),
       [groups],
@@ -66,20 +80,25 @@ export function withGroupTilesLogic(Component: ComponentType<GroupTilesProps>) {
           return {
             key: group.key,
             label: group.label,
-            value: formatNumber(group.count),
+            value: number(group.count),
             meta: group.meta ?? "",
             share: measurable
               ? {
                   value: proven,
                   total: group.total as number,
-                  label: `${group.label}: ${proven}${germanLabels.text109}${group.total} ${shareNoun}`,
+                  label: t("elements.groupTiles.shareLabel", {
+                    label: group.label,
+                    proven,
+                    total: group.total as number,
+                    shareNoun,
+                  }),
                 }
               : null,
-
+            // The bar is the shape, the number is the statement.
             shareText: measurable
               ? `${proven}/${group.total} ${shareNoun} · ${pct(proven, group.total as number)} %`
               : anyMeasured
-                ? "nichts gemessen"
+                ? t("elements.groupTiles.nothingMeasured")
                 : "",
             onOpen: onOpen ? () => onOpen(group.key) : undefined,
             tileStyle: tileStyle(Boolean(onOpen)),
@@ -89,13 +108,18 @@ export function withGroupTilesLogic(Component: ComponentType<GroupTilesProps>) {
             shareStyle: SHARE_STYLE,
           };
         }),
-      [anyMeasured, onOpen, shareNoun, sorted],
+      [anyMeasured, onOpen, shareNoun, sorted, t, number],
     );
 
     const caption = useMemo(() => {
       const total = groups.reduce((sum, group) => sum + group.count, 0);
-      return `${formatNumber(total)} ${unit} in ${groups.length} ${noun}.`;
-    }, [groups, noun, unit]);
+      return t("elements.groupTiles.caption", {
+        total: number(total),
+        unit,
+        groups: groups.length,
+        noun,
+      });
+    }, [groups, noun, t, unit, number]);
 
     const containerStyle = useMemo<CSSProperties>(
       () => ({ display: "grid", gap: 10, minWidth: 0, ...style }),
@@ -106,7 +130,8 @@ export function withGroupTilesLogic(Component: ComponentType<GroupTilesProps>) {
       () => ({
         display: "grid",
         gridTemplateColumns: `repeat(auto-fill, minmax(${tileWidth}px, 1fr))`,
-
+        // Two pixels of paper between the surfaces: the separation comes from
+        // the background, not from a frame around every tile.
         gap: 2,
         listStyle: "none",
         margin: 0,

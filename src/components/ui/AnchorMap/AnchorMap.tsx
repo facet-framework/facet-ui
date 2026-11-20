@@ -20,11 +20,16 @@ export type AnchorMapProps = {
   containerStyle: CSSProperties;
   captionStyle: CSSProperties;
   entries: AnchorEntryView[];
-
+  /** Answer line, e.g. "2 entry points in 2 files". */
   caption: string;
   "data-testid"?: string;
 };
 
+/**
+ * Entry points in the code. Path, line and role come from the repo scan, not
+ * from the record — hence their own marking. Moved anchors (drift) come
+ * first.
+ */
 export function AnchorMap({
   containerStyle,
   captionStyle,

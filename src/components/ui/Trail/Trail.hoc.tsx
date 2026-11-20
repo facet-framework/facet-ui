@@ -1,6 +1,6 @@
-import { labelText } from "../../../i18n/legacy/labels";
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
 import { color, font, fontSize } from "../../../design-system/tokens";
+import { useText } from "../../../facet/i18n";
 import type { TrailProps, TrailStepView } from "./Trail";
 
 export type TrailStep = {
@@ -18,8 +18,11 @@ export type WithTrailProps = Omit<
   style?: CSSProperties;
 };
 
+/** Sets the trail: the last level is the current place, all earlier ones are ways back. */
 export function withTrailLogic(Component: ComponentType<TrailProps>) {
-  const Wrapped = ({ steps, label = labelText.text433, style, ...rest }: WithTrailProps) => {
+  const Wrapped = ({ steps, label: labelProp, style, ...rest }: WithTrailProps) => {
+    const { t } = useText();
+    const label = labelProp ?? t("elements.trail.label");
     const views = useMemo<TrailStepView[]>(
       () =>
         steps.map((step, index) => {

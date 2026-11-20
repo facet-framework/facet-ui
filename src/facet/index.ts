@@ -1,18 +1,10 @@
-export * from "./design";
-
 /**
- * @deprecated Import from `@facet-tools/ui/facet/atlas`.
+ * The FACET design system: tokens, primitives, shell, patterns and i18n.
+ *
+ * This is the whole surface of the root entry `@facet-tools/ui` (`src/index.ts`
+ * re-exports it). It carries no screens; the Atlas pages live in the Atlas
+ * reader.
  */
-export * as frame from "./screens/a-frame";
-/**
- * @deprecated Import from `@facet-tools/ui/facet/atlas`.
- */
-export * as records from "./screens/b-records";
-/**
- * @deprecated Import from `@facet-tools/ui/facet/atlas`.
- */
-export * as contents from "./screens/c-contents";
-/**
- * @deprecated Import from `@facet-tools/ui/facet/atlas`.
- */
-export * as plugins from "./screens/d-plugins";
+export * from "./i18n";
+export * from "./primitives";
+export * from "./shell";
