@@ -9,6 +9,10 @@
  * State is never encoded by colour alone: rank, weight and position carry it too.
  */
 
+/*
+ * @facet: foundations/styling/design-tokens
+ * @facet-role: primary
+ */
 :root {
   /* Surfaces */
   --paper: #f2f3f0;

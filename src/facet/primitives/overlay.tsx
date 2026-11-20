@@ -56,6 +56,8 @@ function focusItem(menu: Element | null, at: MenuFocus) {
  * closes with the focus inside it. A layout effect, so the cleanup still sees
  * the focused item before React removes the menu from the document.
  */
+// @facet: interface/overlays/menu-navigation
+// @facet-role: primary
 export function useMenuKeyboard(ref: RefObject<HTMLElement | null>, openFocus?: MenuFocus) {
   const fromContext = useContext(MenuFocusContext);
   const initial = useRef(openFocus ?? fromContext);
@@ -92,6 +94,8 @@ export function useMenuKeyboard(ref: RefObject<HTMLElement | null>, openFocus?: 
  * `openFocus` (or through `MenuFocusContext`). An arrow on the control of an
  * open menu moves into it; the menu stands beside the control in one wrapper.
  */
+// @facet: interface/overlays/menu-navigation
+// @facet-role: primary
 export function useMenuTrigger(open: boolean, onToggle?: () => void) {
   const [focus, setFocus] = useState<MenuFocus | undefined>(undefined);
   return {
@@ -199,6 +203,8 @@ export type SheetProps = {
   width?: number;
 };
 
+// @facet: interface/overlays/dialogs-and-sheets
+// @facet-role: primary
 export function Sheet({
   open,
   side = "right",
@@ -241,6 +247,8 @@ export function Sheet({
   );
 }
 
+// @facet: interface/overlays/dialogs-and-sheets
+// @facet-role: primary
 export function Dialog({
   open,
   title,
@@ -280,6 +288,8 @@ export function Dialog({
   );
 }
 
+// @facet: interface/feedback/toasts
+// @facet-role: primary
 export function Toast({
   tone = "neutral",
   children,
@@ -349,6 +359,8 @@ export function filterSiblings(items: MenuItem[], query: string): MenuItem[] {
  * restores comes back as it was; otherwise the list keeps its own.
  *
  */
+// @facet: interface/overlays/breadcrumbs
+// @facet-role: primary
 export function Breadcrumbs({
   crumbs,
   openKey,

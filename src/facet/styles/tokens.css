@@ -11,6 +11,10 @@
  * Depth replaces borders: ground → surface → raised → float, each with its own
  * colour and shadow. Hairlines are for divisions inside one surface only.
  */
+/*
+ * @facet: foundations/styling/theme-palettes
+ * @facet-role: primary
+ */
 .t-app:not([data-t-theme]):not([data-t-theme] .t-app),
 [data-t-theme="facet"][data-t-mode="dark"] {
   --t-ground: #0b0d12;

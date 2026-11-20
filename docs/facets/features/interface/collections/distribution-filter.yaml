@@ -1,0 +1,30 @@
+schema_version: "0.1"
+id: interface/collections/distribution-filter
+lifecycle: active
+intent:
+  summary: Distribution renders keyed groups and lets users pick a group when a selection callback is provided.
+contract:
+  scenarios:
+    - id: pick
+      statement: |
+        Given a Distribution with labeled counts and an onPick callback
+        When the user selects a group by its label and count
+        Then onPick receives the group key
+    - id: static
+      statement: |
+        Given a Distribution without an onPick callback
+        When it renders its groups
+        Then each segment exposes its group label and count as its accessible name
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::lets a distribution segment act as a filter"
+      proves:
+        - pick
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Distribution from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

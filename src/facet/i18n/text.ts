@@ -25,6 +25,8 @@ export type FacetText = {
 
 const BUILT_IN: Record<FacetLocale, Dictionary> = { en, de };
 
+// @facet: localization/formatting/message-formatting
+// @facet-role: primary
 /** The text functions for `locale` outside React, e.g. for the data layer or fixtures. */
 export function createText(
   locale: string,

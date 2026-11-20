@@ -1,0 +1,31 @@
+schema_version: "0.1"
+id: interface/collections/table
+lifecycle: active
+intent:
+  summary: DataTable presents rows with optional sortable columns and row actions.
+contract:
+  scenarios:
+    - id: sort
+      statement: |
+        Given a table with an active sort and sortable columns
+        When the table renders and a sortable header is clicked
+        Then the active header exposes the supplied direction and the sort callback receives the clicked column key
+    - id: row
+      statement: |
+        Given a table with an onRowClick callback
+        When the user clicks a rendered row
+        Then the callback receives that row's data
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::sorts by header and announces the direction"
+      proves:
+        - sort
+        - row
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import DataTable from @facet-tools/ui and pass rows, a row key and column definitions."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

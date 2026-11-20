@@ -1,0 +1,41 @@
+schema_version: "0.1"
+id: interface/collections/pagination
+lifecycle: active
+intent:
+  summary: Pagination exposes the visible range and allows applications to request another page or page size.
+contract:
+  scenarios:
+    - id: numbered
+      statement: |
+        Given page three with 25 items per page and 480 total items
+        When Pagination renders and the user requests a page or page size
+        Then it shows the range from 51 to 75 and marks page three current
+        And the callbacks receive the requested page or page size
+    - id: compact
+      statement: |
+        Given compact Pagination with 30 items and a page size of 25
+        When the user requests more on page one
+        Then the control offers five more items and requests page two
+        And on page two there is no load-more button
+    - id: empty
+      statement: |
+        Given Pagination with zero total items
+        When it renders on page one
+        Then the displayed range and total are zero
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::paginates with a range, numbers and page size"
+      proves:
+        - numbered
+    - id: "src/facet/primitives/primitives.spec.tsx::loads more on mobile and stops at the end"
+      proves:
+        - compact
+        - empty
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Pagination from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

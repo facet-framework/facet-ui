@@ -18,6 +18,8 @@ export type WithStackProps = Omit<StackProps, "computedStyle"> & {
 };
 
 /** Translates direction, gap and alignment into a flex style. */
+// @facet: interface/layout/stack
+// @facet-role: primary
 export function withStackLogic(Component: ComponentType<StackProps>) {
   const Wrapped = ({
     direction = "column",

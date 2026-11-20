@@ -1,0 +1,31 @@
+schema_version: "0.1"
+id: interface/controls/chips
+lifecycle: active
+intent:
+  summary: Chips can display a label, invoke an action or provide a removal control.
+contract:
+  scenarios:
+    - id: label
+      statement: |
+        Given a Chip with no action or removal callback
+        When it renders
+        Then its label is displayed outside a button
+    - id: actions
+      statement: |
+        Given one Chip with onClick and another with onRemove
+        When the user activates the action button and the Remove button
+        Then their respective callbacks run
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::renders a chip as label, toggle or removable"
+      proves:
+        - label
+        - actions
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Chip from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

@@ -1,0 +1,31 @@
+schema_version: "0.1"
+id: interface/feedback/empty-and-error-states
+lifecycle: active
+intent:
+  summary: Empty and error states communicate the absence of results or a failure and can provide recovery actions.
+contract:
+  scenarios:
+    - id: empty
+      statement: |
+        Given an EmptyState with a title
+        When it renders
+        Then its status region includes the title
+    - id: retry
+      statement: |
+        Given an ErrorState with a reason and retry callback
+        When it renders and the user activates Try again
+        Then its alert contains the reason and the retry callback runs
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::renders empty and error states with their actions"
+      proves:
+        - empty
+        - retry
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import EmptyState and ErrorState from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

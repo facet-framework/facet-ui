@@ -1,0 +1,31 @@
+schema_version: "0.1"
+id: localization/formatting/message-formatting
+lifecycle: active
+intent:
+  summary: The text API formats numbers, fills label placeholders and selects singular or plural messages for a locale.
+contract:
+  scenarios:
+    - id: plural-forms
+      statement: |
+        Given a plural key with one and other messages
+        When plural formats a count
+        Then it selects one for the locale's one category and other for all remaining categories
+        And it supplies count for interpolation
+    - id: fallback
+      statement: |
+        Given a valid locale tag with no built-in dictionary and no overrides
+        When createText formats a message and a number
+        Then the message uses the English dictionary and the number uses the requested locale
+    - id: interpolation
+      statement: |
+        Given a message with a numeric placeholder and a matching parameter
+        When t translates the message
+        Then it inserts the number formatted for the active locale
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import createText from @facet-tools/ui for use outside React or call useText within a component."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

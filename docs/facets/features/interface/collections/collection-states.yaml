@@ -1,0 +1,39 @@
+schema_version: "0.1"
+id: interface/collections/collection-states
+lifecycle: active
+intent:
+  summary: Collection and its toolbar provide slots for results and controls for refining or recovering a view.
+contract:
+  scenarios:
+    - id: ready
+      statement: |
+        Given a ready Collection with content and pagination
+        When it renders
+        Then both the content and pagination appear
+    - id: recovery
+      statement: |
+        Given a filtered-empty Collection with a query and reset callback or an error Collection with a retry callback
+        When the user invokes the displayed recovery action
+        Then the corresponding callback runs
+    - id: toolbar
+      statement: |
+        Given a toolbar with query, filter, view, sort, group and reset callbacks
+        When the user operates those controls
+        Then the toolbar reports the requested refinement or reset to the caller
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::renders one defined form per collection state"
+      proves:
+        - ready
+        - recovery
+    - id: "src/facet/primitives/primitives.spec.tsx::shows a toolbar with facets, sort, group, view and reset"
+      proves:
+        - toolbar
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Collection and CollectionToolbar from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

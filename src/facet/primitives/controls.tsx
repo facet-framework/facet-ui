@@ -28,6 +28,8 @@ function withoutEventHandlers<T extends object>(attrs: T): Partial<T> {
   ) as Partial<T>;
 }
 
+// @facet: interface/controls/action-buttons
+// @facet-role: primary
 export function Button({
   variant = "default",
   size = "default",
@@ -100,6 +102,8 @@ export type IconButtonProps = Omit<ButtonProps, "children" | "icon"> & {
 };
 
 /** A square button with only an icon; the label is required and becomes its name. */
+// @facet: interface/controls/action-buttons
+// @facet-role: primary
 export function IconButton({ icon, label, ...rest }: IconButtonProps) {
   return <Button icon={icon} aria-label={label} title={label} variant="quiet" {...rest} />;
 }
@@ -124,6 +128,8 @@ export type SwitchProps = {
   onChange?: (next: boolean) => void;
 };
 
+// @facet: interface/controls/switch
+// @facet-role: primary
 export function Switch({ checked, label, disabled, hint, disabledReason, onChange }: SwitchProps) {
   const hintId = useId();
   const reasonId = useId();
@@ -172,6 +178,8 @@ export type SegmentProps<V extends string> = {
   onChange?: (value: V) => void;
 };
 
+// @facet: interface/controls/selection
+// @facet-role: primary
 export function Segment<V extends string>({ label, value, options, onChange }: SegmentProps<V>) {
   return (
     <div className="t-segment" role="radiogroup" aria-label={label}>
@@ -201,6 +209,8 @@ export type TabsProps<V extends string> = {
   onChange?: (value: V) => void;
 };
 
+// @facet: interface/controls/selection
+// @facet-role: primary
 export function Tabs<V extends string>({ label, value, items, onChange }: TabsProps<V>) {
   return (
     <div className="t-tabs" role="tablist" aria-label={label}>
@@ -232,6 +242,8 @@ export type ChipProps = {
 };
 
 /** A chip is a button when it does something, otherwise a plain label. */
+// @facet: interface/controls/chips
+// @facet-role: primary
 export function Chip({ children, count, pressed, icon, onClick, onRemove, mono }: ChipProps) {
   const { t } = useText();
   const inner = (
@@ -310,6 +322,8 @@ export type FieldProps = {
 };
 
 /** A labelled form field. The children render the control with the given id. */
+// @facet: interface/controls/form-fields
+// @facet-role: primary
 export function Field({ label, hint, error, children, id: given }: FieldProps) {
   const auto = useId();
   const id = given ?? auto;
@@ -334,6 +348,8 @@ export type SearchFieldProps = {
   onChange?: (value: string) => void;
 };
 
+// @facet: interface/controls/form-fields
+// @facet-role: primary
 export function SearchField({
   label,
   value,

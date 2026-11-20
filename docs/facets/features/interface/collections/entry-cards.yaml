@@ -1,0 +1,49 @@
+schema_version: "0.1"
+id: interface/collections/entry-cards
+lifecycle: active
+intent:
+  summary: EntryCardsControl displays a set of summaries and can open an entry by key.
+contract:
+  scenarios:
+    - id: open-first
+      statement: |
+        Given entries in which the second entry is open
+        When EntryCardsControl renders
+        Then the open entry appears first
+    - id: order
+      statement: |
+        Given a list with no open entries
+        When EntryCardsControl renders
+        Then the original order is preserved
+    - id: activate
+      statement: |
+        Given entries and an onOpen callback
+        When a user clicks an entry button
+        Then the callback receives that entry's key
+    - id: static
+      statement: |
+        Given entries without an onOpen callback
+        When EntryCardsControl renders
+        Then it displays entries without buttons
+verification:
+  integration_tests:
+    - id: "src/components/ui/EntryCards/EntryCards.spec.tsx::moves open entries to the front"
+      proves:
+        - open-first
+    - id: "src/components/ui/EntryCards/EntryCards.spec.tsx::keeps the order when nothing is open"
+      proves:
+        - order
+    - id: "src/components/ui/EntryCards/EntryCards.spec.tsx::reports the key of the clicked entry"
+      proves:
+        - activate
+    - id: "src/components/ui/EntryCards/EntryCards.spec.tsx::stays information without a handler, not a button"
+      proves:
+        - static
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import EntryCardsControl from @facet-tools/ui/primitives."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

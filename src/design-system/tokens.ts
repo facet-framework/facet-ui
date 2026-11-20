@@ -1,3 +1,5 @@
+// @facet: foundations/styling/design-tokens
+// @facet-role: primary
 /**
  * Typed access to the CSS variables from `tokens.css` (FACET design language).
  * Components reference these constants exclusively — no colour literals in TSX.

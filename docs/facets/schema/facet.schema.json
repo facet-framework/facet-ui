@@ -1,0 +1,1103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/facet-framework/core/main/schema/facet.schema.json",
+  "title": "FACET Feature Record",
+  "description": "Schema for a FACET feature record (FACET specification, Appendix A.1).",
+  "type": "object",
+  "required": ["schema_version", "id", "intent", "contract", "lineage"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["0.1"],
+      "description": "FACET record schema version. A record declaring variants cannot also declare a top-level lifecycle."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$",
+      "description": "Canonical feature ID in the form domain/capability/feature (3 lowercase kebab-case segments)."
+    },
+    "lifecycle": {
+      "type": "string",
+      "enum": ["planned", "active", "deprecated", "sunset"],
+      "description": "Current lifecycle state of the feature. 'planned' = documented but not yet implemented (no source anchor required); 'active' = implemented and deployed (source anchor enforced by CI); 'deprecated' = being phased out; 'sunset' = removed."
+    },
+    "intent": {
+      "type": "object",
+      "required": ["summary"],
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 1500,
+          "description": "Human-readable description of what the feature does and why it exists."
+        },
+        "decision_records": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "References to ADR or other decision records that motivated this feature.",
+          "default": []
+        }
+      }
+    },
+    "contract": {
+      "type": "object",
+      "required": ["scenarios"],
+      "additionalProperties": false,
+      "properties": {
+        "scenarios": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/scenario"
+          },
+          "description": "Behavioral contract expressed as Gherkin-style scenarios."
+        },
+        "business_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/business_rule"
+          },
+          "description": "Business rules and formulas this feature applies, each kept in a DMN model and referenced here, never copied (FACET §3.2.4). The model is the source of the rule's logic; this entry names it, says in one line what it fixes, and links it to the scenarios that are cases of it. The core reads only these fields and never opens the model."
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "unit_tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/test_ref"
+          },
+          "description": "Unit test references mapped to contract scenario IDs."
+        },
+        "property_tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/test_ref"
+          },
+          "description": "Property-based test references mapped to contract scenario IDs."
+        },
+        "integration_tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/test_ref"
+          },
+          "description": "Integration test references mapped to contract scenario IDs."
+        },
+        "e2e_tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/test_ref"
+          },
+          "description": "End-to-end test references mapped to contract scenario IDs."
+        }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "slos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/slo"
+          },
+          "description": "Service level objectives for this feature."
+        },
+        "alerts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/alert"
+          },
+          "description": "Alert definitions that fire when the feature degrades."
+        },
+        "dashboards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["url"],
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "URL to a Grafana or other dashboard for this feature."
+              }
+            }
+          },
+          "description": "Links to observability dashboards."
+        },
+        "continuous_checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/continuous_check"
+          },
+          "description": "Synthetic checks run continuously against this feature."
+        }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "description": "Developer-facing emission contract: metric names, span names and log events actually emitted by the implementation. Peer of operator-facing 'observation', which defines SLOs, alerts and runbooks for judging health. Emitted names allow alert conditions to be compared with the implementation. Every list is optional; an absent block claims nothing about emissions.",
+      "additionalProperties": false,
+      "properties": {
+        "metrics_emitted": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/metric_emission"
+          },
+          "description": "Metrics this feature emits."
+        },
+        "traces_emitted": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/trace_emission"
+          },
+          "description": "Trace spans this feature emits."
+        },
+        "log_events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/log_event"
+          },
+          "description": "Structured log events this feature emits."
+        }
+      }
+    },
+    "defects": {
+      "type": "object",
+      "description": "Fixes landed in this feature's anchored code, one entry per bugfix commit with its date and touched files. Counts are derived from the fixes list; per-file counts are derived from paths in that list.",
+      "additionalProperties": false,
+      "properties": {
+        "fixes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/defect_fix"
+          },
+          "description": "One entry per bugfix commit attributed to this feature. Append-only in practice: a tool adds entries it has not seen before and never rewrites one, so a hand-corrected entry survives the next run."
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/defect_exclusion"
+          },
+          "description": "Commits excluded from this feature’s defect ledger, with the reason. Backfill preserves these exclusions."
+        }
+      }
+    },
+    "knowledge": {
+      "type": "object",
+      "description": "User-facing knowledge facet. Captures the questions a user-facing knowledge base must answer for this feature, plus the non-derivable facts only the feature owner can supply. Optional: empty or absent knowledge produces a linter warning, never an error. Slots are authored as questions (or short answers to invariant questions); the LLM-driven generator pipeline (see FACET §8.5) renders user-facing artifacts (FAQ, help-center articles) by combining these slots with the feature's intent, contract, and source anchors.",
+      "additionalProperties": false,
+      "properties": {
+        "prerequisite_knowledge": {
+          "$ref": "#/definitions/knowledge_slot",
+          "description": "What the user must already understand to use this feature successfully (e.g. 'understands what a webhook is', 'has admin permissions on Billing'). Not derivable from source."
+        },
+        "not_for": {
+          "$ref": "#/definitions/knowledge_slot",
+          "description": "Anti-use-cases: situations where this feature is the wrong tool. Owner-supplied; an LLM cannot infer absence-of-fit from source."
+        },
+        "discoverability": {
+          "$ref": "#/definitions/knowledge_slot",
+          "description": "Where and how the user enters or finds this feature in the product (UI path, CLI command, API endpoint, deep link). The answer may be derivable from source/anchors; the question is invariant."
+        },
+        "common_pitfalls": {
+          "$ref": "#/definitions/knowledge_slot",
+          "description": "Frequent mistakes users make with this feature, and how to recognize/avoid them. Drawn from support tickets, owner experience, or contract failure scenarios."
+        },
+        "success_signal": {
+          "$ref": "#/definitions/knowledge_slot",
+          "description": "How the user knows the feature worked for them — the felt confirmation, not the system post-state. Owner-supplied."
+        }
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "required": ["owner", "created_at"],
+      "additionalProperties": false,
+      "properties": {
+        "owner": {
+          "$ref": "#/definitions/owner"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "ISO 8601 date when this record was first created (YYYY-MM-DD)."
+        },
+        "superseded_by": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Feature ID that replaces this one, or null if not superseded."
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Feature IDs that this feature depends on.",
+          "default": []
+        },
+        "depended_on_by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Feature IDs that depend on this feature.",
+          "default": []
+        },
+        "related_policies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Policy IDs (policy/<domain>/<name>) that govern this feature.",
+          "default": []
+        },
+        "related_assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Assumption IDs (assumption/<domain>/<name>) that this feature relies on.",
+          "default": []
+        },
+        "related_data_entities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Data entity IDs (data/<domain>/<entity>) that this feature reads or mutates.",
+          "default": []
+        },
+        "change_history_ref": {
+          "type": "string",
+          "description": "Pointer to a CHANGELOG section or git tag range for this feature's history."
+        },
+        "tickets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ticket_ref"
+          },
+          "uniqueItems": true,
+          "default": [],
+          "description": "Issues in a tracker that are relevant to this feature as a whole. Optional, and independent of the scenarios' 'tickets': the framework does not say where a given ticket belongs (FACET §3.7.1). See definitions/ticket_ref."
+        }
+      }
+    },
+    "authorship": {
+      "type": "object",
+      "description": "Per-section authorship metadata (free-form). Typically injected by the FACET agent.",
+      "additionalProperties": true
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Tool-generated provenance and annotation map. Keys and values are strings capped at 1000 characters. Authorship is recorded separately.",
+      "propertyNames": {
+        "maxLength": 1000
+      },
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 1000
+      }
+    },
+    "variants": {
+      "type": "object",
+      "description": "Per-variant lifecycle state, keyed by names declared in variants.yaml. An absent variant does not apply. A record with variants cannot also declare a top-level lifecycle.",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*$": {
+          "type": "object",
+          "required": ["lifecycle"],
+          "additionalProperties": false,
+          "properties": {
+            "lifecycle": {
+              "type": "string",
+              "enum": ["planned", "active", "deprecated", "sunset"],
+              "description": "Lifecycle of this feature on this variant. 'active' requires an anchor in a path exclusive to it; shared code proves no variant."
+            },
+            "notes": {
+              "type": "string",
+              "description": "Why this variant differs, when that is not obvious."
+            }
+          }
+        }
+      }
+    },
+    "flags": {
+      "type": "array",
+      "description": "Feature flags controlling exposure, independently of lifecycle.",
+      "items": {
+        "$ref": "#/definitions/feature_flag"
+      },
+      "default": []
+    }
+  },
+  "definitions": {
+    "scenario": {
+      "type": "object",
+      "required": ["id", "statement"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Stable kebab-case identifier for this scenario, unique within the feature."
+        },
+        "statement": {
+          "type": "string",
+          "description": "Gherkin-style prose statement (Given/When/Then or equivalent natural language)."
+        },
+        "examples": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Named example blocks for a parameterised Gherkin Scenario Outline. A <name> placeholder substitutes values from the named column. Blocks without columns inherit the first declared columns; blocks may declare different columns. Each block describes one rule. The linter checks row widths and warns on undeclared placeholders (FACET §11.2). The outline counts as one scenario regardless of its number of cases.",
+          "items": {
+            "$ref": "#/definitions/examples_block"
+          },
+          "contains": {
+            "type": "object",
+            "required": ["columns"]
+          }
+        },
+        "audience": {
+          "type": "string",
+          "enum": ["product", "engineering"],
+          "description": "Readership of the scenario statement: product uses product language readable without implementation knowledge; engineering requires implementation knowledge. Absence means unclassified. This classification changes neither lint findings nor scenario counts."
+        },
+        "pre_state": {
+          "type": "object",
+          "description": "Optional structured description of the system state required before this scenario.",
+          "additionalProperties": true
+        },
+        "post_state": {
+          "type": "object",
+          "description": "Optional structured description of the observable system state after this scenario.",
+          "additionalProperties": true
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Variants this scenario applies to. Omit when it applies everywhere the feature exists."
+        },
+        "backing": {
+          "$ref": "#/definitions/backing"
+        },
+        "deviation": {
+          "$ref": "#/definitions/deviation"
+        },
+        "tickets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ticket_ref"
+          },
+          "uniqueItems": true,
+          "default": [],
+          "description": "Issues in a tracker that are relevant to this one promise. Optional, and independent of 'lineage.tickets' (FACET §3.7.1). See definitions/ticket_ref."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["deviation"]
+          },
+          "then": {
+            "properties": {
+              "backing": {
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "const": "backed"
+                  },
+                  "by_variant": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^[a-z][a-z0-9-]*$": {
+                        "type": "object",
+                        "properties": {
+                          "state": {
+                            "const": "backed"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "examples_block": {
+      "type": "object",
+      "description": "One named set of cases under a Scenario Outline: a heading row and the rows beneath it, for one rule.\n\nThe object accepts the declared 'columns' key and rejects unknown keys, including 'cols'. Explicit columns determine how row values are interpreted; when columns are omitted, headings are inherited from the outline.",
+      "required": ["rows"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional heading describing what the cases in this block have in common."
+        },
+        "columns": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Ordered column names substituted by matching <name> placeholders. When omitted, columns are inherited from the first block declaring them. At least one block must declare columns. Unreferenced columns may carry supporting information."
+        },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Cases as arrays of scalar values matched positionally to the columns in effect. Each row must match the column count; the linter enforces this constraint (FACET §11.2).",
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "description": "One scalar cell substituted into statement prose. An empty string represents an empty value; null is not accepted.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "deviation": {
+      "type": "object",
+      "description": "Observed unintended behaviour in the anchored code, stated in the code’s own terms. The scenario id names the observed behaviour. The reason records evidence for classifying it as unintended; intended replacement behaviour is referenced through tracked_as. A deviation cannot accompany unbacked backing, including per-variant overrides.",
+      "required": ["reason"],
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Code evidence supporting the claim that the observed behaviour is unintended."
+        },
+        "confirmed_by": {
+          "type": "string",
+          "enum": ["code-review", "test", "runtime"],
+          "description": "Evidence used to confirm the behaviour: code review, reproduction, or production observation."
+        },
+        "tracked_as": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Issue reference or canonical feature id tracking replacement behaviour. A feature id is resolved and warns if its record becomes active while the deviation remains declared. Other strings are not resolved. Explicit null means nothing tracks this deviation."
+        }
+      }
+    },
+    "backing": {
+      "type": "object",
+      "description": "Whether the data described by this scenario exists. An absent block means backed. Unbacked means the surface ships with an intended empty state. Per-variant overrides replace the shared state for that variant alone. Record-level backing is derived from scenarios.",
+      "required": ["state"],
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "$ref": "#/definitions/backing_state"
+        },
+        "reason": {
+          "$ref": "#/definitions/backing_reason"
+        },
+        "unblocked_by": {
+          "$ref": "#/definitions/backing_unblocked_by"
+        },
+        "by_variant": {
+          "type": "object",
+          "description": "Per-variant overrides of the shared scenario backing state. An absent override uses the shared state.",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^[a-z][a-z0-9-]*$": {
+              "$ref": "#/definitions/backing_override"
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "unbacked"
+              }
+            },
+            "required": ["state"]
+          },
+          "then": {
+            "required": ["reason", "unblocked_by"]
+          }
+        }
+      ]
+    },
+    "backing_override": {
+      "type": "object",
+      "description": "Override of shared backing for one variant. An unbacked override requires its own reason and unblocked_by reference.",
+      "required": ["state"],
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "$ref": "#/definitions/backing_state"
+        },
+        "reason": {
+          "$ref": "#/definitions/backing_reason"
+        },
+        "unblocked_by": {
+          "$ref": "#/definitions/backing_unblocked_by"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "unbacked"
+              }
+            },
+            "required": ["state"]
+          },
+          "then": {
+            "required": ["reason", "unblocked_by"]
+          }
+        }
+      ]
+    },
+    "backing_state": {
+      "type": "string",
+      "enum": ["backed", "unbacked"],
+      "description": "'backed' — the data this scenario reads exists. 'unbacked' — it deliberately does not yet, and the surface shows whatever it shows without it."
+    },
+    "backing_reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Why the data is not available yet. Required when state is 'unbacked' to distinguish a declared gap from an unexplained omission."
+    },
+    "backing_unblocked_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What would supply the data — a store, a domain, a service, or an issue reference. Required when state is 'unbacked'. Written as a feature id in the canonical domain/capability/feature form it becomes an edge in the dependency graph rather than a note, and the linter can then say when the named feature went active and the gap was never revisited."
+    },
+    "defect_fix": {
+      "type": "object",
+      "description": "One bugfix commit and the anchored files in it that resolve to this feature. The commit and paths provide traceable evidence for an attribution derived by a heuristic; they are not an independently stored counter.",
+      "required": ["commit", "date", "files"],
+      "additionalProperties": false,
+      "properties": {
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$",
+          "description": "Commit hash, lowercase hex. Written in full by tooling so it stays unambiguous as the history grows; a hand-written abbreviation of seven characters or more is accepted and matched by prefix."
+        },
+        "date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "ISO 8601 date (YYYY-MM-DD) the commit was authored, retaining recency without resolving the commit in a clone."
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Repository-relative paths changed by the commit that carry an anchor for this feature. These paths are the evidence for per-file and per-feature attribution."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The commit's subject line, so the record says what broke without a clone to hand."
+        },
+        "issue": {
+          "type": "string",
+          "description": "Issue or ticket reference the fix names, when it names one."
+        },
+        "recorded_by": {
+          "type": "string",
+          "enum": ["git-history", "tracker", "manual"],
+          "description": "Origin of the attribution: Git history, a tracker, or a manual entry. This distinguishes heuristic attribution from human reporting."
+        }
+      }
+    },
+    "defect_exclusion": {
+      "type": "object",
+      "description": "Commit excluded from this feature’s defect ledger, with a reviewable reason.",
+      "required": ["commit", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$",
+          "description": "Commit hash, lowercase hex, matched by prefix against the candidates a backfill finds."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why this commit is not a defect in this feature — it touched the anchored file only to reformat it, it fixed a neighbouring feature the same commit happened to include, the message says 'fix' about something that was never broken."
+        }
+      }
+    },
+    "metric_emission": {
+      "type": "object",
+      "required": ["name", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Metric name as emitted to the metrics backend (e.g. 'orders_checkout_requests_total')."
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["counter", "gauge", "histogram", "summary"],
+          "description": "OpenMetrics-style metric kind."
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Label keys attached to the metric."
+        },
+        "description": {
+          "type": "string",
+          "description": "Free-form description of what the metric measures."
+        }
+      }
+    },
+    "trace_emission": {
+      "type": "object",
+      "required": ["span_name"],
+      "additionalProperties": false,
+      "properties": {
+        "span_name": {
+          "type": "string",
+          "description": "Span name as emitted (e.g. 'orders.checkout')."
+        },
+        "parent_span": {
+          "type": "string",
+          "description": "Expected parent span name when this feature is invoked via the usual call path."
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Span attribute keys attached to this span."
+        }
+      }
+    },
+    "log_event": {
+      "type": "object",
+      "required": ["event", "level"],
+      "additionalProperties": false,
+      "properties": {
+        "event": {
+          "type": "string",
+          "description": "Stable log event name / msg field value."
+        },
+        "level": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error", "fatal"],
+          "description": "Log level at which the event is emitted."
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Structured-log field keys attached to this event."
+        }
+      }
+    },
+    "test_ref": {
+      "type": "object",
+      "required": ["id", "proves"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable identifier for this test (file path, test name, or CI job ID)."
+        },
+        "proves": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "List of scenario IDs from contract.scenarios that this test verifies."
+        }
+      }
+    },
+    "slo": {
+      "type": "object",
+      "required": ["name", "target", "window"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable SLO name."
+        },
+        "target": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Target percentage (0–100)."
+        },
+        "window": {
+          "type": "string",
+          "description": "Rolling window duration (e.g. '30d', '7d', '1h')."
+        },
+        "query": {
+          "type": "string",
+          "description": "PromQL or equivalent query expression for this SLO."
+        },
+        "query_source": {
+          "type": "string",
+          "description": "Source system for the query (e.g. 'prometheus', 'grafana', 'datadog')."
+        }
+      }
+    },
+    "alert": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Alert rule name."
+        },
+        "condition": {
+          "type": "string",
+          "description": "PromQL or natural-language condition that triggers the alert."
+        },
+        "severity": {
+          "type": "string",
+          "description": "Alert severity level (e.g. 'critical', 'warning', 'info')."
+        },
+        "runbook": {
+          "type": "string",
+          "description": "URL or path to the runbook for responding to this alert."
+        }
+      }
+    },
+    "continuous_check": {
+      "type": "object",
+      "required": ["id", "frequency"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable identifier for this synthetic check."
+        },
+        "frequency": {
+          "type": "string",
+          "description": "How often the check runs (e.g. '1m', '5m', '15m')."
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "required": ["team"],
+      "additionalProperties": false,
+      "properties": {
+        "team": {
+          "type": "string",
+          "description": "Owning team name."
+        },
+        "individual": {
+          "type": "string",
+          "description": "Optional email of the individual DRI for this feature."
+        }
+      }
+    },
+    "knowledge_slot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "question": {
+          "type": "string",
+          "minLength": 5,
+          "description": "User-facing question answered by this slot, for example: 'Which permissions does the user need to apply a discount code?'"
+        },
+        "answer": {
+          "type": "string",
+          "description": "Optional short answer (or list of bullets in plain text) the owner provides for facts that are not derivable from source. Leave empty if the LLM generator can derive the answer from anchors, dependencies, or tests."
+        },
+        "not_applicable": {
+          "type": "object",
+          "description": "Owner-supplied declaration that this question does not apply to the feature. Agents must not supply it. Silences only this slot. Cannot accompany an answer, a non-empty derive_from, or their per-variant forms.",
+          "required": ["reason", "confirmed_by"],
+          "additionalProperties": false,
+          "properties": {
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Reviewable explanation of why the question does not apply to this feature’s users."
+            },
+            "confirmed_by": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Person or owning team declaring that this question does not apply. Required; recorded as text and not resolved against the registry."
+            }
+          }
+        },
+        "derive_from": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "anchors",
+              "tests",
+              "dependencies",
+              "policies",
+              "data_entities",
+              "intent",
+              "contract"
+            ]
+          },
+          "description": "Additional record sections or repository sources loaded by the knowledge generator when rendering this slot.",
+          "default": []
+        },
+        "by_variant": {
+          "type": "object",
+          "description": "Per-variant overrides. The slot's own answer is the shared default; an override replaces it for that client only. An absent override is not a gap — it means the shared answer applies.",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^[a-z][a-z0-9-]*$": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "answer": {
+                  "type": "string"
+                },
+                "derive_from": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "anchors",
+                      "tests",
+                      "dependencies",
+                      "policies",
+                      "data_entities",
+                      "intent",
+                      "contract"
+                    ]
+                  },
+                  "description": "Additional record sections or repository sources loaded by the knowledge generator when rendering this slot.",
+                  "default": []
+                }
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["not_applicable"]
+          },
+          "then": {
+            "properties": {
+              "answer": {
+                "maxLength": 0
+              },
+              "derive_from": {
+                "maxItems": 0
+              },
+              "by_variant": {
+                "additionalProperties": false,
+                "patternProperties": {
+                  "^[a-z][a-z0-9-]*$": {
+                    "properties": {
+                      "answer": {
+                        "maxLength": 0
+                      },
+                      "derive_from": {
+                        "maxItems": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "feature_flag": {
+      "type": "object",
+      "required": ["key"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The flag key as it appears in source. The linter checks it still does: a declared key that is absent from source means the gate was removed and the record was not told."
+        },
+        "system": {
+          "type": "string",
+          "description": "Flag system, e.g. launchdarkly, statsig, unleash, env, custom."
+        },
+        "default": {
+          "type": "boolean",
+          "description": "Default value when the flag system is unreachable."
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Variants this flag gates, when a rollout differs per variant. Omit when it gates every variant."
+        },
+        "rollout": {
+          "type": "string",
+          "description": "Who currently sees it, in plain words."
+        },
+        "retire_by": {
+          "type": "string",
+          "description": "ISO 8601 date (YYYY-MM-DD) by which the flag should be removed. After this date the linter warns but does not fail."
+        }
+      }
+    },
+    "business_rule": {
+      "type": "object",
+      "required": ["id", "kind", "model", "element", "states"],
+      "additionalProperties": false,
+      "description": "One business rule: a decision table or a formula in a DMN model.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Stable kebab-case name, unique among this feature's business rules. Not the DMN element id: that belongs to the modeler and changes when a node is renamed there."
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["table", "formula"],
+          "description": "'table' for a decision table, 'formula' for a literal expression (also inside a business knowledge model). Decides what can be checked and how the rule is shown."
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^/].*\\.dmn$",
+          "description": "Path of the DMN model from the repository root, ending in .dmn."
+        },
+        "element": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Id of the decision or business knowledge model inside 'model'."
+        },
+        "states": {
+          "type": "string",
+          "minLength": 1,
+          "description": "One line saying what the rule fixes, for a reader who does not open the model. Not a second description of the logic — that is the model's."
+        },
+        "scenarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "description": "Ids of this feature's contract scenarios that are cases of this rule. Says that a scenario is a case; which row it hits is computed by whoever evaluates the model. Absent or empty means no scenario is known to be a case of the rule."
+        },
+        "completeness": {
+          "type": "string",
+          "enum": ["claimed", "not-claimed"],
+          "description": "Only for kind 'table': whether the author claims the table answers every input combination. A claim, not a proof — whatever evaluates the model checks it where it can and says where it cannot."
+        }
+      },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "formula"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": ["completeness"]
+        }
+      }
+    },
+    "ticket_ref": {
+      "description": "Issue reference in a tracker and its relation to this feature. A bare key (KAN-12 or example-org/project with a numeric issue) means relates. The object form specifies a key, relation, optional tracker and title. References do not change lifecycle, backing, or verification.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "The issue key as the tracker writes it, relation 'relates'."
+        },
+        {
+          "type": "object",
+          "required": ["key"],
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "The issue key as the tracker writes it: 'KAN-12' for Jira, 'a numeric repository issue' for GitHub."
+            },
+            "relation": {
+              "type": "string",
+              "enum": ["implements", "specifies", "verifies", "tracks-defect", "relates"],
+              "default": "relates",
+              "description": "How the issue relates to this feature. 'implements': the issue asked for this behaviour to be built or changed. 'specifies': the issue is where the behaviour was decided — an epic, a spec ticket, a design review. 'verifies': the issue tracks testing or acceptance of the behaviour. 'tracks-defect': the issue tracks a defect in the behaviour — prefer 'deviation.tracked_as' on the scenario when the defect is declared there. 'relates': anything else. A closed list, so a host can group and filter by it; a relation that fits none is 'relates', not a new word."
+            },
+            "tracker": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$",
+              "maxLength": 60,
+              "description": "Which tracker the key belongs to, by the id under 'trackers' in .facetrc.yaml. Absent means the project's default tracker. Needed only in a project that keeps issues in more than one place."
+            },
+            "title": {
+              "type": "string",
+              "maxLength": 200,
+              "description": "The issue's title as a reader's aid. Not kept in sync with the tracker; a host that can read the tracker shows the live title instead."
+            }
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "required": ["lifecycle"],
+      "not": {
+        "required": ["variants"]
+      }
+    },
+    {
+      "required": ["variants"],
+      "not": {
+        "required": ["lifecycle"]
+      }
+    }
+  ]
+}

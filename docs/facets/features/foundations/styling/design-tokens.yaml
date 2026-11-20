@@ -1,0 +1,30 @@
+schema_version: "0.1"
+id: foundations/styling/design-tokens
+lifecycle: active
+intent:
+  summary: Typed tokens and matching CSS custom properties give applications reusable values for color, spacing, fonts and motion.
+contract:
+  scenarios:
+    - id: typed-values
+      statement: |
+        Given an application importing the token entry
+        When it reads space.s4 and font.mono
+        Then the values reference --space-4 and --font-mono
+    - id: token-gap
+      statement: |
+        Given a StackControl with gap set to s4
+        When the stack renders
+        Then its gap references --space-4
+verification:
+  integration_tests:
+    - id: "src/components/ui/Stack/Stack.spec.tsx::resolves token gaps"
+      proves:
+        - token-gap
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import token objects from @facet-tools/ui/tokens and load @facet-tools/ui/tokens.css."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

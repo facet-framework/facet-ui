@@ -12,6 +12,8 @@ export type WithTextProps = Omit<TextProps, "computedStyle"> &
  * Translates variant, tone and typeface into the concrete style.
  * The computation is memoised because `Text` occurs very often in long lists.
  */
+// @facet: foundations/typography/text-styles
+// @facet-role: related
 export function withTextLogic(Component: ComponentType<TextProps>) {
   const Wrapped = ({
     variant = "body",

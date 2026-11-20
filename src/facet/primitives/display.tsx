@@ -6,6 +6,8 @@ import { Button } from "./controls";
 const cx = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(" ");
 
 /** A share between 0 and 1 drawn as a bar. `null` means not measured, never zero. */
+// @facet: interface/feedback/measurement
+// @facet-role: primary
 export function Meter({
   value,
   tone = "ok",
@@ -118,6 +120,8 @@ export function Finding({
   );
 }
 
+// @facet: interface/layout/content-sections
+// @facet-role: primary
 export function Section({
   title,
   meta,
@@ -152,6 +156,8 @@ export function Section({
   );
 }
 
+// @facet: interface/layout/content-sections
+// @facet-role: related
 export function Surface({
   children,
   level = "surface",
@@ -181,6 +187,8 @@ export type ListRowProps = {
   onClick?: () => void;
 };
 
+// @facet: interface/layout/content-sections
+// @facet-role: primary
 export function ListRow({ title, sub, lead, trail, href, onClick }: ListRowProps) {
   const inner = (
     <>
@@ -248,6 +256,8 @@ function EmptyArt({ icon }: { icon: IconName }) {
   );
 }
 
+// @facet: interface/feedback/empty-and-error-states
+// @facet-role: primary
 export function EmptyState({
   title,
   body,
@@ -280,6 +290,8 @@ export function EmptyState({
   );
 }
 
+// @facet: interface/feedback/empty-and-error-states
+// @facet-role: primary
 export function ErrorState({
   title,
   reason,
@@ -312,6 +324,8 @@ export function ErrorState({
 }
 
 /** Proportions of a whole as one band; each segment can act as a filter. */
+// @facet: interface/collections/distribution-filter
+// @facet-role: primary
 export function Distribution({
   label,
   parts,

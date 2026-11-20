@@ -1,0 +1,41 @@
+schema_version: "0.1"
+id: interface/feedback/progress-bars
+lifecycle: active
+intent:
+  summary: BarControl presents a value relative to a total as accessible progress.
+contract:
+  scenarios:
+    - id: percentage
+      statement: |
+        Given a value of 31 and a total of 38
+        When BarControl renders
+        Then the progress bar reports 82 as its current value
+    - id: zero-total
+      statement: |
+        Given a total of zero
+        When BarControl renders
+        Then the progress bar reports zero
+    - id: cap
+      statement: |
+        Given a value above the total
+        When BarControl renders
+        Then the progress bar reports 100
+verification:
+  integration_tests:
+    - id: "src/components/ui/Bar/Bar.spec.tsx::computes the share in percent"
+      proves:
+        - percentage
+    - id: "src/components/ui/Bar/Bar.spec.tsx::stays at zero without a reference total"
+      proves:
+        - zero-total
+    - id: "src/components/ui/Bar/Bar.spec.tsx::caps values above the reference total"
+      proves:
+        - cap
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import BarControl from @facet-tools/ui/primitives."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

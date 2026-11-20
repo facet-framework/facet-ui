@@ -25,6 +25,8 @@ export function writeHeight(name: `--${string}`, bar: Element | null, host: HTML
  * ResizeObserver. `drawn` changes whenever the bar is mounted or unmounted,
  * so that the observer follows the element that is there.
  */
+// @facet: interface/frame/application-shell
+// @facet-role: related
 export function useHeightVar(
   name: `--${string}`,
   bar: RefObject<Element | null>,

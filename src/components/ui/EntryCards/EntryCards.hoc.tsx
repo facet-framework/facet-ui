@@ -37,6 +37,8 @@ export type WithEntryCardsProps = Omit<
  * its state does not change. A tile field that reshuffles with every data
  * update forces the reader to read it again.
  */
+// @facet: interface/collections/entry-cards
+// @facet-role: primary
 export function withEntryCardsLogic(Component: ComponentType<EntryCardsProps>) {
   const Wrapped = ({
     entries,

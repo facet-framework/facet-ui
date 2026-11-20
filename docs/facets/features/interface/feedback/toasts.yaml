@@ -1,0 +1,30 @@
+schema_version: "0.1"
+id: interface/feedback/toasts
+lifecycle: active
+intent:
+  summary: Toast presents application messages as status updates.
+contract:
+  scenarios:
+    - id: status
+      statement: |
+        Given toasts with positive, negative and default tones
+        When they render
+        Then each exposes a status region
+    - id: message
+      statement: |
+        Given a Toast with message content
+        When it renders
+        Then it displays that content inside the status region
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::announces toasts and tooltips"
+      proves:
+        - status
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Toast from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

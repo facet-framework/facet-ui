@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/facet-framework/core/main/schema/taxonomy.schema.json",
+  "title": "FACET Product Taxonomy",
+  "description": "Declares product domains and capabilities used by feature ids (FACET §4.4). Records supply the third id segment. Optional: without a taxonomy, no taxonomy checks run. This naming authority carries no contract, anchor or lifecycle.",
+  "type": "object",
+  "required": ["schema_version", "domains"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["0.1"],
+      "description": "FACET schema family this taxonomy was written under."
+    },
+    "domains": {
+      "type": "object",
+      "description": "Product domains, keyed by the segment records use as the first part of their id. A product domain, not a team and not a service: teams reorganise and ids are immutable, so an id built from an org chart is wrong on a schedule. The organisational axis already exists as lineage.owner.team on each record, and the two are deliberately separate.",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*$": {
+          "$ref": "#/definitions/domain"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "domain": {
+      "type": "object",
+      "required": ["title", "capabilities"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What this domain is called in the product's own language — the name a user or an operator would use, not the directory it happens to live in."
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional description of the domain's purpose, used to choose where a feature belongs."
+        },
+        "classification": {
+          "$ref": "#/definitions/classification"
+        },
+        "owner": {
+          "type": "object",
+          "description": "The team answering for this domain by default. It informs a record's lineage.owner and never replaces it: a record's owner is a claim about that feature, and a domain-level default that silently became one would be a claim nobody made.",
+          "required": ["team"],
+          "additionalProperties": false,
+          "properties": {
+            "team": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Team identifier, in whatever form the project's CODEOWNERS uses."
+            }
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "description": "Capabilities under this domain, keyed by the segment records use as the second part of their id. A capability is a stable noun group: the level at which a product's areas are named in a roadmap, above a single feature and below a whole domain.",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "patternProperties": {
+            "^[a-z][a-z0-9-]*$": {
+              "$ref": "#/definitions/capability"
+            }
+          }
+        }
+      }
+    },
+    "capability": {
+      "type": "object",
+      "description": "One product capability. Its features are defined by records, avoiding a duplicate feature list that could disagree with them.",
+      "required": ["title"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What this capability is called in the product's own language."
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional description of the capability's scope and boundaries."
+        },
+        "classification": {
+          "$ref": "#/definitions/classification"
+        }
+      }
+    },
+    "classification": {
+      "type": "string",
+      "enum": ["core", "supporting", "generic"],
+      "description": "Strategic weight using Evans' subdomains: core differentiates the product; supporting is business-specific without differentiating it; generic is a solved problem that may be bought. Weight is independent of taxonomy depth, which is derived from ids. Classification belongs to domains or capabilities. An absent value means undecided; a capability without a value inherits its domain's classification."
+    }
+  }
+}

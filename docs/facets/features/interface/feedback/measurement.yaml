@@ -1,0 +1,31 @@
+schema_version: "0.1"
+id: interface/feedback/measurement
+lifecycle: active
+intent:
+  summary: Meter exposes measured progress and distinguishes it from missing data.
+contract:
+  scenarios:
+    - id: measured
+      statement: |
+        Given a Meter with value 0.94
+        When it renders
+        Then its accessible numeric value is 94
+    - id: unmeasured
+      statement: |
+        Given a Meter with a null value in the default locale
+        When it renders
+        Then it has no numeric value and its accessible value text is not measured
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::never shows an unmeasured meter as zero"
+      proves:
+        - measured
+        - unmeasured
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Meter from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

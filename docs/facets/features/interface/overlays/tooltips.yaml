@@ -1,0 +1,42 @@
+schema_version: "0.1"
+id: interface/overlays/tooltips
+lifecycle: active
+intent:
+  summary: The tooltip layer reveals control explanations on hover or keyboard focus and associates additional descriptions with their controls.
+contract:
+  scenarios:
+    - id: hover
+      statement: |
+        Given TooltipLayer and a button with a title
+        When the pointer enters the button and 350 milliseconds elapse
+        Then the tooltip displays the title and is visible
+    - id: focus
+      statement: |
+        Given TooltipLayer and a named IconButton
+        When keyboard tabbing focuses the button
+        Then its label appears in the tooltip without a hover delay
+    - id: description
+      statement: |
+        Given TooltipLayer and a control whose title provides extra information
+        When the tooltip opens
+        Then the control references that information as its accessible description
+        And a tooltip that repeats an icon button's name does not add a description
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/tooltip.spec.tsx::shows a plain title after the delay, hidden from sight and screen reader while measured"
+      proves:
+        - hover
+    - id: "src/facet/primitives/tooltip.spec.tsx::appears at once when the keyboard arrives, on an IconButton too"
+      proves:
+        - focus
+    - id: "src/facet/primitives/tooltip.spec.tsx::describes its control through aria-describedby, unless it only repeats the name"
+      proves:
+        - description
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Render AppShell with the design system stylesheet. The shell mounts TooltipLayer."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

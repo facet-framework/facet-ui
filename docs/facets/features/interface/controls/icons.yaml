@@ -1,0 +1,33 @@
+schema_version: "0.1"
+id: interface/controls/icons
+lifecycle: active
+intent:
+  summary: Icons expose a named image when a label is supplied and stay decorative otherwise.
+contract:
+  scenarios:
+    - id: names
+      statement: |
+        Given each name in iconNames
+        When its Icon renders
+        Then the SVG contains at least one path
+    - id: accessibility
+      statement: |
+        Given one Icon without a label and one with a label
+        When both render
+        Then the first SVG is hidden from assistive technology and the second is an image named by its label
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::draws at least one path for every name in the set"
+      proves:
+        - names
+    - id: "src/facet/primitives/primitives.spec.tsx::is decoration without a label and an image with one"
+      proves:
+        - accessibility
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Icon and iconNames from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

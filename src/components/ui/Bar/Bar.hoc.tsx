@@ -15,6 +15,8 @@ export type WithBarProps = Omit<BarProps, "trackStyle" | "fillStyle" | "percent"
 };
 
 /** Converts value and reference size into share, colour and geometry. */
+// @facet: interface/feedback/progress-bars
+// @facet-role: primary
 export function withBarLogic(Component: ComponentType<BarProps>) {
   const Wrapped = ({
     value,

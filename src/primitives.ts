@@ -1,3 +1,5 @@
+// @facet: distribution/imports/package-entries
+// @facet-role: related
 export { default as BarControl } from "./components/ui/Bar";
 export * from "./components/ui/Bar";
 export { default as BlindControl } from "./components/ui/Blind";

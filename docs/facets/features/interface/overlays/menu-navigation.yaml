@@ -1,0 +1,41 @@
+schema_version: "0.1"
+id: interface/overlays/menu-navigation
+lifecycle: active
+intent:
+  summary: Menus support keyboard entry and navigation, while the consumer controls whether the menu is open.
+contract:
+  scenarios:
+    - id: open
+      statement: |
+        Given a closed menu wired to useMenuTrigger
+        When ArrowDown or ArrowUp opens it from its trigger
+        Then focus goes to the first or last item respectively
+    - id: navigate
+      statement: |
+        Given an open menu with focused items
+        When the user presses the arrow keys or Home or End
+        Then arrows move focus with wraparound and Home and End focus the first and last items
+    - id: restore
+      statement: |
+        Given an open menu with focus on an item and an application Escape handler that closes the menu
+        When the user presses Escape
+        Then the menu closes and focus returns to the trigger
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::opens from an arrow on the closed button: down on the first item, up on the last"
+      proves:
+        - open
+    - id: "src/facet/primitives/primitives.spec.tsx::walks the items with the arrows and wraps at both ends; Home and End reach the ends"
+      proves:
+        - navigate
+    - id: "src/facet/primitives/primitives.spec.tsx::gives the focus back to the button when Esc closes the menu"
+      proves:
+        - restore
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Menu and useMenuTrigger from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

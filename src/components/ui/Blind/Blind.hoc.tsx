@@ -23,6 +23,8 @@ export type WithBlindProps = Omit<
 };
 
 /** Owns the blind's focus takeover and Escape handling. */
+// @facet: interface/overlays/side-dialog
+// @facet-role: primary
 export function withBlindLogic(Component: ComponentType<BlindProps>) {
   const Wrapped = ({ open, onClose, width = 720, style, ...rest }: WithBlindProps) => {
     const panelRef = useRef<HTMLDivElement | null>(null);

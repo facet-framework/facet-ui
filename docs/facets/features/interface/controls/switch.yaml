@@ -1,0 +1,42 @@
+schema_version: "0.1"
+id: interface/controls/switch
+lifecycle: active
+intent:
+  summary: Switch exposes on and off states, supports keyboard activation and explains a locked control.
+contract:
+  scenarios:
+    - id: keyboard
+      statement: |
+        Given a focused Switch with an onChange callback
+        When Space is pressed while unchecked or Enter is pressed while checked
+        Then the callback receives the opposite state
+    - id: hint
+      statement: |
+        Given an unchecked Switch with a label and a hint
+        When it renders
+        Then it exposes the label as its name and the visible hint as its accessible description
+    - id: locked
+      statement: |
+        Given a checked Switch with a disabled reason
+        When a user clicks it or presses Space on it
+        Then it stays checked and the callback is not invoked
+        And it exposes its disabled state and shows the reason as visible text and as its accessible description
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::asks for the other state from the keyboard, with Space and with Enter"
+      proves:
+        - keyboard
+    - id: "src/facet/primitives/primitives.spec.tsx::describes a switch with its hint without letting the hint become the name"
+      proves:
+        - hint
+    - id: "src/facet/primitives/primitives.spec.tsx::keeps a locked switch still and says why, on the control and beside it"
+      proves:
+        - locked
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Switch from @facet-tools/ui and supply checked and onChange."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

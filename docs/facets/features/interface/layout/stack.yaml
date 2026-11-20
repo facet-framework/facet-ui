@@ -1,0 +1,41 @@
+schema_version: "0.1"
+id: interface/layout/stack
+lifecycle: active
+intent:
+  summary: StackControl arranges children along a vertical or horizontal track with configurable spacing, wrapping and alignment.
+contract:
+  scenarios:
+    - id: vertical
+      statement: |
+        Given StackControl with no direction
+        When it renders
+        Then the flex direction is column
+    - id: horizontal
+      statement: |
+        Given StackControl with direction row
+        When it renders
+        Then the flex direction is row
+    - id: wrap
+      statement: |
+        Given StackControl with wrap, center alignment and space-between justification
+        When it renders
+        Then it applies those flex settings
+verification:
+  integration_tests:
+    - id: "src/components/ui/Stack/Stack.spec.tsx::stacks vertically by default"
+      proves:
+        - vertical
+    - id: "src/components/ui/Stack/Stack.spec.tsx::switches to a horizontal track"
+      proves:
+        - horizontal
+    - id: "src/components/ui/Stack/Stack.spec.tsx::sets wrapping and alignment"
+      proves:
+        - wrap
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import StackControl from @facet-tools/ui/primitives."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

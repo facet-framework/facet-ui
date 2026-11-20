@@ -74,6 +74,8 @@ export type TextStyleOptions = {
   tabular?: boolean;
 };
 
+// @facet: foundations/typography/text-styles
+// @facet-role: primary
 /** Builds the complete text style from variant, tone and typeface. */
 export function textStyle(options: TextStyleOptions): CSSProperties {
   const { variant, tone, mono, truncate, clamp, align, weight, nowrap, tabular } = options;

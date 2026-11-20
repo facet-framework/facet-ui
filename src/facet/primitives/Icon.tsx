@@ -179,6 +179,8 @@ export type IconProps = {
   className?: string;
 };
 
+// @facet: interface/controls/icons
+// @facet-role: primary
 export function Icon({ name, size = 16, label, className }: IconProps) {
   const paths = P[name] ?? [];
   return (

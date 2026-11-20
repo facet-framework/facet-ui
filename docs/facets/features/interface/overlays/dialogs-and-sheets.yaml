@@ -1,0 +1,37 @@
+schema_version: "0.1"
+id: interface/overlays/dialogs-and-sheets
+lifecycle: active
+intent:
+  summary: Dialogs and sheets expose controlled visibility and close actions. Sheets also support a complementary region.
+contract:
+  scenarios:
+    - id: visibility
+      statement: |
+        Given a Sheet or Dialog with open set to false
+        When it renders
+        Then no dialog is present
+    - id: close
+      statement: |
+        Given an open Sheet or Dialog with onClose
+        When the user clicks Close
+        Then the callback runs
+    - id: dock
+      statement: |
+        Given an open Sheet with modal set to false and a title
+        When it renders
+        Then a complementary region is named by the title
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::opens sheets and dialogs only when open, and closes through the callback"
+      proves:
+        - visibility
+        - close
+        - dock
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Dialog and Sheet from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

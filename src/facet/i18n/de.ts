@@ -1,4 +1,6 @@
 import type { Dictionary } from "./en";
+// @facet: localization/language/component-language
+// @facet-role: data
 export const de: Dictionary = {
   "primitives.chip.remove": "Entfernen",
   "primitives.meter.unmeasured": "nicht gemessen",

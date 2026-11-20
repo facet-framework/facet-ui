@@ -1,0 +1,33 @@
+schema_version: "0.1"
+id: foundations/typography/content-wrapping
+lifecycle: active
+intent:
+  summary: List rows keep long titles intact and allow descriptions to wrap within a two-line limit.
+contract:
+  scenarios:
+    - id: full-title
+      statement: |
+        Given a ListRow with a long unbroken title
+        When it renders
+        Then the DOM contains the full title and the title rule allows breaks anywhere without ellipsis
+    - id: description
+      statement: |
+        Given a ListRow with a description
+        When it renders
+        Then the description rule allows breaks anywhere and clamps to two lines
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/wrap.spec.tsx::a list row title renders in full and its rule does not truncate"
+      proves:
+        - full-title
+    - id: "src/facet/primitives/wrap.spec.tsx::a list row sub line wraps but is clamped to two lines"
+      proves:
+        - description
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Use ListRow from @facet-tools/ui with @facet-tools/ui/styles.css."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

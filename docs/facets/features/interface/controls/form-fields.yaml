@@ -1,0 +1,31 @@
+schema_version: "0.1"
+id: interface/controls/form-fields
+lifecycle: active
+intent:
+  summary: Field associates a label with a control, and SearchField reports edits to a named search input.
+contract:
+  scenarios:
+    - id: label-and-error
+      statement: |
+        Given a Field with an input using its supplied ID and a Field with both a hint and an error
+        When they render
+        Then the first input is found by its label and the second field displays the error in place of its hint
+    - id: query
+      statement: |
+        Given a named SearchField with an empty value
+        When the user types a character in the searchbox
+        Then onChange receives that character
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::labels fields, shows an error instead of the hint, and reports search input"
+      proves:
+        - label-and-error
+        - query
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Field and SearchField from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

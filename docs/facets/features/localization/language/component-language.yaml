@@ -1,0 +1,43 @@
+schema_version: "0.1"
+id: localization/language/component-language
+lifecycle: active
+intent:
+  summary: Components read translated labels from their nearest provider. The library includes English and German dictionaries.
+contract:
+  scenarios:
+    - id: localized-controls
+      statement: |
+        Given a provider with locale de around pagination, an unmeasured meter, a removable chip and a closable dialog
+        When the components render
+        Then they use labels from the active dictionary for the page range, next page, missing measurement, removal and close
+    - id: default-language
+      statement: |
+        Given a closable dialog outside a TextProvider
+        When it renders open
+        Then the close button is named Close
+    - id: switch-language
+      statement: |
+        Given a mounted TextProvider with locale en
+        When its locale prop changes to de
+        Then descendants reading useText receive the German dictionary
+    - id: override-label
+      statement: |
+        Given a TextProvider with a string override for a built-in key
+        When a descendant translates that key
+        Then it gets the override
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::renders the built-in texts of pagination, meter, chip and overlay in German under the German locale"
+      proves:
+        - localized-controls
+    - id: "src/facet/primitives/primitives.spec.tsx::opens sheets and dialogs only when open, and closes through the callback"
+      proves:
+        - default-language
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import TextProvider and useText from @facet-tools/ui. Set locale or supply dictionary overrides on the provider."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

@@ -1,3 +1,5 @@
+// @facet: localization/language/component-language
+// @facet-role: data
 export const en = {
   "primitives.chip.remove": "Remove",
   "primitives.meter.unmeasured": "not measured",

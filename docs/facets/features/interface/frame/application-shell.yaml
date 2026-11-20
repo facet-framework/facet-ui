@@ -1,0 +1,39 @@
+schema_version: "0.1"
+id: interface/frame/application-shell
+lifecycle: active
+intent:
+  summary: AppShell composes application chrome, page content and overlays and controls frame state.
+contract:
+  scenarios:
+    - id: isolation
+      statement: |
+        Given a shell with modal and compact density
+        When it renders
+        Then the main region is inert and the shell exposes compact density
+    - id: mobile
+      statement: |
+        Given a mobile shell with a tab bar and focus enabled
+        When it renders without modal isolation
+        Then it displays the tab bar and marks focus mode on while the main region is not inert
+    - id: measured-header
+      statement: |
+        Given a desktop shell with a measured header
+        When its height changes and its observer fires
+        Then --t-bars-h on the shell follows the measured height
+verification:
+  integration_tests:
+    - id: "src/facet/shell/frame.spec.tsx::renders application slots and applies modal isolation"
+      proves:
+        - isolation
+        - mobile
+    - id: "src/facet/shell/bars.spec.tsx::is written onto the shell from the measured head, and follows it"
+      proves:
+        - measured-header
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import AppShell from @facet-tools/ui and load @facet-tools/ui/styles.css."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

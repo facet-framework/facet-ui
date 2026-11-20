@@ -785,6 +785,10 @@ button.t-chip:hover {
   gap: 2px;
   min-width: 0;
 }
+/*
+ * @facet: foundations/typography/content-wrapping
+ * @facet-role: primary
+ */
 .t-list-row__title {
   font-size: var(--t-fs-14);
   overflow-wrap: anywhere;

@@ -121,6 +121,8 @@ function byKeyboard(node: HTMLElement): boolean {
  * label) is not pointed at it through `aria-describedby`: a screen reader
  * would read the same words twice. Any other tooltip describes its control.
  */
+// @facet: interface/overlays/tooltips
+// @facet-role: primary
 export function TooltipLayer() {
   const id = `t-tip-${useId().replace(/:/g, "")}`;
   const [shown, setShown] = useState<Shown | null>(null);

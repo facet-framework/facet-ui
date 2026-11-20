@@ -1,0 +1,41 @@
+schema_version: "0.1"
+id: foundations/typography/text-styles
+lifecycle: active
+intent:
+  summary: Text styles expose type variants, semantic tones and options for fitting text into a layout.
+contract:
+  scenarios:
+    - id: mono
+      statement: |
+        Given a TextControl with mono enabled
+        When it renders
+        Then its font family references --font-mono
+    - id: clamp
+      statement: |
+        Given a TextControl with clamp set to two
+        When it renders
+        Then its line clamp is two
+    - id: truncate
+      statement: |
+        Given a TextControl with truncate enabled
+        When it renders
+        Then it uses nowrap and ellipsis
+verification:
+  integration_tests:
+    - id: "src/components/ui/Text/Text.spec.tsx::switches to mono for field values"
+      proves:
+        - mono
+    - id: "src/components/ui/Text/Text.spec.tsx::limits descriptions to the given number of lines"
+      proves:
+        - clamp
+    - id: "src/components/ui/Text/Text.spec.tsx::truncates on one line instead of wrapping"
+      proves:
+        - truncate
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import TextControl from @facet-tools/ui/primitives or textStyle from @facet-tools/ui/tokens."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

@@ -1,0 +1,377 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/facet-framework/core/main/schema/facetrc.schema.json",
+  "title": "FACET project configuration",
+  "description": "Committed project layout for FACET, read from .facetrc.yaml at the repository root. Optional: a project that omits the file keeps the defaults. Declare either the single-registry fields or a registries block, never both.",
+  "type": "object",
+  "properties": {
+    "test_feature_prefixes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Explicit feature ID prefixes for several parts of one tested product."
+    },
+    "test_feature_prefix": {
+      "type": "string",
+      "description": "Explicit feature ID prefix for test discovery claims and execution reports. Empty selects every feature."
+    },
+    "schema_version": {
+      "type": "string",
+      "enum": ["0.1"],
+      "description": "FACET version this configuration is written against."
+    },
+    "adr": {
+      "type": "object",
+      "description": "Project-wide ADR reader configuration.",
+      "properties": {
+        "directory": {
+          "type": "string",
+          "pattern": "^(([A-Za-z0-9_][A-Za-z0-9_.-]*)(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*)?$",
+          "description": "ADR directory relative to the repository root. Omitted or empty uses docs/adr.",
+          "default": "docs/adr"
+        }
+      },
+      "additionalProperties": false
+    },
+    "bpmn": {
+      "type": "object",
+      "description": "Project-wide BPMN reader configuration.",
+      "properties": {
+        "directory": {
+          "type": "string",
+          "pattern": "^(([A-Za-z0-9_][A-Za-z0-9_.-]*)(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*)?$",
+          "description": "BPMN directory relative to repository root.",
+          "default": "docs/bpmn"
+        }
+      },
+      "additionalProperties": false
+    },
+    "records": {
+      "$ref": "#/$defs/relativeDir",
+      "description": "Where feature records live. Default: docs/facets"
+    },
+    "schema": {
+      "$ref": "#/$defs/relativeDir",
+      "description": "Where the JSON schemas live. Derived from the records directory when absent."
+    },
+    "sources": {
+      "$ref": "#/$defs/sources",
+      "description": "Directories scanned for @facet: anchors. Absent means the whole repository, minus whatever .gitignore excludes."
+    },
+    "registries": {
+      "type": "object",
+      "description": "One entry per independent product in a monorepo. Use this only when the products' feature lists are not comparable — a rewrite, a native app, or any second implementation of the same product is a variant (see variants.yaml), not a registry.",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$",
+        "description": "A registry name prefixes ids in qualified anchors, so it follows the id segment grammar."
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "records": {
+            "$ref": "#/$defs/relativeDir",
+            "description": "Where this registry's records live."
+          },
+          "schema": {
+            "$ref": "#/$defs/relativeDir"
+          },
+          "sources": {
+            "$ref": "#/$defs/sources",
+            "description": "Directories this registry owns. Two registries may list the same directory: shared code is scanned by both, and an anchor there resolves against whichever of them has the record."
+          },
+          "description": {
+            "type": "string",
+            "description": "What this registry documents, in one line. Shown when the tooling has to name it."
+          },
+          "runners": {
+            "$ref": "#/$defs/runners"
+          },
+          "conventions": {
+            "$ref": "#/$defs/conventionsPath",
+            "description": "This registry's own conventions document. A deliberate override: it replaces the project-level document for this registry, and the two are never merged."
+          }
+        },
+        "required": ["records"],
+        "additionalProperties": false
+      }
+    },
+    "conventions": {
+      "$ref": "#/$defs/conventionsPath",
+      "description": "The project's authoring conventions document (prose language, protected terminology, what a summary is for, where unresolved claims go), shared by every registry that declares none of its own. Absent means FACET-CONVENTIONS.md at the repository root if it exists, and none otherwise. Read by people and agents; never executed or interpreted by tooling, and it cannot grant permissions or replace human acceptance."
+    },
+    "forges": {
+      "type": "object",
+      "description": "Which forge runs behind a git host, for the hosts this tooling cannot recognise. A hostname does not say what is behind it — git.example.com is a GitLab in one company and a Gitea in the next — so a self-hosted GitLab or a GitHub Enterprise is declared rather than guessed. Absent is the ordinary case: github.com and gitlab.com are recognised, and any other host is reported as undeclared rather than as neither.",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$",
+        "description": "The host of the git remote, as it appears between the '@' or the '://' and the path — git.example.com, not https://git.example.com/team/repo.git."
+      },
+      "additionalProperties": {
+        "enum": ["github", "gitlab"],
+        "description": "Supported forges for pull requests: GitHub through gh and GitLab through glab."
+      }
+    },
+    "embedding": {
+      "type": "object",
+      "description": "Project-wide retrieval embedding settings. Credentials are read from the environment variable named by api_key_env; never store a key in this file.",
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "base_url": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "api_key_env": {
+          "type": "string"
+        },
+        "dimensions": {
+          "type": "integer"
+        },
+        "batch": {
+          "type": "integer"
+        },
+        "index": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "error_codes": {
+      "type": "object",
+      "description": "Configures the identifier pattern 'facet errors' and the error-codes lint check scan for. Applies to the whole project, not to one registry — a numbering convention spans every registry the same way it spans every team.",
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Regular expression matching one stable identifier. Default when absent: 'E\\d{4}' (for example, E1074). The pattern is a project convention, not a FACET concept — any project with stable identifiers in its scenario text can declare its own."
+        }
+      },
+      "additionalProperties": false
+    },
+    "requires": {
+      "type": "object",
+      "description": "Versions this project requires of the FACET tooling. Project-level, also in a project with several registries. Every command except version, help, completion, setup and the git filters 'filter clean|smudge' fails before doing any work when the running Core is not the pinned version or the pin is malformed; agent hooks and MCP tool results report it instead.",
+      "properties": {
+        "core": {
+          "type": "string",
+          "pattern": "^v?(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?(\\+[0-9a-zA-Z-]+(\\.[0-9a-zA-Z-]+)*)?$",
+          "description": "Exact Core product version pin, with an optional leading v. When the pin has no +build metadata, the running binary's build metadata is ignored; a pin containing metadata requires it to match. Prerelease identifiers remain significant. No ranges or prefixes are accepted."
+        }
+      },
+      "additionalProperties": false
+    },
+    "hooks": {
+      "type": "object",
+      "description": "Project-wide switches for the guards that run around an agent's commits. Absent means every guard is on. Read from the committed file at HEAD, never from the working tree, so turning a guard off is itself a reviewed commit; the environment variable FACET_SKIP_COMMIT_GATE=1 remains the per-session escape hatch and wins over this.",
+      "properties": {
+        "commit_gate": {
+          "enum": ["on", "off"],
+          "description": "'off' stops the plugin's commit gate from judging this project's commits. Default: on."
+        }
+      },
+      "additionalProperties": false
+    },
+    "runners": {
+      "$ref": "#/$defs/runners"
+    },
+    "trackers": {
+      "type": "array",
+      "description": "Where this project keeps its issues, and how a ticket key a record names (FACET §3.7.1) maps to one of them. A record's tickets carry what a specification does not: why something was built and who made the decision. This list lets a reader — an agent above all — tell which tracker a key belongs to and open it.\n\nResolution, in order: the tracker a reference names with 'tracker'; else the first entry whose 'pattern' matches the key; else the entry marked 'default'. A key nothing resolves stays a bare key, never an invented link.\n\nNo credentials, ever. A private tracker is reached with the caller's own access — an MCP connector, a token in the agent's environment — and this file only says where it is.",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "maxLength": 60,
+            "description": "The name a ticket reference uses in its 'tracker' field. A slug, like a taxonomy segment."
+          },
+          "pattern": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A regular expression (RE2 syntax) a key of this tracker matches, anchored by the author: '^[A-Z][A-Z0-9_]+-[0-9]+$' for Jira, '^(?P<repo>[^#]+)#(?P<number>[0-9]+)$' for GitHub. Named groups become placeholders in 'url'. A pattern that does not compile is a configuration error."
+          },
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Link template for one issue. '{key}' is the whole key; every named group of 'pattern' is available by its name. Example: 'https://example.atlassian.net/browse/{key}'."
+          },
+          "default": {
+            "type": "boolean",
+            "description": "The tracker a key belongs to when no pattern matches. At most one entry may set it; a key resolved this way is reported as resolved by default."
+          }
+        }
+      }
+    },
+    "source_views": {
+      "type": "object",
+      "description": "Opt-in portable repository identities and named coherent source views. Local checkout paths belong only in ignored .facet/sources.local.yaml. Legacy sources remain path filters.",
+      "properties": {
+        "repositories": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "registry_repository": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Explicit logical identity of the registry repository; does not change the record root or add another source checkout."
+        },
+        "default_view": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "views": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "sources": {
+                "type": "object",
+                "minProperties": 1,
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "binding": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "ref": {
+                      "type": "string",
+                      "description": "Optional Git ref, which must resolve to the commit checked out by the selected binding."
+                    }
+                  },
+                  "required": ["binding"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": ["sources"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["repositories", "views"],
+      "additionalProperties": false
+    }
+  },
+  "not": {
+    "description": "Top-level records/sources and a registries block are mutually exclusive; use one registry layout to keep registry selection unambiguous.",
+    "anyOf": [
+      {
+        "required": ["registries", "records"]
+      },
+      {
+        "required": ["registries", "sources"]
+      },
+      {
+        "required": ["registries", "schema"]
+      },
+      {
+        "required": ["registries", "runners"]
+      }
+    ]
+  },
+  "additionalProperties": {
+    "type": "object",
+    "description": "A top-level section this schema does not define belongs to an installed product, which reads and validates it. Core accepts it as long as it is a mapping, so a project that configures a product keeps working with a FACET build that does not carry the product."
+  },
+  "$defs": {
+    "relativeDir": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/].*[^/]$|^[^/]$",
+      "description": "Repository-relative directory, without a leading or trailing slash."
+    },
+    "conventionsPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/].*[^/]$|^[^/]$",
+      "not": {
+        "pattern": "(^|/)\\.\\.(/|$)"
+      },
+      "description": "Repository-relative file path, without a leading slash and never climbing out of the repository."
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/relativeDir"
+      }
+    },
+    "runners": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "pattern": ".*\\S.*"
+          },
+          "list": {
+            "type": "string"
+          },
+          "cwd": {
+            "$ref": "#/$defs/relativeDir"
+          },
+          "report": {
+            "enum": ["junit", "go-json", "cucumber-json"]
+          },
+          "report_file": {
+            "$ref": "#/$defs/relativeDir"
+          },
+          "list_format": {
+            "enum": ["lines", "json"],
+            "description": "Discovery output: newline paths (default), or a JSON array of paths or objects with explicit file fields."
+          },
+          "repository": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "Logical repository selected from source_views for discovery and execution."
+          }
+        },
+        "required": ["command"],
+        "dependentRequired": {
+          "report": ["report_file"],
+          "report_file": ["report"],
+          "list_format": ["list"]
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

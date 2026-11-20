@@ -1,0 +1,37 @@
+schema_version: "0.1"
+id: interface/layout/content-sections
+lifecycle: active
+intent:
+  summary: Section organizes titled content, and ListRow can present an action or a destination within it.
+contract:
+  scenarios:
+    - id: section-heading
+      statement: |
+        Given a Section with a title
+        When it renders
+        Then the title appears as a heading
+    - id: action-row
+      statement: |
+        Given a ListRow with an onClick callback
+        When its button is clicked
+        Then the callback runs
+    - id: link-row
+      statement: |
+        Given a ListRow with an href
+        When it renders
+        Then it exposes a link with that destination
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::composes finding, stat, section, surface and rows"
+      proves:
+        - section-heading
+        - action-row
+        - link-row
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Section, Surface and ListRow from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

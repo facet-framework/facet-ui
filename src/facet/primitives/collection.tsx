@@ -36,6 +36,8 @@ export type DataTableProps<R> = {
  * ascending and descending; the state is announced through `aria-sort`.
  * Below 768 px the table becomes a list of cards (`.t-table-cards`).
  */
+// @facet: interface/collections/table
+// @facet-role: primary
 export function DataTable<R>({
   label,
   columns,
@@ -158,6 +160,8 @@ export type PaginationProps = {
   compact?: boolean;
 };
 
+// @facet: interface/collections/pagination
+// @facet-role: primary
 export function Pagination({
   page,
   pageSize,
@@ -273,6 +277,8 @@ export type CollectionToolbarProps<V extends string> = {
   onReset?: () => void;
 };
 
+// @facet: interface/collections/collection-states
+// @facet-role: primary
 export function CollectionToolbar<V extends string>({
   query,
   queryLabel,
@@ -364,6 +370,8 @@ export type CollectionProps = {
  * The frame every list in Atlas stands in: toolbar, optional distribution
  * band, body, pagination — and one defined form for each state.
  */
+// @facet: interface/collections/collection-states
+// @facet-role: primary
 export function Collection({
   state,
   toolbar,

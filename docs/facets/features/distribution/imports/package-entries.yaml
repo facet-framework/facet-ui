@@ -1,0 +1,33 @@
+schema_version: "0.1"
+id: distribution/imports/package-entries
+lifecycle: active
+intent:
+  summary: The package provides JavaScript entry points for the design system, presentational primitives and tokens, plus standalone stylesheets.
+contract:
+  scenarios:
+    - id: design-entry
+      statement: |
+        Given the root and design-system entries
+        When they are imported
+        Then they expose the same export names and the Button and AppShell exports share identity
+    - id: formats
+      statement: |
+        Given a built package
+        When the root, primitives and tokens entries are loaded with ESM import or CommonJS require
+        Then each JavaScript entry provides exports and the stylesheet paths and package metadata resolve
+verification:
+  integration_tests:
+    - id: "src/entries.spec.ts::exports the design system at the root with shared object identity"
+      proves:
+        - design-entry
+    - id: "src/packageEntries.spec.ts::resolves each JavaScript entry and stylesheet"
+      proves:
+        - formats
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import @facet-tools/ui, @facet-tools/ui/primitives or @facet-tools/ui/tokens. Load styles.css or tokens.css from the package."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

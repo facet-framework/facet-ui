@@ -1,0 +1,42 @@
+schema_version: "0.1"
+id: interface/controls/action-buttons
+lifecycle: active
+intent:
+  summary: Buttons expose actions and links, with accessible names for icon-only actions and descriptions for disabled actions.
+contract:
+  scenarios:
+    - id: actions
+      statement: |
+        Given an action Button, a Button with an href and an IconButton with a label
+        When the action is clicked
+        Then its handler runs and the other controls expose a link with its href and a named button
+    - id: disabled-reason
+      statement: |
+        Given buttons with disabled reasons in a form
+        When a user tries to activate them by pointer or keyboard
+        Then they expose disabled state and the reason as a description
+        And the tested interactions do not submit or reset the form or invoke the supplied handlers
+    - id: reset
+      statement: |
+        Given a reset Button without a disabled reason in a form with an edited field
+        When it is clicked
+        Then the field returns to its initial value
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::renders a button, a link button and an icon button with its name"
+      proves:
+        - actions
+    - id: "src/facet/primitives/primitives.spec.tsx::neither submits nor resets its form and fires no handler while disabled with a reason"
+      proves:
+        - disabled-reason
+    - id: "src/facet/primitives/primitives.spec.tsx::keeps a reset button resetting its form while it has no disabled reason"
+      proves:
+        - reset
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Button and IconButton from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

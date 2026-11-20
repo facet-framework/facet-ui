@@ -25,6 +25,8 @@ export type AppShellProps = {
   modal?: boolean;
 };
 
+// @facet: interface/frame/application-shell
+// @facet-role: primary
 export function AppShell({
   top,
   nav,

@@ -70,6 +70,12 @@ and sign the CLA. An automated agent cannot sign on your behalf or supply
 employer authorization. Review generated changes, identify their sources and
 licenses, and take responsibility for the submitted patch.
 
+## FACET records
+
+Update the affected records in `docs/facets` with each behavior change. Add or move
+the source anchors with their implementation, and link scenarios to the tests
+that verify them. Run `npx --yes facet-framework@0.1.0-rc.2 lint` before submitting.
+
 ## Releases
 
 A release runs the Release workflow on `main` with the version from

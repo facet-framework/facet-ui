@@ -19,6 +19,8 @@ export type TextProviderProps = {
   children: ReactNode;
 };
 
+// @facet: localization/language/component-language
+// @facet-role: primary
 /** Sets the language of every FACET component below it. Without it, FACET speaks English. */
 export function TextProvider({ locale = "en", dictionary, children }: TextProviderProps) {
   const value = useMemo(() => createText(locale, dictionary), [locale, dictionary]);

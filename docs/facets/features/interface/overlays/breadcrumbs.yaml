@@ -1,0 +1,34 @@
+schema_version: "0.1"
+id: interface/overlays/breadcrumbs
+lifecycle: active
+intent:
+  summary: Breadcrumbs show the current location and let users navigate or search sibling destinations.
+contract:
+  scenarios:
+    - id: path
+      statement: |
+        Given a breadcrumb trail with a link, an actionable segment and a last segment
+        When it renders and the actionable segment is clicked
+        Then the link exposes its destination, the action runs and the last segment is marked as the current page
+    - id: siblings
+      statement: |
+        Given an open sibling list with selectable matches
+        When the user searches, presses Enter on a matching query and presses Escape from a focused item
+        Then the filtered menu shows matching items and Enter selects the first hit
+        And Escape requests closing and returns focus to the sibling trigger
+verification:
+  integration_tests:
+    - id: "src/facet/primitives/primitives.spec.tsx::makes every breadcrumb but the last a place, and opens siblings from the caret"
+      proves:
+        - path
+    - id: "src/facet/primitives/primitives.spec.tsx::searches the open sibling list; Enter opens the first hit, Esc and an outside press close"
+      proves:
+        - siblings
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import Breadcrumbs from @facet-tools/ui."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

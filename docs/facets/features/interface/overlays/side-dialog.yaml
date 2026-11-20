@@ -1,0 +1,33 @@
+schema_version: "0.1"
+id: interface/overlays/side-dialog
+lifecycle: active
+intent:
+  summary: BlindControl presents a named side dialog and supports keyboard dismissal.
+contract:
+  scenarios:
+    - id: open-focus
+      statement: |
+        Given an open BlindControl
+        When it renders
+        Then the dialog receives focus
+    - id: escape
+      statement: |
+        Given an open BlindControl with an onClose callback
+        When Escape is pressed
+        Then the callback runs once
+verification:
+  integration_tests:
+    - id: "src/components/ui/Blind/Blind.spec.tsx::gives the blind the focus"
+      proves:
+        - open-focus
+    - id: "src/components/ui/Blind/Blind.spec.tsx::closes with Escape"
+      proves:
+        - escape
+knowledge:
+  discoverability:
+    question: Where can I use this capability?
+    answer: "Import BlindControl from @facet-tools/ui/primitives."
+lineage:
+  owner:
+    team: Unknown
+  created_at: "2026-11-20"

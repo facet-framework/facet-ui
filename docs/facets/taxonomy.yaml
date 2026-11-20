@@ -1,0 +1,55 @@
+schema_version: "0.1"
+domains:
+  foundations:
+    title: Design foundations
+    purpose: Shared visual values and appearance settings.
+    classification: core
+    capabilities:
+      styling:
+        title: Styling
+        purpose: Reusable CSS values and scoped palettes.
+      typography:
+        title: Typography
+        purpose: Text styles and line wrapping.
+  localization:
+    title: Localization
+    purpose: Language and number formatting for applications.
+    classification: core
+    capabilities:
+      language:
+        title: Language
+        purpose: Provider scope and built-in messages.
+      formatting:
+        title: Formatting
+        purpose: Interpolation, number formatting and plural forms.
+  interface:
+    title: Interface
+    purpose: Components for building application screens.
+    classification: core
+    capabilities:
+      frame:
+        title: Application frame
+        purpose: Application slots and frame state.
+      layout:
+        title: Layout
+        purpose: Composition and spacing of content.
+      controls:
+        title: Controls
+        purpose: Actions, choices and form input.
+      collections:
+        title: Collections
+        purpose: Tools for displaying and navigating sets of items.
+      feedback:
+        title: Feedback
+        purpose: Status, measurements and recovery actions.
+      overlays:
+        title: Overlays
+        purpose: Surfaces for contextual actions and explanations.
+  distribution:
+    title: Distribution
+    purpose: Package entry points for application builds.
+    classification: supporting
+    capabilities:
+      imports:
+        title: Imports
+        purpose: JavaScript module and stylesheet resolution.
