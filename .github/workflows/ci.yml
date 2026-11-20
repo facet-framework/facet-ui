@@ -26,3 +26,35 @@ jobs:
       - run: pnpm build
       - run: pnpm test:coverage --runInBand
       - run: npm pack --dry-run
+
+  facet-lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Validate the FACET registry
+        shell: bash
+        run: |
+          test -f .facetrc.yaml
+          test -d docs/facets
+          test -f docs/facets/taxonomy.yaml
+          test -s docs/facets/schema/facet.schema.json
+          test -s docs/facets/schema/taxonomy.schema.json
+          test -s docs/facets/schema/facetrc.schema.json
+
+          npx --yes facet-framework@0.1.0-rc.2 lint --json | tee "$RUNNER_TEMP/facet-lint.json"
+          yaml_count=$(find docs/facets -type f \( -name '*.yaml' -o -name '*.yml' \) -printf '.' | wc -c)
+          feature_count=$(find docs/facets/features -type f \( -name '*.yaml' -o -name '*.yml' \) -printf '.' | wc -c)
+          checked=$(jq -er '.checked.records' "$RUNNER_TEMP/facet-lint.json")
+
+          # Core counts feature records separately from the taxonomy document.
+          echo "Validated $checked feature records and the taxonomy ($yaml_count YAML files)"
+          test "$feature_count" -gt 0
+          test "$yaml_count" -eq "$((feature_count + 1))"
+          test "$checked" -eq "$feature_count"
+          jq -e 'all(.findings[]; .check != "schema")' "$RUNNER_TEMP/facet-lint.json" > /dev/null
