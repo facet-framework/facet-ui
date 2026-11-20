@@ -7,7 +7,7 @@ function files(dir: string): string[] {
 }
 it("keeps the design system name out of source identifiers and prose", () => {
   const scanned = files(__dirname).filter((file) => file !== __filename);
-  expect(scanned.length).toBeGreaterThan(300);
+  expect(scanned.length).toBeGreaterThan(100);
   expect(
     scanned.filter((file) =>
       new RegExp(String.fromCodePoint(116, 105, 101, 102, 101), "i").test(

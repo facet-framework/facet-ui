@@ -8,7 +8,7 @@ exports[`Snapshot tests for ErrorState YAML error with origin 1`] = `
   <p
     style="margin: 0px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--due); overflow-wrap: anywhere;"
   >
-    broken (line 42)
+    broken
   </p>
   <p
     style="margin: 0px; font-family: var(--font-mono); font-size: var(--text-meta); color: var(--dim); overflow-wrap: anywhere;"

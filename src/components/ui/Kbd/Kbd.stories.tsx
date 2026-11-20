@@ -31,7 +31,7 @@ export const Contract: Story = {
     <div style={{ display: "grid", gap: 8 }}>
       {(
         [
-          ["⌘K", "Search records, promises, tests and code paths"],
+          ["⌘K", "Search items, tasks, tests and code paths"],
           ["R", "Open register"],
           ["→", "one level deeper"],
           ["Esc", "exactly one level back"],

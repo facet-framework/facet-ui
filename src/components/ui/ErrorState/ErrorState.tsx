@@ -16,7 +16,7 @@ export type ErrorStateProps = {
 
 /**
  * Error state: cause, origin (file, line), the way back. It never replaces the
- * whole application — a broken record stays a broken record.
+ * whole application — a broken item stays a broken item.
  */
 export function ErrorState({
   containerStyle,

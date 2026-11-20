@@ -7,8 +7,8 @@ const germanText = createGermanText("de");
 
 describe("Unit tests for Skeleton", () => {
   it("announces itself as an ongoing process", () => {
-    render(<Skeleton computedStyle={{}} label="Reading records" />);
-    const node = screen.getByRole("status", { name: "Reading records" });
+    render(<Skeleton computedStyle={{}} label="Reading items" />);
+    const node = screen.getByRole("status", { name: "Reading items" });
     expect(node).toHaveAttribute("aria-busy", "true");
   });
 });
@@ -30,8 +30,8 @@ describe("Unit tests for withSkeletonLogic", () => {
   });
 
   it("accepts its own plain words", () => {
-    render(<SkeletonWithLogic label="Counting promises" />);
-    expect(screen.getByRole("status", { name: "Counting promises" })).toBeInTheDocument();
+    render(<SkeletonWithLogic label="Counting tasks" />);
+    expect(screen.getByRole("status", { name: "Counting tasks" })).toBeInTheDocument();
   });
 
   it("assigns a descriptive displayName", () => {

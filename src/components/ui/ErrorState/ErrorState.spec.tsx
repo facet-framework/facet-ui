@@ -1,7 +1,15 @@
 import { createText as createGermanText } from "../../../facet/i18n/text";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { YamlError } from "../../../core";
+class InputError extends Error {
+  constructor(
+    message: string,
+    public line: number,
+  ) {
+    super(message);
+    this.name = "InputError";
+  }
+}
 import ErrorStateWithLogic, { ErrorState, withErrorStateLogic } from ".";
 import { renderInGerman } from "../../../facet/i18n/testing";
 
@@ -42,12 +50,12 @@ describe("Unit tests for withErrorStateLogic", () => {
   });
 
   it("joins file and line number", () => {
-    render(<ErrorStateWithLogic error={new YamlError("broken", 41)} path="quick-add.yaml" />);
+    render(<ErrorStateWithLogic error={new InputError("broken", 41)} path="quick-add.yaml" />);
     expect(screen.getByText("quick-add.yaml:42")).toBeInTheDocument();
   });
 
   it("copes without a file", () => {
-    render(<ErrorStateWithLogic error={new YamlError("broken", 7)} />);
+    render(<ErrorStateWithLogic error={new InputError("broken", 7)} />);
     expect(screen.getByText("Line 8")).toBeInTheDocument();
   });
 
@@ -62,7 +70,7 @@ describe("Unit tests for withErrorStateLogic", () => {
   });
 
   it("speaks German under the German locale", () => {
-    renderInGerman(<ErrorStateWithLogic error={new YamlError("broken", 7)} onRetry={jest.fn()} />);
+    renderInGerman(<ErrorStateWithLogic error={new InputError("broken", 7)} onRetry={jest.fn()} />);
     expect(
       screen.getByText(germanText.t("elements.errorState.line", { line: 8 })),
     ).toBeInTheDocument();
@@ -91,7 +99,7 @@ describe("Snapshot tests for ErrorState", () => {
   it("YAML error with origin", () => {
     const { container } = render(
       <ErrorStateWithLogic
-        error={new YamlError("broken", 41)}
+        error={new InputError("broken", 41)}
         path="quick-add.yaml"
         onRetry={() => {}}
       />,

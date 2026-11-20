@@ -5,12 +5,12 @@ const styles = { containerStyle: {}, headlineStyle: {}, bodyStyle: {} };
 
 describe("Unit tests for EmptyState", () => {
   it("names what is missing", () => {
-    render(<EmptyState {...styles} headline="No promise described." />);
-    expect(screen.getByRole("status")).toHaveTextContent("No promise described.");
+    render(<EmptyState {...styles} headline="No task described." />);
+    expect(screen.getByRole("status")).toHaveTextContent("No task described.");
   });
 
   it("explains the consequence on request", () => {
-    render(<EmptyState {...styles} headline="No promise." body="Nothing to back." />);
+    render(<EmptyState {...styles} headline="No task." body="Nothing to back." />);
     expect(screen.getByText("Nothing to back.")).toBeInTheDocument();
   });
 
@@ -49,7 +49,7 @@ describe("Unit tests for withEmptyStateLogic", () => {
 describe("Snapshot tests for EmptyState", () => {
   it("quiet", () => {
     const { container } = render(
-      <EmptyStateWithLogic headline="No promise described." body="Nothing to back." />,
+      <EmptyStateWithLogic headline="No task described." body="Nothing to back." />,
     );
     expect(container.firstChild).toMatchSnapshot();
   });

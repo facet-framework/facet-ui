@@ -66,8 +66,8 @@ describe("Unit tests for withSegmentBandLogic", () => {
   });
 
   it("accepts a custom plain text", () => {
-    render(<SegmentBandWithLogic segments={segments} label="Lifecycle across 20 records" />);
-    expect(screen.getByRole("img", { name: "Lifecycle across 20 records" })).toBeInTheDocument();
+    render(<SegmentBandWithLogic segments={segments} label="Lifecycle across 20 items" />);
+    expect(screen.getByRole("img", { name: "Lifecycle across 20 items" })).toBeInTheDocument();
   });
 
   it("sets the band height", () => {

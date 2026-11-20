@@ -21,7 +21,7 @@ exports[`Snapshot tests for EmptyState quiet 1`] = `
   <p
     style="margin: 0px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--dim);"
   >
-    No promise described.
+    No task described.
   </p>
   <p
     style="margin: 0px; font-family: var(--font-mono); font-size: var(--text-meta); line-height: 1.6; color: var(--dim);"

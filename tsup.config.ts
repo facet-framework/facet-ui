@@ -5,18 +5,17 @@ import { defineConfig } from "tsup";
 /**
  * Build ESM/CJS entry points, declarations and source maps into dist/.
  * React remains a peer dependency; tokens are copied as a separate stylesheet.
- * tsup.standalone.config.ts builds the self-contained custom-element bundle.
  */
 export default defineConfig({
   entry: {
     // The root entry is the FACET design system (src/index.ts re-exports src/facet/index.ts);
     index: "src/index.ts",
-    core: "src/core/index.ts",
-    "core/fixtures": "src/core/fixtures/index.ts",
-    elements: "src/elements/index.ts",
+    primitives: "src/primitives.ts",
+    tokens: "src/design-system/index.ts",
   },
   format: ["esm", "cjs"],
   dts: true,
+  metafile: true,
   sourcemap: true,
   clean: true,
   treeshake: true,

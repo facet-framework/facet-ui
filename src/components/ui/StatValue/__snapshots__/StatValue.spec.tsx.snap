@@ -34,7 +34,7 @@ exports[`Snapshot tests for StatValue regular metric 1`] = `
   <span
     style="font-family: var(--font-sans); font-size: var(--text-meta); color: var(--dim);"
   >
-    Promises with a test
+    Tasks with a test
   </span>
 </div>
 `;

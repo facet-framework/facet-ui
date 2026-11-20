@@ -102,10 +102,10 @@ describe("no design prose in the FACET dictionaries", () => {
         "Whether the host collects, how long it keeps data and where it writes are not reported to Atlas, so they are not shown here.",
       ),
     ).toBeDefined();
-    expect(reasoning("Every promise is therefore open.")).toBeDefined();
+    expect(reasoning("Every task is therefore open.")).toBeDefined();
     // And it lets ordinary labels and states through.
     expect(reasoning("Nothing open.")).toBeUndefined();
-    expect(reasoning(de["shell.top.backNone"])).toBeUndefined();
+    expect(reasoning(de["primitives.pager.previous"])).toBeUndefined();
     expect(reasoning("Install and grant in the terminal.")).toBeUndefined();
   });
 

@@ -18,7 +18,7 @@ const meta: Meta<typeof StackWithLogic> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const items = ["Records", "Promises & Tests", "Operations", "Policies"];
+const items = ["Items", "Tasks & Tests", "Operations", "Policies"];
 
 /** Vertical track — the register index. */
 export const Vertical: Story = {

@@ -24,7 +24,7 @@ const meta: Meta<typeof SegmentBandWithLogic> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Lifecycle across all records. */
+/** Status across all items. */
 export const Lifecycle: Story = {
   args: {
     segments: [

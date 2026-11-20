@@ -1,5 +1,4 @@
 import { memo, useMemo, type ComponentType, type CSSProperties } from "react";
-import { YamlError } from "../../../core";
 import { color, font, fontSize } from "../../../design-system/tokens";
 import { useText } from "../../../facet/i18n";
 import type { ErrorStateProps } from "./ErrorState";
@@ -14,7 +13,7 @@ export type WithErrorStateProps = Omit<
   | "origin"
   | "retryLabel"
 > & {
-  /** The error that occurred — `YamlError` brings the line number along. */
+  /** The error that occurred — an error may carry a zero-based line number. */
   error: unknown;
   /** File in which the error occurred. */
   path?: string;
@@ -39,7 +38,10 @@ export function withErrorStateLogic(Component: ComponentType<ErrorStateProps>) {
     }, [error, t]);
 
     const origin = useMemo(() => {
-      const line = error instanceof YamlError && error.line != null ? error.line + 1 : null;
+      const line =
+        error instanceof Error && "line" in error && typeof error.line === "number"
+          ? error.line + 1
+          : null;
       if (path && line != null) return `${path}:${line}`;
       if (path) return path;
       return line != null ? t("elements.errorState.line", { line }) : undefined;

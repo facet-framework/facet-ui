@@ -31,7 +31,7 @@ export const FactualLabel: Story = {
   args: { variant: "label", tone: "dim", children: "Entry points in code" },
 };
 
-/** Field values are set in mono — here a record id. */
+/** Field values are set in mono — here an item id. */
 export const FieldValue: Story = {
   args: { variant: "meta", tone: "soft", mono: true, children: "tasks/create/quick-add" },
 };

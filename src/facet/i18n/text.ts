@@ -1,8 +1,3 @@
-/**
- * The text functions without React: the data layer (`@facet-tools/ui/core`) builds
- * visible sentences too, and it must not pull React in to do so.
- * `TextProvider` builds on the same `createText`.
- */
 import { de } from "./de";
 import { en, type Dictionary, type TextKey } from "./en";
 
@@ -31,10 +26,13 @@ export type FacetText = {
 const BUILT_IN: Record<FacetLocale, Dictionary> = { en, de };
 
 /** The text functions for `locale` outside React, e.g. for the data layer or fixtures. */
-export function createText(locale: string, overrides?: Partial<Dictionary>): FacetText {
+export function createText(
+  locale: string,
+  overrides?: Readonly<Record<string, string | undefined>>,
+): FacetText {
   const lang = locale.toLowerCase().split("-")[0] as FacetLocale;
   const base = BUILT_IN[lang] ?? en;
-  const dict: Dictionary = overrides ? { ...base, ...overrides } : base;
+  const dict = overrides ? { ...base, ...overrides } : base;
   const nf = new Intl.NumberFormat(locale);
   const rules = new Intl.PluralRules(locale);
   const number = (n: number) => nf.format(n);

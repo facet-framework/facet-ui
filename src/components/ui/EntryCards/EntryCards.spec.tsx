@@ -8,22 +8,22 @@ const germanText = createGermanText("de");
 
 const entries = [
   {
-    key: "records",
-    tag: "Records",
+    key: "items",
+    tag: "Items",
     title: "What is described",
     value: "42",
     valueMeta: "28 active · 14 planned",
-    lead: "Every record has a team.",
+    lead: "Every item has a team.",
     action: "Open register",
   },
   {
-    key: "promises",
-    tag: "Promises",
+    key: "tasks",
+    tag: "Tasks",
     title: "Which tests are mapped",
     value: "68 %",
     valueMeta: "31/46 backed",
-    lead: "15 promises have no test.",
-    action: "Open promises",
+    lead: "15 tasks have no test.",
+    action: "Open tasks",
     open: true,
   },
 ];
@@ -51,14 +51,14 @@ describe("Unit tests for withEntryCardsLogic", () => {
 
   it("moves open entries to the front", () => {
     const { container } = render(<EntryCardsWithLogic entries={entries} />);
-    expect(keys(container)).toEqual(["promises", "records"]);
+    expect(keys(container)).toEqual(["tasks", "items"]);
   });
 
   it("keeps the order when nothing is open", () => {
     const { container } = render(
       <EntryCardsWithLogic entries={entries.map((entry) => ({ ...entry, open: false }))} />,
     );
-    expect(keys(container)).toEqual(["records", "promises"]);
+    expect(keys(container)).toEqual(["items", "tasks"]);
   });
 
   it("marks the open entry without colour too", () => {
@@ -90,7 +90,7 @@ describe("Unit tests for withEntryCardsLogic", () => {
     const onOpen = jest.fn();
     render(<EntryCardsWithLogic entries={entries} onOpen={onOpen} />);
     await userEvent.click(screen.getByRole("button", { name: /Which tests are mapped/ }));
-    expect(onOpen).toHaveBeenCalledWith("promises");
+    expect(onOpen).toHaveBeenCalledWith("tasks");
   });
 
   it("falls back to the default empty text, in German under the German locale", () => {
@@ -102,7 +102,7 @@ describe("Unit tests for withEntryCardsLogic", () => {
   });
 
   it("says so when there is no entry", () => {
-    render(<EntryCardsWithLogic entries={[]} emptyText="No record read yet." />);
-    expect(screen.getByText("No record read yet.")).toBeInTheDocument();
+    render(<EntryCardsWithLogic entries={[]} emptyText="No item read yet." />);
+    expect(screen.getByText("No item read yet.")).toBeInTheDocument();
   });
 });

@@ -46,7 +46,7 @@ describe("Icon", () => {
   it("is decoration without a label and an image with one", () => {
     const { container } = render(<Icon name="back" />);
     expect(container.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
-    render(<Icon name="drift" label="Drift" className="x" />);
+    render(<Icon name="offsetBlocks" label="Drift" className="x" />);
     expect(screen.getByRole("img", { name: "Drift" })).toBeInTheDocument();
   });
 
@@ -219,7 +219,7 @@ describe("controls", () => {
           value="a"
           onChange={onTab}
           items={[
-            { value: "a", label: "Promises", count: 19 },
+            { value: "a", label: "Tasks", count: 19 },
             { value: "b", label: "Code" },
           ]}
         />
@@ -228,7 +228,7 @@ describe("controls", () => {
     expect(screen.getByRole("radio", { name: "List" })).toHaveAttribute("aria-checked", "true");
     await userEvent.click(screen.getByRole("radio", { name: "Table" }));
     expect(onView).toHaveBeenCalledWith("table");
-    expect(screen.getByRole("tab", { name: /Promises/ })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: /Tasks/ })).toHaveAttribute("aria-selected", "true");
     await userEvent.click(screen.getByRole("tab", { name: "Code" }));
     expect(onTab).toHaveBeenCalledWith("b");
   });
@@ -652,7 +652,7 @@ describe("overlay", () => {
         footer={<p>Footer</p>}
         groups={[
           {
-            label: "Record",
+            label: "Item",
             items: [
               {
                 key: "c",
@@ -745,7 +745,7 @@ describe("overlay", () => {
             key: "dom",
             label: "navigation",
             onClick: onDomain,
-            siblings: [{ key: "reg", label: "registry" }],
+            siblings: [{ key: "reg", label: "catalog" }],
           },
           { key: "rec", label: "adr-plugin", mono: true },
         ]}
@@ -766,13 +766,13 @@ describe("overlay", () => {
             label: "navigation",
             mono: true,
             href: "/d",
-            siblings: [{ key: "reg", label: "registry" }],
+            siblings: [{ key: "reg", label: "catalog" }],
           },
           { key: "rec", label: "x" },
         ]}
       />,
     );
-    expect(screen.getByRole("menu", { name: "Siblings" })).toHaveTextContent("registry");
+    expect(screen.getByRole("menu", { name: "Siblings" })).toHaveTextContent("catalog");
   });
 
   it("draws a segment that leads nowhere as text, never as a dead button", () => {
@@ -792,7 +792,7 @@ describe("overlay", () => {
     const onReg = jest.fn();
     const onClose = jest.fn();
     const siblings = [
-      { key: "registry", label: "registry", onSelect: onReg },
+      { key: "catalog", label: "catalog", onSelect: onReg },
       { key: "navigation", label: "navigation" },
       { key: "book", label: "Book area" },
     ];
@@ -815,11 +815,11 @@ describe("overlay", () => {
     // A sibling is found by its key as well as by its label.
     expect(screen.getAllByRole("menuitem").map((m) => m.textContent)).toEqual(["Book area"]);
     await userEvent.clear(field);
-    await userEvent.type(field, "reg");
+    await userEvent.type(field, "catalog");
     await userEvent.keyboard("{Enter}");
     expect(onReg).toHaveBeenCalled();
     await userEvent.keyboard("{ArrowDown}");
-    expect(screen.getByRole("menuitem", { name: "registry" })).toHaveFocus();
+    expect(screen.getByRole("menuitem", { name: "catalog" })).toHaveFocus();
     await userEvent.keyboard("{Escape}");
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("button", { name: "Show siblings" })).toHaveFocus();

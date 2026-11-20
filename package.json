@@ -1,7 +1,7 @@
 {
   "name": "@facet-tools/ui",
   "version": "0.1.0-rc.2",
-  "description": "The FACET design system: React components, design tokens, custom elements and the FACET record data layer.",
+  "description": "React components, design tokens, layout and localization for applications.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -9,18 +9,12 @@
   },
   "homepage": "https://github.com/facet-framework/facet-ui#readme",
   "keywords": [
-    "facet",
     "design-system",
-    "react",
-    "web-components",
-    "atlas"
+    "react"
   ],
   "type": "module",
   "sideEffects": [
-    "*.css",
-    "./dist/elements.js",
-    "./dist/elements.cjs",
-    "./dist/facet-ui.standalone.js"
+    "*.css"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -36,40 +30,29 @@
         "default": "./dist/index.cjs"
       }
     },
-    "./core": {
-      "import": {
-        "types": "./dist/core.d.ts",
-        "default": "./dist/core.js"
-      },
-      "require": {
-        "types": "./dist/core.d.cts",
-        "default": "./dist/core.cjs"
-      }
-    },
-    "./core/fixtures": {
-      "import": {
-        "types": "./dist/core/fixtures.d.ts",
-        "default": "./dist/core/fixtures.js"
-      },
-      "require": {
-        "types": "./dist/core/fixtures.d.cts",
-        "default": "./dist/core/fixtures.cjs"
-      }
-    },
-    "./elements": {
-      "import": {
-        "types": "./dist/elements.d.ts",
-        "default": "./dist/elements.js"
-      },
-      "require": {
-        "types": "./dist/elements.d.cts",
-        "default": "./dist/elements.cjs"
-      }
-    },
-    "./elements/standalone": "./dist/facet-ui.standalone.js",
     "./tokens.css": "./dist/tokens.css",
     "./styles.css": "./dist/styles.css",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./primitives": {
+      "import": {
+        "types": "./dist/primitives.d.ts",
+        "default": "./dist/primitives.js"
+      },
+      "require": {
+        "types": "./dist/primitives.d.cts",
+        "default": "./dist/primitives.cjs"
+      }
+    },
+    "./tokens": {
+      "import": {
+        "types": "./dist/tokens.d.ts",
+        "default": "./dist/tokens.js"
+      },
+      "require": {
+        "types": "./dist/tokens.d.cts",
+        "default": "./dist/tokens.cjs"
+      }
+    }
   },
   "files": [
     "dist",
@@ -83,7 +66,7 @@
   },
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "build": "tsup && tsup --config tsup.standalone.config.ts && pnpm run licenses:generate",
+    "build": "tsup && pnpm run licenses:generate",
     "dev": "tsup --watch",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",

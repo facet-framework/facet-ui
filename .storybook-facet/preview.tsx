@@ -47,7 +47,7 @@ const preview: Preview = {
         title: "Language",
         icon: "globe",
         items: [
-          { value: "de", title: "Deutsch" },
+          { value: "de", title: "German" },
           { value: "en", title: "English" },
         ],
         dynamicTitle: true,

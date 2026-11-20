@@ -12,7 +12,7 @@
 .t-finding__aside {
   margin-top: var(--t-s-4);
 }
-/* The drift mark stands beside the number at the number's cap height. */
+/* The figure mark stands beside the number at the number's cap height. */
 .t-finding__figure {
   display: flex;
   align-items: center;

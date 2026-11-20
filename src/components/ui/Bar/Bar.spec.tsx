@@ -33,7 +33,7 @@ describe("Unit tests for withBarLogic", () => {
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
   });
 
-  it("colours full coverage as backed", () => {
+  it("colours a complete value as successful", () => {
     const { container } = render(<BarWithLogic value={4} total={4} label="full" />);
     expect((container.firstChild as HTMLElement).firstChild).toHaveStyle({
       background: "var(--ok)",

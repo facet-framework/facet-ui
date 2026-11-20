@@ -10,10 +10,10 @@ const styles = {
 
 describe("Unit tests for StatValue", () => {
   it("shows label, value and classification", () => {
-    render(<StatValue {...styles} label="Backed" value="31/38" hint="Promises with a test" />);
+    render(<StatValue {...styles} label="Backed" value="31/38" hint="Tasks with a test" />);
     expect(screen.getByText("Backed")).toBeInTheDocument();
     expect(screen.getByText("31/38")).toBeInTheDocument();
-    expect(screen.getByText("Promises with a test")).toBeInTheDocument();
+    expect(screen.getByText("Tasks with a test")).toBeInTheDocument();
   });
 
   it("leaves out the classification when none is given", () => {
@@ -63,7 +63,7 @@ describe("Unit tests for withStatValueLogic", () => {
 describe("Snapshot tests for StatValue", () => {
   it("regular metric", () => {
     const { container } = render(
-      <StatValueWithLogic label="Backed" value="31/38" hint="Promises with a test" />,
+      <StatValueWithLogic label="Backed" value="31/38" hint="Tasks with a test" />,
     );
     expect(container.firstChild).toMatchSnapshot();
   });

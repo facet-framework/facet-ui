@@ -4,7 +4,7 @@ describe.each(["esm", "cjs"])("built %s entries", (format) => {
   it("resolves each JavaScript entry and stylesheet", () => {
     const script = `const { createRequire } = await import("node:module");
       const require = createRequire(process.cwd() + "/package.json");
-      const names = ["@facet-tools/ui", "@facet-tools/ui/core", "@facet-tools/ui/core/fixtures", "@facet-tools/ui/elements", "@facet-tools/ui/elements/standalone"];
+      const names = ["@facet-tools/ui", "@facet-tools/ui/primitives", "@facet-tools/ui/tokens"];
       for (const name of names) {
         const entry = ${format === "esm" ? "await import(name)" : "require(name)"};
         if (!Object.keys(entry).length) throw new Error(name);

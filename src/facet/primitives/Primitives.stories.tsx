@@ -34,7 +34,17 @@ import {
   type CollectionState,
 } from "./collection";
 import { Breadcrumbs, Dialog, Menu, Sheet, Toast } from "./overlay";
-import { sample } from "../fixtures";
+const sample = {
+  adrs480: () =>
+    Array.from({ length: 480 }, (_, i) => ({
+      number: i + 1,
+      title: `Item ${i + 1}`,
+      status: "accepted",
+      area: "Library",
+      refs: 2,
+      date: "2026-01-01",
+    })),
+};
 
 const meta: Meta = { title: "Primitives/Overview", parameters: { layout: "padded" } };
 export default meta;
@@ -89,7 +99,7 @@ export const Typography: Story = {
     <div className="t-stack" style={{ gap: 18, maxWidth: 900 }}>
       <span className="t-eyebrow">Overview · facet</span>
       <span className="t-hero-number">94 %</span>
-      <h1 className="t-hero-sentence">1,853 of 1,971 promises are backed.</h1>
+      <h1 className="t-hero-sentence">1,853 of 1,971 tasks are backed.</h1>
       <p className="t-lead">
         118 are waiting for a test, 18 files have moved since the last comparison.
       </p>
@@ -177,13 +187,13 @@ function ControlsDemo() {
         value={tab}
         onChange={setTab}
         items={[
-          { value: "a", label: "Promises", count: 19 },
+          { value: "a", label: "Tasks", count: 19 },
           { value: "b", label: "Code", count: 8 },
           { value: "c", label: "History" },
         ]}
       />
       <div className="t-cols-2">
-        <SearchField label="Search" value={q} placeholder="Record, file, term" onChange={setQ} />
+        <SearchField label="Search" value={q} placeholder="Item, file, term" onChange={setQ} />
         <Field label="Title" hint="Becomes the heading of the page.">
           {(id) => <input id={id} className="t-input" defaultValue="First steps" />}
         </Field>
@@ -219,13 +229,13 @@ export const Display: Story = {
         eyebrow="Overview"
         figure="94 %"
         tone="ok"
-        sentence="1,853 of 1,971 promises are backed."
+        sentence="1,853 of 1,971 tasks are backed."
         lead="118 are waiting for a test."
       />
       <div className="t-row t-row--wrap" style={{ gap: 40 }}>
         <Stat value="217" label="active features" large />
         <Stat value="18" label="files with drift" tone="warn" />
-        <Stat value="525" of="1,852" label="files anchored" />
+        <Stat value="525" of="1,852" label="files indexed" />
       </div>
       <div className="t-stack" style={{ gap: 10, maxWidth: 420 }}>
         <Meter value={0.94} label="backed" />
@@ -262,13 +272,13 @@ export const Display: Story = {
       </div>
       <div className="t-cols-2">
         <EmptyState
-          icon="decision"
+          icon="scales"
           title="No decisions yet"
           body="Add the first ADR under docs/adr."
           action={<Button icon="plus">Add ADR</Button>}
         />
         <ErrorState
-          title="Records not readable"
+          title="Items not readable"
           reason="facet ui does not answer on /api/model."
           onRetry={() => undefined}
         />
@@ -310,7 +320,7 @@ function CollectionDemo({ state, mobile }: { state: CollectionState; mobile?: bo
           ]}
         />
       }
-      empty={{ title: "No decisions yet", body: "docs/adr is empty.", icon: "decision" }}
+      empty={{ title: "No decisions yet", body: "docs/adr is empty.", icon: "scales" }}
       filteredEmpty={{ query: "sidecar 2019" }}
       error={{
         title: "Directory not readable",
@@ -369,7 +379,7 @@ function CollectionDemo({ state, mobile }: { state: CollectionState; mobile?: bo
           { key: "area", label: "Area", hideOnMobile: true, render: (r) => r.area },
           {
             key: "refs",
-            label: "Records",
+            label: "Items",
             numeric: true,
             sortable: true,
             hideOnMobile: true,
@@ -426,7 +436,7 @@ function OverlayDemo() {
             key: "domain",
             label: "navigation",
             onClick: () => undefined,
-            siblings: ["registry", "authoring", "delivery", "core"].map((d) => ({
+            siblings: ["catalog", "authoring", "delivery", "core"].map((d) => ({
               key: d,
               label: d,
               onSelect: () => undefined,
@@ -447,7 +457,7 @@ function OverlayDemo() {
           style={{ position: "absolute", top: 0, left: 0, width: 280 }}
           groups={[
             {
-              label: "Record",
+              label: "Item",
               items: [
                 { key: "c", label: "Copy id", icon: "copy", meta: "C" },
                 { key: "o", label: "Open in editor", icon: "code" },

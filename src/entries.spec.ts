@@ -8,21 +8,12 @@ describe("package entry contract", () => {
     expect(Object.keys(root).sort()).toEqual(Object.keys(design).sort());
     expect(root.AppShell).toBe(design.AppShell);
     expect(root.Button).toBe(design.Button);
-    for (const name of ["Seal", "withSealLogic", "frame", "records", "plugins", "contents"])
+    for (const name of ["Seal", "withSealLogic", "frame", "items", "plugins", "contents"])
       expect(root).not.toHaveProperty(name);
   });
   it("declares exactly the supported entries", () => {
     expect(Object.keys(pkg.exports).sort()).toEqual(
-      [
-        ".",
-        "./core",
-        "./core/fixtures",
-        "./elements",
-        "./elements/standalone",
-        "./package.json",
-        "./styles.css",
-        "./tokens.css",
-      ].sort(),
+      [".", "./package.json", "./primitives", "./tokens", "./styles.css", "./tokens.css"].sort(),
     );
     expect(pkg.version).toBe("0.1.0-rc.2");
     expect(pkg.exports["./styles.css"]).toBe("./dist/styles.css");

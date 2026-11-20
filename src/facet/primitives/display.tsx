@@ -83,7 +83,7 @@ export function Finding({
   mark,
 }: {
   eyebrow?: ReactNode;
-  /** A figure-sized mark beside the number, e.g. the drift mark. */
+  /** A figure-sized mark beside the number, e.g. a status icon. */
   mark?: ReactNode;
   figure?: ReactNode;
   of?: ReactNode;

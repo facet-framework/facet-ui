@@ -1,5 +1,4 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
-import type { Dictionary } from "./en";
 import { createText, ENGLISH_TEXT, type FacetLocale, type FacetText } from "./text";
 
 export {
@@ -16,7 +15,7 @@ export type TextProviderProps = {
   /** "en" (the default) or "de"; another tag formats numbers for it and uses English text. */
   locale?: FacetLocale | (string & {});
   /** Texts that replace the built-in ones, e.g. a whole dictionary for another language. */
-  dictionary?: Partial<Dictionary>;
+  dictionary?: Readonly<Record<string, string | undefined>>;
   children: ReactNode;
 };
 

@@ -1,28 +1,37 @@
-<h1 align="center">FACET UI</h1>
+# FACET UI
 
-<p align="center">The FACET design system: React primitives, application shell, design tokens and custom elements.</p>
-
-Version **0.1.0-rc.2** · [Documentation](https://facet-framework.com) · [Apache-2.0](LICENSE)
+React components, design tokens, layouts and localization. Version 0.1.0-rc.2.
 
 ```sh
 npm install @facet-tools/ui@0.1.0-rc.2 react react-dom
 ```
 
 ```tsx
-import { Button } from "@facet-tools/ui";
+import { AppShell, Button, TextProvider } from "@facet-tools/ui";
 import "@facet-tools/ui/styles.css";
 
-export function OpenRegistry({ onOpen }: { onOpen: () => void }) {
+export function App() {
   return (
-    <div className="t-app">
-      <Button onClick={onOpen}>Open registry</Button>
-    </div>
+    <TextProvider locale="en">
+      <AppShell top={<h1>Workspace</h1>}>
+        <Button onClick={() => alert("Saved")}>Save</Button>
+      </AppShell>
+    </TextProvider>
   );
 }
 ```
 
-Use `@facet-tools/ui/core` for the React-free data layer,
-`@facet-tools/ui/elements` for custom elements.
+The root exports controls, collections, overlays and the application frame.
+`@facet-tools/ui/primitives` exports presentational components and their logic wrappers.
+`@facet-tools/ui/tokens` exports typed color, spacing, motion and typography tokens;
+`@facet-tools/ui/tokens.css` supplies their CSS variables.
 
+English and German dictionaries cover the design system. Applications can supply
+additional labels through `TextProvider` and `createText`.
+
+[Source](https://github.com/facet-framework/facet-ui) ·
 [Issues](https://github.com/facet-framework/facet-ui/issues) ·
-[Security](SECURITY.md) · [Support](SUPPORT.md) · [Third-party notices](THIRD_PARTY.md)
+[Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
+
+Licensed under Apache-2.0. See [LICENSE](LICENSE), [NOTICE](NOTICE) and
+[third-party dependencies](THIRD_PARTY.md).
