@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project website and documentation
+    url: https://facet-framework.com
+    about: Start here for the specification, guides and the current release.
+  - name: Report a vulnerability
+    url: https://github.com/facet-framework/facet-ui/security/policy
+    about: Do not post vulnerability details publicly. Follow SECURITY.md, which names the private path and its fallback.

@@ -1,0 +1,22 @@
+// Localized text and compatibility literals; preserve public discriminants.
+export const localized = {
+  text1: "document: docs/help/offline.md\n\nWas passiert, wenn zwei Geräte …",
+  text2: "Was ist hier die Konvention für Namen von Zusagen?",
+  text3: "Warum ist das Limit auf fünf gesetzt worden?",
+  text4: "Erzähl mir was über sync/queue/offline-queue",
+  text5: "Wie hoch ist die Testabdeckung?",
+  text6: "Was ist überfällig?",
+  text7: "Wer ist zuständig für die Zustellung?",
+  text8: "Welche personenbezogenen Daten gibt es?",
+  text9: "Welche Alarme haben kein Runbook?",
+  text10: "wie hängen die beiden zusammen",
+  text11: "q=wie+h%C3%A4ngen+die+beiden+zusammen",
+  text12: "Ich fasse nicht zusammen",
+  text13: "NÄHE",
+  text14: "NÄHE",
+  text15: "vergleicht Wörter",
+  text16: "vergleicht Wörter",
+  text17: "erfinde ich nicht",
+  text18: "  Konvention für Zusagen  ",
+  text19: "Konvention für Zusagen",
+} as const;

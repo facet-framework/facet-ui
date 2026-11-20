@@ -1,0 +1,5 @@
+# Dependencies whose installation may run a build script.
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver

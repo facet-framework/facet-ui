@@ -1,0 +1,99 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for Seal describes the state transition 1`] = `
+<span
+  aria-label="keine Facette befüllt"
+  role="img"
+  style="display: inline-flex; align-items: center; gap: 2px;"
+>
+  <span
+    data-facet="intent"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Zweck — leer"
+  />
+  <span
+    data-facet="contract"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Zusage — leer"
+  />
+  <span
+    data-facet="verification"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Testabdeckung — leer"
+  />
+  <span
+    data-facet="observation"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Betrieb — leer"
+  />
+  <span
+    data-facet="knowledge"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Wissen — leer"
+  />
+  <span
+    data-facet="lineage"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Herkunft — leer"
+  />
+  <span
+    data-facet="anchors"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Einstiege im Code — leer"
+  />
+  <span
+    style="display: inline; margin-left: 6px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--dim);"
+  >
+    0/7
+  </span>
+</span>
+`;
+
+exports[`Snapshot tests for Seal partially filled 1`] = `
+<span
+  aria-label="3 von 7 Facetten befüllt: Zweck, Zusage, Testabdeckung"
+  role="img"
+  style="display: inline-flex; align-items: center; gap: 2px;"
+>
+  <span
+    data-facet="intent"
+    style="display: inline-block; width: 3px; height: 14px; background: var(--ink);"
+    title="Zweck — befüllt"
+  />
+  <span
+    data-facet="contract"
+    style="display: inline-block; width: 3px; height: 14px; background: var(--ink);"
+    title="Zusage — befüllt"
+  />
+  <span
+    data-facet="verification"
+    style="display: inline-block; width: 3px; height: 14px; background: var(--ink);"
+    title="Testabdeckung — befüllt"
+  />
+  <span
+    data-facet="observation"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Betrieb — leer"
+  />
+  <span
+    data-facet="knowledge"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Wissen — leer"
+  />
+  <span
+    data-facet="lineage"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Herkunft — leer"
+  />
+  <span
+    data-facet="anchors"
+    style="display: inline-block; width: 3px; height: 14px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2);"
+    title="Einstiege im Code — leer"
+  />
+  <span
+    style="display: inline; margin-left: 6px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--dim);"
+  >
+    3/7
+  </span>
+</span>
+`;

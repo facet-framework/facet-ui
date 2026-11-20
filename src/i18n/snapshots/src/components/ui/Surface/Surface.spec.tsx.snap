@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for Surface content surface 1`] = `
+<div
+  style="background: var(--surface); padding: var(--space-4); min-width: 0; min-height: 0;"
+>
+  Inhalt
+</div>
+`;
+
+exports[`Snapshot tests for Surface active register row with a rail 1`] = `
+<div
+  style="background: var(--tint-2); padding: 0px; border-left: 2px solid var(--signal); min-width: 0; min-height: 0;"
+/>
+`;

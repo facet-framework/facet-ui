@@ -1,0 +1,139 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for ProofMatrix with a gap 1`] = `
+<div
+  style="display: grid; gap: 4px; min-width: 0;"
+>
+  <p
+    style="margin: 0px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--ink);"
+  >
+    1 von 2 Zusagen haben eine Testzuordnung — eine ohne Test.
+  </p>
+  <div
+    style="display: grid; grid-template-columns: minmax(0, 1fr) repeat(4, 46px); gap: 2px; padding-bottom: 4px; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: var(--line);"
+  >
+    <span />
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); text-align: center; white-space: nowrap;"
+    >
+      Modul
+    </span>
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); text-align: center; white-space: nowrap;"
+    >
+      Eigenschaft
+    </span>
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); text-align: center; white-space: nowrap;"
+    >
+      Integration
+    </span>
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); text-align: center; white-space: nowrap;"
+    >
+      Ende-zu-Ende
+    </span>
+  </div>
+  <div
+    data-scenario="task-added"
+    style="display: grid; grid-template-columns: minmax(0, 1fr) repeat(4, 46px); gap: 2px; align-items: center; padding: 3px 0px;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--soft); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      task-added
+    </span>
+    <span
+      data-cell="task-added:unit"
+      style="display: grid; place-items: center; height: 22px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--ok); background: var(--ok-soft);"
+      title="task-added · Modul: 2 Tests"
+    >
+      2
+    </span>
+    <span
+      data-cell="task-added:property"
+      style="display: grid; place-items: center; height: 22px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); background: transparent; box-shadow: inset 0 0 0 1px var(--line);"
+      title="task-added · Eigenschaft: kein Test zugeordnet"
+    />
+    <span
+      data-cell="task-added:integration"
+      style="display: grid; place-items: center; height: 22px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); background: transparent; box-shadow: inset 0 0 0 1px var(--line);"
+      title="task-added · Integration: kein Test zugeordnet"
+    />
+    <span
+      data-cell="task-added:e2e"
+      style="display: grid; place-items: center; height: 22px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--ok); background: var(--ok-soft);"
+      title="task-added · Ende-zu-Ende: 1 Test"
+    >
+      1
+    </span>
+  </div>
+  <div
+    data-scenario="offline-added"
+    style="display: grid; grid-template-columns: minmax(0, 1fr) repeat(4, 46px); gap: 2px; align-items: center; padding: 3px 0px;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-meta); color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      offline-added
+    </span>
+    <span
+      data-cell="offline-added:unit"
+      style="display: grid; place-items: center; height: 22px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); background: transparent; box-shadow: inset 0 0 0 1px var(--line);"
+      title="offline-added · Modul: kein Test zugeordnet"
+    />
+    <span
+      data-cell="offline-added:property"
+      style="display: grid; place-items: center; height: 22px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); background: transparent; box-shadow: inset 0 0 0 1px var(--line);"
+      title="offline-added · Eigenschaft: kein Test zugeordnet"
+    />
+    <span
+      data-cell="offline-added:integration"
+      style="display: grid; place-items: center; height: 22px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); background: transparent; box-shadow: inset 0 0 0 1px var(--line);"
+      title="offline-added · Integration: kein Test zugeordnet"
+    />
+    <span
+      data-cell="offline-added:e2e"
+      style="display: grid; place-items: center; height: 22px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); background: transparent; box-shadow: inset 0 0 0 1px var(--line);"
+      title="offline-added · Ende-zu-Ende: kein Test zugeordnet"
+    />
+  </div>
+</div>
+`;
+
+exports[`Snapshot tests for ProofMatrix without promises 1`] = `
+<div
+  style="display: grid; gap: 4px; min-width: 0;"
+>
+  <p
+    style="margin: 0px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--ink);"
+  >
+    Keine Zusage beschrieben.
+  </p>
+  <div
+    style="display: grid; grid-template-columns: minmax(0, 1fr) repeat(4, 46px); gap: 2px; padding-bottom: 4px; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: var(--line);"
+  >
+    <span />
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); text-align: center; white-space: nowrap;"
+    >
+      Modul
+    </span>
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); text-align: center; white-space: nowrap;"
+    >
+      Eigenschaft
+    </span>
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); text-align: center; white-space: nowrap;"
+    >
+      Integration
+    </span>
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); text-align: center; white-space: nowrap;"
+    >
+      Ende-zu-Ende
+    </span>
+  </div>
+</div>
+`;

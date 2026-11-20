@@ -1,0 +1,105 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for RestCloud expanded 1`] = `
+<div
+  aria-expanded="true"
+  aria-label="8 weitere Einträge — einklappen"
+  role="button"
+  style="display: grid; gap: 6px; padding: 10px 0px; cursor: pointer; min-width: 0;"
+  tabindex="0"
+>
+  <div
+    style="display: flex; gap: 1px; height: 3px; opacity: 0.4; transition: height var(--motion-reveal) var(--motion-ease); background: var(--line);"
+  >
+    <span
+      data-tick="rest-0"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-1"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-2"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-3"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-4"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-5"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-6"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-7"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+  </div>
+  <span
+    style="font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0.12em; color: var(--dim); white-space: nowrap;"
+  >
+    8 weitere Einträge — einklappen
+  </span>
+</div>
+`;
+
+exports[`Snapshot tests for RestCloud collapsed 1`] = `
+<div
+  aria-expanded="false"
+  aria-label="8 weitere Einträge — aufklappen"
+  role="button"
+  style="display: grid; gap: 6px; padding: 10px 0px; cursor: pointer; min-width: 0;"
+  tabindex="0"
+>
+  <div
+    style="display: flex; gap: 1px; height: 9px; opacity: 1; transition: height var(--motion-reveal) var(--motion-ease); background: var(--line);"
+  >
+    <span
+      data-tick="rest-0"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-1"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-2"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-3"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-4"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-5"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-6"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+    <span
+      data-tick="rest-7"
+      style="background: var(--ink); flex-grow: 1; height: 100%;"
+    />
+  </div>
+  <span
+    style="font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0.12em; color: var(--dim); white-space: nowrap;"
+  >
+    8 weitere Einträge — aufklappen
+  </span>
+</div>
+`;

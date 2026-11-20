@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for ErrorState error without a source 1`] = `
+<div
+  role="alert"
+  style="display: grid; gap: 6px; justify-items: start; padding: 12px 14px; background: var(--deadline-soft); border-left-style: solid; border-left-width: 2px; border-left-color: var(--deadline); min-width: 0;"
+>
+  <p
+    style="margin: 0px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--deadline); overflow-wrap: anywhere;"
+  >
+    offline
+  </p>
+</div>
+`;
+
+exports[`Snapshot tests for ErrorState YAML error with a source 1`] = `
+<div
+  role="alert"
+  style="display: grid; gap: 6px; justify-items: start; padding: 12px 14px; background: var(--deadline-soft); border-left-style: solid; border-left-width: 2px; border-left-color: var(--deadline); min-width: 0;"
+>
+  <p
+    style="margin: 0px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--deadline); overflow-wrap: anywhere;"
+  >
+    kaputt (Zeile 42)
+  </p>
+  <p
+    style="margin: 0px; font-family: var(--font-mono); font-size: var(--text-meta); color: var(--dim); overflow-wrap: anywhere;"
+  >
+    quick-add.yaml:42
+  </p>
+  <button
+    style="appearance: none; background: none; padding: 6px 0px; min-height: 32px; font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal); cursor: pointer;"
+    type="button"
+  >
+    erneut lesen
+  </button>
+</div>
+`;

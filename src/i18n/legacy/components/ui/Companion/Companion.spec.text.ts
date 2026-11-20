@@ -1,0 +1,22 @@
+// Localized text and compatibility literals; preserve public discriminants.
+export const localized = {
+  text1: "Zwei Zusagen ohne Test.\n\nOffen ist: zwei Zusagen ohne Test.",
+  text2: "OHNE TEST",
+  text3: "Wer ist zuständig?",
+  text4: "Ich habe die Records gelesen.",
+  text6: "Ich habe die Records gelesen.",
+  text8: "Ich habe die Records gelesen.",
+  text13: "IM REGISTER ↑",
+  text15: "Wer ist zuständig?",
+  text16: "Wer ist zuständig?",
+  text18: "LIEST",
+  text22: "Was ist offen?",
+  text23: "Fragen",
+  text27: "Fragen",
+  text30: "ein sehr langer Fragetext ohne Umbruchstelle ",
+  text31: "Ein langer Absatz mit vielen Sätzen. ",
+  text35: "Zuerst die Datei suchen, dann die Konstante lesen.",
+  text37: "Bei Claude Code ist niemand angemeldet.",
+  text38: "Melde dich in einem Terminal an: `claude auth login`.",
+  text39: "NICHT BEREIT",
+} as const;

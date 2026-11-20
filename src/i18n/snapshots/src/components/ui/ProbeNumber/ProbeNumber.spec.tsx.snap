@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for ProbeNumber compact 1`] = `
+<button
+  aria-expanded="false"
+  aria-label="offen"
+  style="appearance: none; background: none; padding: 0px; margin: 0px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--signal); cursor: pointer; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: var(--sig-mid); line-height: inherit;"
+  type="button"
+>
+  16
+</button>
+`;
+
+exports[`Snapshot tests for ProbeNumber open 1`] = `
+<button
+  aria-expanded="true"
+  aria-label="offen"
+  style="appearance: none; background: none; padding: 0px; margin: 0px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--signal); cursor: pointer; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: var(--signal); line-height: inherit;"
+  type="button"
+>
+  16
+</button>
+`;

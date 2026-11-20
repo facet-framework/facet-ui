@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for Counter percentage with a unit 1`] = `
+<span
+  style="position: relative; font-family: var(--font-mono); font-variant-numeric: tabular-nums;"
+>
+  <span
+    aria-hidden="true"
+  >
+    77 %
+  </span>
+  <span
+    style="position: absolute; width: 1px; height: 1px; overflow: hidden; white-space: nowrap;"
+  >
+    77 %
+  </span>
+</span>
+`;
+
+exports[`Snapshot tests for Counter static value 1`] = `
+<span
+  style="position: relative; font-family: var(--font-mono); font-variant-numeric: tabular-nums;"
+>
+  <span
+    aria-hidden="true"
+  >
+    16
+  </span>
+  <span
+    style="position: absolute; width: 1px; height: 1px; overflow: hidden; white-space: nowrap;"
+  >
+    16
+  </span>
+</span>
+`;

@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for Text Single-line monospace field value 1`] = `
+<span
+  style="font-size: var(--text-meta); line-height: 1.5; font-weight: 400; color: var(--ink); font-family: var(--font-mono); margin: 0px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+>
+  docs/facets/features/tasks/create/quick-add.yaml
+</span>
+`;
+
+exports[`Snapshot tests for Text body text 1`] = `
+<span
+  style="font-size: var(--text-base); line-height: 1.6; font-weight: 400; color: var(--ink); font-family: var(--font-sans); margin: 0px; min-width: 0;"
+>
+  Fließtext
+</span>
+`;
+
+exports[`Snapshot tests for Text Lead sentence as a hero 1`] = `
+<p
+  style="font-size: var(--text-hero); line-height: 1.18; font-weight: 300; letter-spacing: -0.015em; color: var(--ink); font-family: var(--font-sans); margin: 0px; min-width: 0;"
+>
+  16 Punkte brauchen dich
+</p>
+`;
+
+exports[`Snapshot tests for Text Uppercase factual label 1`] = `
+<span
+  style="font-size: var(--text-label); line-height: 1.3; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); font-family: var(--font-sans); margin: 0px; min-width: 0;"
+>
+  Einstiege im Code
+</span>
+`;

@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for KnowledgeSlots with an open question 1`] = `
+<div
+  style="display: grid; gap: 2px; min-width: 0;"
+>
+  <p
+    style="margin: 0px 0px 4px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--ink);"
+  >
+    2 Fragen · 1 offen.
+  </p>
+  <div
+    data-slot="edge_cases"
+    style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; padding: 10px 0px; border-top-style: solid; border-top-width: 1px; border-top-color: var(--line); min-width: 0;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      edge_cases
+    </span>
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--soft); white-space: nowrap;"
+    >
+      aus den Modultests abgeleitet
+    </span>
+    <span
+      style="grid-column: 1 / -1; font-family: var(--font-sans); font-size: var(--text-body); color: var(--ink);"
+    >
+      Was passiert bei doppelten Einträgen?
+    </span>
+    <div
+      style="display: grid; gap: 10px; min-width: 0; grid-column: 1 / -1; font-family: var(--font-sans); font-size: var(--text-meta); line-height: 1.6; color: var(--soft);"
+    >
+      <p
+        style="margin: 0px;"
+      >
+        <span
+          style="color: inherit;"
+        >
+          Der zweite Eintrag wird verworfen.
+        </span>
+      </p>
+    </div>
+  </div>
+  <div
+    data-slot="failure_modes"
+    style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; padding: 10px 0px; border-top-style: solid; border-top-width: 1px; border-top-color: var(--line); min-width: 0;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+    >
+      failure_modes
+    </span>
+    <span
+      style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); white-space: nowrap;"
+    >
+      ohne Herleitung
+    </span>
+    <span
+      style="grid-column: 1 / -1; font-family: var(--font-sans); font-size: var(--text-body); color: var(--ink);"
+    >
+      Was passiert bei Netzverlust?
+    </span>
+    <div
+      style="display: grid; gap: 10px; min-width: 0; grid-column: 1 / -1; font-family: var(--font-sans); font-size: var(--text-meta); line-height: 1.6; color: var(--signal);"
+    >
+      <p
+        style="margin: 0px;"
+      >
+        <span
+          style="color: inherit;"
+        >
+          offen — hierauf gibt es noch keine Antwort
+        </span>
+      </p>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Snapshot tests for KnowledgeSlots without knowledge 1`] = `
+<div
+  style="display: grid; gap: 2px; min-width: 0;"
+>
+  <p
+    style="margin: 0px 0px 4px; font-family: var(--font-sans); font-size: var(--text-base); color: var(--ink);"
+  >
+    Kein Wissen festgehalten.
+  </p>
+</div>
+`;

@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for Kbd search shortcut 1`] = `
+<kbd
+  aria-label="Befehl K"
+  style="font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0.08em; color: var(--dim); background: var(--tint); padding: 2px 5px; white-space: nowrap;"
+>
+  ⌘K
+</kbd>
+`;
+
+exports[`Snapshot tests for Kbd Key sequence 1`] = `
+<kbd
+  aria-label="Pfeil rechts Pfeil links"
+  style="font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0.08em; color: var(--dim); background: var(--tint); padding: 2px 5px; white-space: nowrap;"
+>
+  → ←
+</kbd>
+`;

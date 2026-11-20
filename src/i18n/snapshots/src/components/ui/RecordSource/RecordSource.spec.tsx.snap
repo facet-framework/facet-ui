@@ -1,0 +1,231 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for RecordSource Raw source 1`] = `
+<div
+  style="display: grid; gap: 0; overflow-x: auto; font-family: var(--font-mono); font-size: var(--text-meta); line-height: 1.65; min-width: 0;"
+>
+  <p
+    style="margin: 0px 0px 10px; font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0.1em; color: var(--dim);"
+  >
+    quick-add.yaml · 4 Zeilen
+  </p>
+  <div
+    data-line="1"
+    style="display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; background: transparent; white-space: pre;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); user-select: none;"
+    >
+      1
+    </span>
+    <code>
+      <span
+        style="color: var(--ink);"
+      >
+        id
+      </span>
+      <span
+        style="color: var(--dim);"
+      >
+        : 
+      </span>
+      <span
+        style="color: var(--signal);"
+      >
+        tasks/create/quick-add
+      </span>
+    </code>
+  </div>
+  <div
+    data-line="2"
+    style="display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; background: transparent; white-space: pre;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); user-select: none;"
+    >
+      2
+    </span>
+    <code>
+      <span
+        style="color: var(--ink);"
+      >
+        lifecycle
+      </span>
+      <span
+        style="color: var(--dim);"
+      >
+        : 
+      </span>
+      <span
+        style="color: var(--signal);"
+      >
+        active 
+      </span>
+      <span
+        style="color: var(--faint);"
+      >
+        # aktiv
+      </span>
+    </code>
+  </div>
+  <div
+    data-line="3"
+    style="display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; background: transparent; white-space: pre;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); user-select: none;"
+    >
+      3
+    </span>
+    <code>
+      <span
+        style="color: var(--ink);"
+      >
+        tags
+      </span>
+      <span
+        style="color: var(--dim);"
+      >
+        :
+      </span>
+    </code>
+  </div>
+  <div
+    data-line="4"
+    style="display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; background: transparent; white-space: pre;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); user-select: none;"
+    >
+      4
+    </span>
+    <code>
+      <span
+        style="color: var(--dim);"
+      >
+          - 
+      </span>
+      <span
+        style="color: var(--signal);"
+      >
+        offline
+      </span>
+    </code>
+  </div>
+</div>
+`;
+
+exports[`Snapshot tests for RecordSource with an error line 1`] = `
+<div
+  style="display: grid; gap: 0; overflow-x: auto; font-family: var(--font-mono); font-size: var(--text-meta); line-height: 1.65; min-width: 0;"
+>
+  <p
+    style="margin: 0px 0px 10px; font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: 0.1em; color: var(--dim);"
+  >
+    4 Zeilen
+  </p>
+  <div
+    data-line="1"
+    style="display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; background: transparent; white-space: pre;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); user-select: none;"
+    >
+      1
+    </span>
+    <code>
+      <span
+        style="color: var(--ink);"
+      >
+        id
+      </span>
+      <span
+        style="color: var(--dim);"
+      >
+        : 
+      </span>
+      <span
+        style="color: var(--signal);"
+      >
+        tasks/create/quick-add
+      </span>
+    </code>
+  </div>
+  <div
+    data-line="2"
+    style="display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; background: var(--deadline-soft); white-space: pre;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--deadline); user-select: none;"
+    >
+      2
+    </span>
+    <code>
+      <span
+        style="color: var(--ink);"
+      >
+        lifecycle
+      </span>
+      <span
+        style="color: var(--dim);"
+      >
+        : 
+      </span>
+      <span
+        style="color: var(--signal);"
+      >
+        active 
+      </span>
+      <span
+        style="color: var(--faint);"
+      >
+        # aktiv
+      </span>
+    </code>
+  </div>
+  <div
+    data-line="3"
+    style="display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; background: transparent; white-space: pre;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); user-select: none;"
+    >
+      3
+    </span>
+    <code>
+      <span
+        style="color: var(--ink);"
+      >
+        tags
+      </span>
+      <span
+        style="color: var(--dim);"
+      >
+        :
+      </span>
+    </code>
+  </div>
+  <div
+    data-line="4"
+    style="display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; background: transparent; white-space: pre;"
+  >
+    <span
+      style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-caption); color: var(--faint); user-select: none;"
+    >
+      4
+    </span>
+    <code>
+      <span
+        style="color: var(--dim);"
+      >
+          - 
+      </span>
+      <span
+        style="color: var(--signal);"
+      >
+        offline
+      </span>
+    </code>
+  </div>
+</div>
+`;

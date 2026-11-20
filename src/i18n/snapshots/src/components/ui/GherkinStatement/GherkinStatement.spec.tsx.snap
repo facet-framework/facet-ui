@@ -1,0 +1,255 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for GherkinStatement converts values into shares 1`] = `
+<div
+  style="display: grid; gap: 2px; min-width: 0;"
+>
+  <div
+    data-step="Given"
+    style="display: grid; grid-template-columns: 3px 52px minmax(0, 1fr); grid-template-areas: "rail keyword text" "rail role text"; column-gap: 10px; align-items: baseline; padding: 3px 0px; min-width: 0;"
+  >
+    <span
+      aria-hidden="true"
+      style="grid-area: rail; align-self: stretch; background: var(--ok); opacity: 1;"
+    />
+    <span
+      style="grid-area: keyword; font-family: var(--font-mono); font-size: var(--text-caption); font-weight: 400; color: var(--ok); white-space: nowrap;"
+    >
+      Given
+    </span>
+    <span
+      style="grid-area: role; font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; color: var(--faint); white-space: nowrap;"
+    >
+      AUSGANGSLAGE
+    </span>
+    <span
+      style="grid-area: text; font-family: var(--font-sans); font-size: var(--text-meta); line-height: 1.55; color: var(--soft); overflow-wrap: anywhere;"
+    >
+      <span>
+        eine Liste 
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: 0.92em; color: var(--signal);"
+      >
+        "Einkauf"
+      </span>
+      <span>
+         existiert
+      </span>
+    </span>
+  </div>
+  <div
+    data-step="When"
+    style="display: grid; grid-template-columns: 3px 52px minmax(0, 1fr); grid-template-areas: "rail keyword text" "rail role text"; column-gap: 10px; align-items: baseline; padding: 3px 0px; min-width: 0;"
+  >
+    <span
+      aria-hidden="true"
+      style="grid-area: rail; align-self: stretch; background: var(--signal); opacity: 1;"
+    />
+    <span
+      style="grid-area: keyword; font-family: var(--font-mono); font-size: var(--text-caption); font-weight: 400; color: var(--signal); white-space: nowrap;"
+    >
+      When
+    </span>
+    <span
+      style="grid-area: role; font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; color: var(--faint); white-space: nowrap;"
+    >
+      AKTION
+    </span>
+    <span
+      style="grid-area: text; font-family: var(--font-sans); font-size: var(--text-meta); line-height: 1.55; color: var(--soft); overflow-wrap: anywhere;"
+    >
+      <span>
+        der Nutzer 
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: 0.92em; color: var(--signal);"
+      >
+        "Milch kaufen"
+      </span>
+      <span>
+         eingibt
+      </span>
+    </span>
+  </div>
+  <div
+    data-step="Then"
+    style="display: grid; grid-template-columns: 3px 52px minmax(0, 1fr); grid-template-areas: "rail keyword text" "rail role text"; column-gap: 10px; align-items: baseline; padding: 3px 0px; min-width: 0;"
+  >
+    <span
+      aria-hidden="true"
+      style="grid-area: rail; align-self: stretch; background: var(--plan); opacity: 1;"
+    />
+    <span
+      style="grid-area: keyword; font-family: var(--font-mono); font-size: var(--text-caption); font-weight: 500; color: var(--plan); white-space: nowrap;"
+    >
+      Then
+    </span>
+    <span
+      style="grid-area: role; font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; color: var(--faint); white-space: nowrap;"
+    >
+      ERGEBNIS
+    </span>
+    <span
+      style="grid-area: text; font-family: var(--font-sans); font-size: var(--text-meta); line-height: 1.55; color: var(--soft); overflow-wrap: anywhere;"
+    >
+      <span>
+        wird die Aufgabe angelegt
+      </span>
+    </span>
+  </div>
+  <div
+    data-step="And"
+    style="display: grid; grid-template-columns: 3px 52px minmax(0, 1fr); grid-template-areas: "rail keyword text" "rail role text"; column-gap: 10px; align-items: baseline; padding: 3px 0px; min-width: 0;"
+  >
+    <span
+      aria-hidden="true"
+      style="grid-area: rail; align-self: stretch; background: var(--plan); opacity: 0.4;"
+    />
+    <span
+      style="grid-area: keyword; font-family: var(--font-mono); font-size: var(--text-caption); font-weight: 400; color: var(--plan); white-space: nowrap;"
+    >
+      And
+    </span>
+    <span
+      style="grid-area: role; font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; color: var(--faint); white-space: nowrap;"
+    >
+      UND
+    </span>
+    <span
+      style="grid-area: text; font-family: var(--font-sans); font-size: var(--text-meta); line-height: 1.55; color: var(--soft); overflow-wrap: anywhere;"
+    >
+      <span>
+        erscheint sie oben
+      </span>
+    </span>
+  </div>
+</div>
+`;
+
+exports[`Snapshot tests for GherkinStatement complete promise 1`] = `
+<div
+  style="display: grid; gap: 4px; min-width: 0;"
+>
+  <div
+    data-step="Given"
+    style="display: grid; grid-template-columns: 3px 52px minmax(0, 1fr); grid-template-areas: "rail keyword text" "rail role text"; column-gap: 10px; align-items: baseline; padding: 6px 0px; min-width: 0;"
+  >
+    <span
+      aria-hidden="true"
+      style="grid-area: rail; align-self: stretch; background: var(--ok); opacity: 1;"
+    />
+    <span
+      style="grid-area: keyword; font-family: var(--font-mono); font-size: var(--text-meta); font-weight: 400; color: var(--ok); white-space: nowrap;"
+    >
+      Given
+    </span>
+    <span
+      style="grid-area: role; font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; color: var(--faint); white-space: nowrap;"
+    >
+      AUSGANGSLAGE
+    </span>
+    <span
+      style="grid-area: text; font-family: var(--font-sans); font-size: var(--text-body); line-height: 1.55; color: var(--soft); overflow-wrap: anywhere;"
+    >
+      <span>
+        eine Liste 
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: 0.92em; color: var(--signal);"
+      >
+        "Einkauf"
+      </span>
+      <span>
+         existiert
+      </span>
+    </span>
+  </div>
+  <div
+    data-step="When"
+    style="display: grid; grid-template-columns: 3px 52px minmax(0, 1fr); grid-template-areas: "rail keyword text" "rail role text"; column-gap: 10px; align-items: baseline; padding: 6px 0px; min-width: 0;"
+  >
+    <span
+      aria-hidden="true"
+      style="grid-area: rail; align-self: stretch; background: var(--signal); opacity: 1;"
+    />
+    <span
+      style="grid-area: keyword; font-family: var(--font-mono); font-size: var(--text-meta); font-weight: 400; color: var(--signal); white-space: nowrap;"
+    >
+      When
+    </span>
+    <span
+      style="grid-area: role; font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; color: var(--faint); white-space: nowrap;"
+    >
+      AKTION
+    </span>
+    <span
+      style="grid-area: text; font-family: var(--font-sans); font-size: var(--text-body); line-height: 1.55; color: var(--soft); overflow-wrap: anywhere;"
+    >
+      <span>
+        der Nutzer 
+      </span>
+      <span
+        style="font-family: var(--font-mono); font-size: 0.92em; color: var(--signal);"
+      >
+        "Milch kaufen"
+      </span>
+      <span>
+         eingibt
+      </span>
+    </span>
+  </div>
+  <div
+    data-step="Then"
+    style="display: grid; grid-template-columns: 3px 52px minmax(0, 1fr); grid-template-areas: "rail keyword text" "rail role text"; column-gap: 10px; align-items: baseline; padding: 6px 0px; min-width: 0;"
+  >
+    <span
+      aria-hidden="true"
+      style="grid-area: rail; align-self: stretch; background: var(--plan); opacity: 1;"
+    />
+    <span
+      style="grid-area: keyword; font-family: var(--font-mono); font-size: var(--text-meta); font-weight: 500; color: var(--plan); white-space: nowrap;"
+    >
+      Then
+    </span>
+    <span
+      style="grid-area: role; font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; color: var(--faint); white-space: nowrap;"
+    >
+      ERGEBNIS
+    </span>
+    <span
+      style="grid-area: text; font-family: var(--font-sans); font-size: var(--text-body); line-height: 1.55; color: var(--soft); overflow-wrap: anywhere;"
+    >
+      <span>
+        wird die Aufgabe angelegt
+      </span>
+    </span>
+  </div>
+  <div
+    data-step="And"
+    style="display: grid; grid-template-columns: 3px 52px minmax(0, 1fr); grid-template-areas: "rail keyword text" "rail role text"; column-gap: 10px; align-items: baseline; padding: 6px 0px; min-width: 0;"
+  >
+    <span
+      aria-hidden="true"
+      style="grid-area: rail; align-self: stretch; background: var(--plan); opacity: 0.4;"
+    />
+    <span
+      style="grid-area: keyword; font-family: var(--font-mono); font-size: var(--text-meta); font-weight: 400; color: var(--plan); white-space: nowrap;"
+    >
+      And
+    </span>
+    <span
+      style="grid-area: role; font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em; color: var(--faint); white-space: nowrap;"
+    >
+      UND
+    </span>
+    <span
+      style="grid-area: text; font-family: var(--font-sans); font-size: var(--text-body); line-height: 1.55; color: var(--soft); overflow-wrap: anywhere;"
+    >
+      <span>
+        erscheint sie oben
+      </span>
+    </span>
+  </div>
+</div>
+`;

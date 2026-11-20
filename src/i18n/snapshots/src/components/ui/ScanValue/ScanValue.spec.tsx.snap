@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for ScanValue host value with a custom source 1`] = `
+<span
+  style="position: relative; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--soft); border-bottom-style: dotted; border-bottom-width: 1px; border-bottom-color: var(--line-2); cursor: help;"
+  title="SigNoz"
+>
+  99,4 %
+  <span
+    style="position: absolute; width: 1px; height: 1px; overflow: hidden; white-space: nowrap;"
+  >
+     (SigNoz)
+  </span>
+</span>
+`;
+
+exports[`Snapshot tests for ScanValue Scan value 1`] = `
+<span
+  style="position: relative; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--soft); border-bottom-style: dotted; border-bottom-width: 1px; border-bottom-color: var(--line-2); cursor: help;"
+  title="aus dem Repo-Scan, nicht aus dem Record"
+>
+  84 200
+  <span
+    style="position: absolute; width: 1px; height: 1px; overflow: hidden; white-space: nowrap;"
+  >
+     (aus dem Repo-Scan, nicht aus dem Record)
+  </span>
+</span>
+`;

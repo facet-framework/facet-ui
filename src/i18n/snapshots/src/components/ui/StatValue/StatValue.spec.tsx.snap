@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for StatValue regular metric 1`] = `
+<div
+  style="display: grid; gap: 4px; min-width: 0;"
+>
+  <span
+    style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); white-space: nowrap;"
+  >
+    Bewiesen
+  </span>
+  <span
+    style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-display); line-height: 1.15; font-weight: 400; color: var(--ink); white-space: nowrap;"
+  >
+    31/38
+  </span>
+  <span
+    style="font-family: var(--font-sans); font-size: var(--text-meta); color: var(--dim);"
+  >
+    Zusagen mit Test
+  </span>
+</div>
+`;
+
+exports[`Snapshot tests for StatValue overdue metric on the stage 1`] = `
+<div
+  style="display: grid; gap: 4px; min-width: 0;"
+>
+  <span
+    style="font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); white-space: nowrap;"
+  >
+    Überfällig
+  </span>
+  <span
+    style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-hero); line-height: 1.15; font-weight: 400; color: var(--deadline); white-space: nowrap;"
+  >
+    2
+  </span>
+</div>
+`;

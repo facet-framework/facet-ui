@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Snapshot tests for QuietLine Quiet line 1`] = `
+<p
+  style="margin: 0px; font-family: var(--font-mono); font-size: var(--text-meta); line-height: 1.6; color: var(--dim);"
+>
+  Keine Prüfung ist überfällig.
+</p>
+`;
+
+exports[`Snapshot tests for QuietLine Quiet line as a positive result 1`] = `
+<p
+  style="margin: 0px; font-family: var(--font-mono); font-size: var(--text-meta); line-height: 1.6; color: var(--ok);"
+>
+  Jeder Record hat ein Team.
+</p>
+`;
