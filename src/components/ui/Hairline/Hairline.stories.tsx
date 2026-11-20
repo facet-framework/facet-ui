@@ -21,7 +21,7 @@ type Story = StoryObj<typeof meta>;
 export const Horizontal: Story = {
   render: (args) => (
     <div style={{ display: "grid", gap: 12, width: 320 }}>
-      <Text variant="meta">Promises &amp; Tests</Text>
+      <Text variant="meta">Tasks &amp; Tests</Text>
       <HairlineWithLogic {...args} />
       <Text variant="meta" tone="dim">
         77 % of the promised behaviour has a mapped test
@@ -38,7 +38,7 @@ export const Vertical: Story = {
       <Text variant="meta">Focus</Text>
       <HairlineWithLogic {...args} />
       <Text variant="meta" tone="dim">
-        Kontext
+        Context
       </Text>
     </div>
   ),

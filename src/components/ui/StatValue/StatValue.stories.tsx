@@ -13,7 +13,7 @@ const meta: Meta<typeof StatValueWithLogic> = {
       },
     },
   },
-  args: { label: "Test mapped", value: "31/38", hint: "Promises with a test" },
+  args: { label: "Test mapped", value: "31/38", hint: "Tasks with a test" },
 };
 
 export default meta;
@@ -33,7 +33,7 @@ export const Deadline: Story = {
 
 /** Backed. */
 export const Backed: Story = {
-  args: { label: "Complete", value: "6", hint: "Records without an open point", meaning: "ok" },
+  args: { label: "Complete", value: "6", hint: "Items without an open point", meaning: "ok" },
 };
 
 /** On stage, with the number landing. */
@@ -49,5 +49,5 @@ export const Stage: Story = {
 
 /** Compact for the context column. */
 export const Compact: Story = {
-  args: { size: "compact", label: "Teams", value: "4", hint: "carry records" },
+  args: { size: "compact", label: "Teams", value: "4", hint: "carry items" },
 };

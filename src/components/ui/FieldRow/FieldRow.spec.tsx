@@ -11,7 +11,7 @@ describe("Unit tests for FieldRow", () => {
   });
 
   it("accepts composite values", () => {
-    render(<FieldRow {...styles} label="Promises" value={<b>4/4</b>} />);
+    render(<FieldRow {...styles} label="Tasks" value={<b>4/4</b>} />);
     expect(screen.getByText("4/4").tagName).toBe("B");
   });
 });

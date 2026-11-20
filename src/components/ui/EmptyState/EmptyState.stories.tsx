@@ -14,8 +14,8 @@ const meta: Meta<typeof EmptyStateWithLogic> = {
     },
   },
   args: {
-    headline: "No promise described.",
-    body: "Without contract.scenarios[] there is nothing a test could back.",
+    headline: "No task described.",
+    body: "Without items[] there is nothing a test could back.",
   },
   decorators: [
     (Story) => (
@@ -36,7 +36,7 @@ export const OpenPoint: Story = {
   args: {
     tone: "open",
     headline: "Active, but no entry point in code.",
-    body: "Changes to the code cannot be traced to this record.",
+    body: "Changes to the code cannot be traced to this item.",
   },
 };
 

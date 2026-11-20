@@ -20,7 +20,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Neutral: Story = { args: { label: "present" } };
 
-/** Test mapped — a promise with a test reference. */
+/** Test mapped — a task with a test reference. */
 export const Backed: Story = {
   name: "Test mapped",
   args: { meaning: "ok", label: "Test mapped" },
@@ -38,8 +38,8 @@ export const WithWord: Story = {
     <div style={{ display: "grid", gap: 8 }}>
       {(
         [
-          ["ok", "4 of 4 promises with a mapped test"],
-          ["signal", "2 promises without a test"],
+          ["ok", "4 of 4 tasks with a mapped test"],
+          ["signal", "2 tasks without a test"],
           ["due", "Check was due on 2026-07-12"],
         ] as const
       ).map(([meaning, text]) => (

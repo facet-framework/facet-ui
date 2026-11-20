@@ -24,7 +24,7 @@ const meta: Meta<typeof SkeletonWithLogic> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Row: Story = { args: { label: "Reading records" } };
+export const Row: Story = { args: { label: "Reading items" } };
 
 export const LeadSentence: Story = { args: { height: 34, label: "Overview is being computed" } };
 

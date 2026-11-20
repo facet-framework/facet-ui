@@ -13,7 +13,7 @@ const meta: Meta<typeof BarWithLogic> = {
       },
     },
   },
-  args: { value: 31, total: 38, label: "31 of 38 promises with a mapped test" },
+  args: { value: 31, total: 38, label: "31 of 38 tasks with a mapped test" },
   decorators: [
     (Story) => (
       <div style={{ width: 280 }}>
@@ -31,16 +31,16 @@ export const Partial: Story = {};
 
 /** Fully mapped — green, without the caller setting the colour. */
 export const Complete: Story = {
-  args: { value: 4, total: 4, label: "4 of 4 promises with a mapped test" },
+  args: { value: 4, total: 4, label: "4 of 4 tasks with a mapped test" },
 };
 
 /** No test mapping. */
 export const Empty: Story = {
-  args: { value: 0, total: 6, label: "0 of 6 promises with a mapped test" },
+  args: { value: 0, total: 6, label: "0 of 6 tasks with a mapped test" },
 };
 
 /** Without a reference total the bar stays empty instead of computing. */
-export const WithoutReference: Story = { args: { value: 0, total: 0, label: "no promises" } };
+export const WithoutReference: Story = { args: { value: 0, total: 0, label: "no tasks" } };
 
 /** Domain comparison — proximity makes the comparison readable. */
 export const Areas: Story = {

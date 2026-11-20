@@ -16,7 +16,7 @@ const meta: Meta<typeof SurfaceWithLogic> = {
   },
   args: {
     padding: "s4",
-    children: <Text variant="meta">Quick add · 4 of 4 promises with a mapped test</Text>,
+    children: <Text variant="meta">Quick add · 4 of 4 tasks with a mapped test</Text>,
   },
 };
 
@@ -44,7 +44,7 @@ export const ScrollArea: Story = {
       <div style={{ display: "grid", gap: 8 }}>
         {Array.from({ length: 12 }, (_, i) => (
           <Text key={i} variant="meta" mono tone="dim">
-            record-{String(i + 1).padStart(2, "0")}
+            item-{String(i + 1).padStart(2, "0")}
           </Text>
         ))}
       </div>

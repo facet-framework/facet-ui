@@ -18,7 +18,7 @@ function ruleFor(cls: string): string | null {
 }
 
 const LONG_ID =
-  "authoring/guardrails/a-very-long-record-slug-that-has-no-spaces-and-must-break-somewhere-instead-of-being-cut";
+  "authoring/guardrails/a-very-long-item-slug-that-has-no-spaces-and-must-break-somewhere-instead-of-being-cut";
 
 describe("names wrap instead of being cut with an ellipsis", () => {
   it("a list row title renders in full and its rule does not truncate", () => {

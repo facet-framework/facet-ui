@@ -24,9 +24,7 @@ npm pack --dry-run
 Build before testing: the integration tests load the published CommonJS and ESM
 entry points. Coverage must meet the thresholds in `jest.config.ts`.
 
-`src/components/` contains React components, `src/core/` the React-free data layer,
-`src/facet/` the FACET design system components, localization and shell, and
-`src/elements/` custom-element adapters. Stories and tests live beside their source.
+`src/components/` contains presentational React components. `src/facet/` contains controls, collections, layouts and localization; `src/design-system/` contains tokens and typography. Stories and tests live beside their source.
 `test/` supplies test utilities. `dist/` is generated and excluded from Git.
 
 Use synthetic examples. Add regression coverage for behavior changes and preserve

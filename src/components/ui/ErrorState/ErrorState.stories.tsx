@@ -1,5 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { YamlError } from "../../../core";
+class InputError extends Error {
+  constructor(
+    message: string,
+    public line: number,
+  ) {
+    super(message);
+    this.name = "InputError";
+  }
+}
 import ErrorStateWithLogic from ".";
 
 const meta: Meta<typeof ErrorStateWithLogic> = {
@@ -9,12 +17,12 @@ const meta: Meta<typeof ErrorStateWithLogic> = {
     docs: {
       description: {
         component:
-          "Errors need an origin: file, line, reason, way back. A broken record never replaces the whole application.",
+          "Errors need an origin: file, line, reason, way back. A broken item never replaces the whole application.",
       },
     },
   },
   args: {
-    error: new YamlError('"key: value" expected, found "- loose line"', 41),
+    error: new InputError('"key: value" expected, found "- loose line"', 41),
     path: "docs/facets/features/tasks/create/quick-add.yaml",
     onRetry: () => {},
   },

@@ -9,7 +9,7 @@ export type WithBarProps = Omit<BarProps, "trackStyle" | "fillStyle" | "percent"
   total: number;
   meaning?: Meaning;
   height?: number;
-  /** Full coverage is coloured green automatically. */
+  /** A complete bar is coloured green automatically. */
   autoComplete?: boolean;
   style?: CSSProperties;
 };

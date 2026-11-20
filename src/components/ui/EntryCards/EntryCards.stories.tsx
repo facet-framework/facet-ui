@@ -27,24 +27,24 @@ type Story = StoryObj<typeof meta>;
 
 const ENTRIES = [
   {
-    key: "records",
-    tag: "Records",
+    key: "items",
+    tag: "Items",
     title: "What is described",
     value: "42",
     valueMeta: "28 active · 14 planned",
-    lead: "Every record has a team and an entry point in code.",
+    lead: "Every item has a team and an entry point in code.",
     action: "Open register",
   },
   {
-    key: "promises",
-    tag: "Promises",
+    key: "tasks",
+    tag: "Tasks",
     title: "Which tests are mapped",
     value: "68 %",
     valueMeta: "31/46 with a mapped test",
-    lead: "15 promises still have no test that holds them.",
-    action: "Open promises",
+    lead: "15 tasks still have no test that holds them.",
+    action: "Open tasks",
     open: true,
-    figure: <Bar value={31} total={46} label="31 of 46 promises with a mapped test" height={3} />,
+    figure: <Bar value={31} total={46} label="31 of 46 tasks with a mapped test" height={3} />,
   },
   {
     key: "ops",
@@ -77,5 +77,5 @@ export const AllQuiet: Story = {
 
 /** Nothing read yet. */
 export const Empty: Story = {
-  args: { entries: [], emptyText: "No record read yet." },
+  args: { entries: [], emptyText: "No item read yet." },
 };

@@ -8,7 +8,7 @@ const meta: Meta<typeof FieldRowWithLogic> = {
     docs: {
       description: {
         component:
-          "One field, one row. The factual label on the left, the value from the record on the right.",
+          "One field, one row. The factual label on the left, the value from the item on the right.",
       },
     },
   },

@@ -31,7 +31,7 @@ export const Opened: Story = {
           Register
         </Text>
         <Text as="p" variant="title" style={{ marginTop: 8 }}>
-          All records
+          All items
         </Text>
       </div>
     ),
@@ -56,7 +56,7 @@ export const WithSwitch: Story = {
               Register
             </Text>
             <Text as="p" variant="title">
-              Promises &amp; Tests
+              Tasks &amp; Tests
             </Text>
             <Button onClick={() => setOpen(false)}>close</Button>
           </div>
