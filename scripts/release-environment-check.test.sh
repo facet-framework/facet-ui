@@ -102,10 +102,18 @@ edit policies '.[1].branch_policies += [{name:"v*", type:"tag"}]'
 edit immutable '.enabled = false'
 edit active '. + [[{id: 99, target:"tag", enforcement:"active"}]]'
 expect 1 '+++ live/env-release.json' workflow
-for file in ruleset-main ruleset-tag active-tag-rulesets repository-merge immutable-releases; do
+for file in ruleset-main ruleset-tag active-tag-rulesets immutable-releases; do
   grep -Fxq "+++ live/$file.json" "$work/out"
 done
+if grep -Fq 'live/repository-merge.json' "$work/out"; then echo 'workflow compared merge settings' >&2; exit 1; fi
 expect 1 '+  "enabled": false' check
+grep -Fxq '+++ live/repository-merge.json' "$work/out"
+
+# A read-only token sees no merge settings; the workflow passes, the full check does not.
+for fixture in main tag repo env policies active immutable npm npm-policies; do cp "$work/$fixture.good" "$work/$fixture"; done
+edit repo '.allow_merge_commit = null | .allow_rebase_merge = null | .allow_squash_merge = null | .squash_merge_commit_title = null | .squash_merge_commit_message = null'
+expect 0 'facet-ui settings match immutable-releases' workflow
+expect 1 'must use squash merges with the PR title and an empty body' check
 
 for fixture in main tag repo env policies active immutable npm npm-policies; do cp "$work/$fixture.good" "$work/$fixture"; done
 edit main 'del(.bypass_actors)'

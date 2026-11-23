@@ -122,15 +122,20 @@ if [ "$scope" != npm ]; then
   invariant 'must have only the expected active tag ruleset' "$active_tag_rulesets" '. == [27722423]'
   compare active-tag-rulesets "$active_tag_rulesets"
 
-  response=$(api "$endpoint") || unreadable "$endpoint"
-  actual=$(printf '%s' "$response" | jq -ce --arg repo "$repo" '
-    select(.full_name == $repo and .visibility == "public")
-    | {default_branch, allow_merge_commit, allow_rebase_merge, allow_squash_merge,
-       squash_merge_commit_title, squash_merge_commit_message}') || unreadable "$endpoint"
-  invariant 'must use squash merges with the PR title and an empty body' "$actual" '
-    . == {default_branch: "main", allow_merge_commit: false, allow_rebase_merge: false,
-      allow_squash_merge: true, squash_merge_commit_title: "PR_TITLE", squash_merge_commit_message: "BLANK"}'
-  compare repository-merge "$actual"
+  # GitHub returns merge settings only to tokens that can write to the repository.
+  # The workflow token is read-only, so only the full pre-release check compares them;
+  # the workflow still verifies that the release commit is a squash of the approved tree.
+  if [ "$scope" = all ]; then
+    response=$(api "$endpoint") || unreadable "$endpoint"
+    actual=$(printf '%s' "$response" | jq -ce --arg repo "$repo" '
+      select(.full_name == $repo and .visibility == "public")
+      | {default_branch, allow_merge_commit, allow_rebase_merge, allow_squash_merge,
+         squash_merge_commit_title, squash_merge_commit_message}') || unreadable "$endpoint"
+    invariant 'must use squash merges with the PR title and an empty body' "$actual" '
+      . == {default_branch: "main", allow_merge_commit: false, allow_rebase_merge: false,
+        allow_squash_merge: true, squash_merge_commit_title: "PR_TITLE", squash_merge_commit_message: "BLANK"}'
+    compare repository-merge "$actual"
+  fi
 
   environment release
 
