@@ -133,25 +133,25 @@ expect 2 'facet-ui settings match ruleset-main' workflow
 
 # A release tree can change the expected JSON, but it cannot relax these invariants.
 for fixture in main tag repo env policies active immutable npm npm-policies; do cp "$work/$fixture.good" "$work/$fixture"; done
-curated="$work/curated"
-mkdir -p "$curated/scripts"
-cp -R "$settings" "$curated/settings"
-cp "$root/scripts/release-environment-check.sh" "$root/scripts/release-settings-check.sh" "$curated/scripts/"
-curated_check() { GH_TOKEN=fixture-token sh "$curated/scripts/release-environment-check.sh" release; }
+release_tree="$work/release-tree"
+mkdir -p "$release_tree/scripts"
+cp -R "$settings" "$release_tree/settings"
+cp "$root/scripts/release-environment-check.sh" "$root/scripts/release-settings-check.sh" "$release_tree/scripts/"
+release_tree_check() { GH_TOKEN=fixture-token sh "$release_tree/scripts/release-environment-check.sh" release; }
 edit main '.bypass_actors = [{actor_id: 5, actor_type: "Integration", bypass_mode: "always"}]'
-cp "$work/main" "$curated/settings/ruleset-main.json"
-expect 1 'facet-ui ruleset-main must have no bypass actors' curated_check
+cp "$work/main" "$release_tree/settings/ruleset-main.json"
+expect 1 'facet-ui ruleset-main must have no bypass actors' release_tree_check
 cp "$work/main.good" "$work/main"
-cp "$work/main.good" "$curated/settings/ruleset-main.json"
+cp "$work/main.good" "$release_tree/settings/ruleset-main.json"
 edit tag '.bypass_actors = [{actor_id: 5, actor_type: "Integration", bypass_mode: "always"}]'
-cp "$work/tag" "$curated/settings/ruleset-tag.json"
-expect 1 'facet-ui ruleset-tag must have no bypass actors' curated_check
+cp "$work/tag" "$release_tree/settings/ruleset-tag.json"
+expect 1 'facet-ui ruleset-tag must have no bypass actors' release_tree_check
 edit tag '.rules += [{type: "creation"}]'
-cp "$work/tag" "$curated/settings/ruleset-tag.json"
-expect 1 'facet-ui v* tags must allow creation' curated_check
+cp "$work/tag" "$release_tree/settings/ruleset-tag.json"
+expect 1 'facet-ui v* tags must allow creation' release_tree_check
 cp "$work/tag.good" "$work/tag"
-cp "$work/tag.good" "$curated/settings/ruleset-tag.json"
+cp "$work/tag.good" "$release_tree/settings/ruleset-tag.json"
 edit env '.can_admins_bypass = true'
-jq '.can_admins_bypass = true' "$settings/env-release.json" > "$curated/settings/env-release.json"
-expect 1 'facet-ui environment release must allow only main' curated_check
+jq '.can_admins_bypass = true' "$settings/env-release.json" > "$release_tree/settings/env-release.json"
+expect 1 'facet-ui environment release must allow only main' release_tree_check
 echo 'OK: settings drift, unreadable bypass actors, and enforced release invariants'
