@@ -1,6 +1,6 @@
 {
   "name": "@facet-tools/ui",
-  "version": "0.1.0-rc.2",
+  "version": "0.1.0-rc.3",
   "description": "React components, design tokens, layout and localization for applications.",
   "license": "Apache-2.0",
   "repository": {
@@ -79,7 +79,9 @@
     "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm build && pnpm test:coverage --runInBand",
     "storybook:facet": "storybook dev -p 6007 -c .storybook-facet",
     "build-storybook:facet": "storybook build -c .storybook-facet -o storybook-facet-static",
-    "licenses:generate": "node scripts/licenses.mjs"
+    "licenses:generate": "node scripts/licenses.mjs",
+    "examples:build": "pnpm --filter \"./examples/*\" build",
+    "examples:dev": "pnpm --filter \"./examples/*\" --parallel dev"
   },
   "peerDependencies": {
     "react": ">=18",

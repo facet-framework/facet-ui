@@ -1165,30 +1165,57 @@ button.t-chip:hover {
   animation: t-rise var(--t-dur-enter) var(--t-ease-out) both;
 }
 
-/* Stat ----------------------------------------------------------------- */
-.t-stat {
+/* Metric --------------------------------------------------------------- */
+.t-metric {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
 }
-.t-stat__value {
+.t-metric__value {
   font-size: var(--t-fs-28);
   font-weight: 300;
   line-height: 1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
-.t-stat__value small {
+.t-metric__value small {
   font-size: 0.6em;
   color: var(--t-muted);
 }
-.t-stat--large .t-stat__value {
+.t-metric__unit {
+  font-size: var(--t-fs-13);
+  letter-spacing: normal;
+  color: var(--t-muted);
+}
+.t-metric--large .t-metric__value {
   font-size: var(--t-fs-40);
 }
-.t-stat__label {
+.t-metric[data-measured="false"] .t-metric__value {
+  color: var(--t-faint);
+}
+.t-metric__label {
   font-size: var(--t-fs-12);
   color: var(--t-muted);
+}
+/* The count-up animates a registered integer that a counter prints: digits only, no layout. */
+@property --t-counter-value {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+.t-counter {
+  --t-counter-value: var(--t-counter-target, 0);
+  counter-reset: t-count var(--t-counter-value);
+  animation: t-count var(--t-dur-flight) var(--t-ease-out) both;
+}
+.t-counter::after {
+  content: counter(t-count);
+}
+@keyframes t-count {
+  from {
+    --t-counter-value: 0;
+  }
 }
 
 /* Empty / error -------------------------------------------------------- */
@@ -1238,4 +1265,415 @@ button.t-chip:hover {
   color: var(--t-muted);
   font-size: var(--t-fs-12);
   line-height: 1.35;
+}
+
+.t-empty--forbidden .t-empty__art {
+  color: var(--t-muted);
+}
+
+/* Visually hidden, still read ------------------------------------------- */
+.t-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Button: full width and busy ------------------------------------------- */
+.t-btn--block {
+  display: flex;
+  width: 100%;
+}
+.t-btn[aria-busy="true"] {
+  cursor: progress;
+}
+.t-segment--full {
+  display: flex;
+}
+.t-segment--full .t-segment__opt {
+  flex: 1;
+  justify-content: center;
+}
+.t-segment__opt[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* A list row that does nothing is not drawn as pressable. */
+.t-list-row--static {
+  cursor: default;
+}
+.t-list-row--static:hover {
+  background: none;
+}
+.t-list-row[aria-current="true"],
+.t-list-row[aria-current="page"] {
+  box-shadow: inset 2px 0 0 var(--t-signal);
+  background: var(--t-signal-wash);
+}
+
+/* Table rows as a grid --------------------------------------------------- */
+.t-table tbody tr[aria-selected="true"] {
+  background: var(--t-signal-wash);
+  box-shadow: inset 2px 0 0 var(--t-signal);
+}
+.t-table tbody tr:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Overlay titles are headings; their size comes from .t-h3. */
+.t-overlay__title {
+  margin: 0;
+}
+.t-dialog--inline {
+  position: relative;
+  z-index: auto;
+  left: auto;
+  top: auto;
+  transform: none;
+  max-height: none;
+}
+
+/* Loading state ---------------------------------------------------------- */
+.t-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 0;
+}
+.t-loading__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: var(--t-r-ctl);
+  box-shadow: inset 0 0 0 1px var(--t-line);
+}
+.t-loading[data-shape="table"] {
+  gap: 0;
+  padding: 0;
+  border-radius: var(--t-r-panel);
+  background: var(--t-surface);
+  overflow: hidden;
+}
+.t-loading[data-shape="table"] .t-loading__row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 0;
+  box-shadow: 0 -1px 0 var(--t-line);
+}
+.t-loading[data-shape="surface"] .t-loading__row {
+  padding: 0;
+  box-shadow: none;
+}
+
+/* Offline state ---------------------------------------------------------- */
+.t-offline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 12px 16px;
+  border-radius: var(--t-r-panel);
+  background: var(--t-sunken);
+  color: var(--t-ink-2);
+  font-size: var(--t-fs-13);
+}
+.t-offline__sign {
+  color: var(--t-warn);
+}
+.t-offline__title {
+  color: var(--t-ink);
+  font-weight: 500;
+}
+.t-offline__since {
+  color: var(--t-muted);
+  font-size: var(--t-fs-12);
+}
+
+/* Toast ------------------------------------------------------------------ */
+.t-toast {
+  position: relative;
+  overflow: hidden;
+  min-height: 48px;
+  padding: 6px 8px 6px 16px;
+  font-size: var(--t-fs-14);
+}
+.t-toast[data-leaving="true"] {
+  animation: t-toast-out var(--t-dur-enter) var(--t-ease-out) both;
+}
+.t-toast[data-tone="bad"] {
+  box-shadow:
+    inset 3px 0 0 var(--t-bad),
+    var(--t-shadow-3);
+}
+.t-toast__text {
+  flex: 1;
+  min-width: 0;
+}
+.t-toast__note,
+.t-toast__seconds {
+  color: var(--t-muted);
+  font-size: var(--t-fs-12);
+}
+.t-toast__seconds {
+  min-width: 3ch;
+  text-align: right;
+}
+.t-toast__undo {
+  color: var(--t-signal);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* The remaining time drains as a bar (scaleX only); hover or focus pause it. */
+.t-toast__track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+}
+.t-toast__rest {
+  display: block;
+  height: 100%;
+  background: var(--t-signal);
+  opacity: 0.6;
+  transform-origin: left center;
+  animation: t-countdown var(--t-toast-duration, 8s) linear both;
+}
+.t-toast[data-paused="true"] .t-toast__rest {
+  animation-play-state: paused;
+}
+@keyframes t-countdown {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes t-toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+}
+/* Only as large as its toasts, so it never covers anything else. */
+.t-toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: 75;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  transform: translateX(-50%);
+}
+.t-toast-region--inline {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  z-index: auto;
+  transform: none;
+}
+.t-shell[data-layout="mobile"] .t-toast-region {
+  bottom: calc(var(--t-tab-h) + 16px + env(safe-area-inset-bottom, 0px));
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-toast__rest {
+    animation: none;
+  }
+  .t-toast[data-leaving="true"] {
+    animation: t-fade var(--t-dur-enter) reverse both;
+  }
+}
+
+/* Confirmation in two steps ---------------------------------------------- */
+.t-confirm-place {
+  display: inline-flex;
+}
+.t-confirm {
+  position: relative;
+}
+.t-confirm[data-state="armed"] {
+  background: var(--t-bad);
+  color: var(--t-ground);
+  box-shadow: none;
+}
+.t-confirm.t-btn--primary[data-state="armed"] {
+  background: var(--t-signal);
+  color: var(--t-signal-ink);
+}
+.t-confirm.t-btn--default[data-state="armed"],
+.t-confirm:not(.t-btn--danger):not(.t-btn--primary)[data-state="armed"] {
+  background: var(--t-ink);
+  color: var(--t-ground);
+}
+/* A pulsing ring while armed: a pseudo element that scales and fades, nothing else moves. */
+.t-confirm[data-state="armed"]::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px currentColor;
+  color: var(--t-bad);
+  opacity: 0.5;
+  animation: t-confirm-ring 1.2s var(--t-ease-out) infinite;
+  pointer-events: none;
+}
+.t-confirm.t-btn--primary[data-state="armed"]::after {
+  color: var(--t-signal);
+}
+.t-confirm[data-state="done"] {
+  color: var(--t-ok);
+}
+@keyframes t-confirm-ring {
+  from {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+}
+
+/* Area bar --------------------------------------------------------------- */
+/* Fixed height, one line per row: the tab bar stands at the same place on every tab. */
+.t-area-bar {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 12px;
+  min-height: 104px;
+  min-width: 0;
+  width: 100%;
+}
+.t-area-bar--compact {
+  min-height: 0;
+}
+.t-area-bar__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 40px;
+}
+.t-area-bar__title {
+  margin: 0;
+  font-size: var(--t-fs-28);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.t-area-bar__title,
+.t-area-bar__meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.t-area-bar__tabs {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-inline-start: -12px;
+  background: linear-gradient(var(--t-line), var(--t-line)) no-repeat left 12px bottom /
+    calc(100% - 12px) 1px;
+}
+/* The edge that hides tabs fades; a mask reads only alpha, so currentColor is an opaque stop. */
+.t-area-bar__tabs[data-edge-end="true"] {
+  mask-image: linear-gradient(to right, currentColor calc(100% - 40px), transparent);
+}
+.t-area-bar__tabs[data-edge-start="true"] {
+  mask-image: linear-gradient(to right, transparent, currentColor 40px);
+}
+.t-area-bar__tabs[data-edge-start="true"][data-edge-end="true"] {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    currentColor 40px,
+    currentColor calc(100% - 40px),
+    transparent
+  );
+}
+.t-area-bar__tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: var(--t-muted);
+  font: inherit;
+  font-size: var(--t-fs-14);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+.t-area-bar__tab:hover,
+.t-area-bar__tab[aria-selected="true"],
+.t-area-bar__tab[aria-current="page"] {
+  color: var(--t-ink);
+}
+.t-area-bar__count {
+  margin-left: 6px;
+  font-family: var(--t-mono);
+  font-size: var(--t-fs-11);
+  color: var(--t-muted);
+}
+.t-area-bar__indicator {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 2px;
+  background: var(--t-signal);
+  transform-origin: 0 50%;
+  opacity: var(--t-indicator-o, 0);
+  transform: translateX(calc(var(--t-indicator-x, 0px) + 12px))
+    scaleX(calc(var(--t-indicator-w, 0) - 24));
+}
+.t-area-bar__indicator[data-glide="true"] {
+  transition: transform var(--t-dur-enter) var(--t-ease-spring);
+}
+.t-area-bar__separator {
+  flex: none;
+  align-self: center;
+  width: 1px;
+  height: 20px;
+  margin: 0 8px;
+  background: var(--t-line-strong);
+}
+/* The one tab transition, content only. Fill mode backwards, never both: a transform kept
+   after the end would make the panel the containing block of every fixed descendant. */
+.t-tab-panel {
+  min-width: 0;
+  animation: t-tab-in var(--t-dur-enter) var(--t-ease-spring) backwards;
+}
+.t-area-bar + .t-tab-panel {
+  margin-top: var(--t-s-6);
+}
+@keyframes t-tab-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (pointer: coarse) {
+  .t-area-bar__tab {
+    min-height: 44px;
+  }
 }

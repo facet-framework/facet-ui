@@ -43,6 +43,8 @@ in force independently of the project’s Apache-2.0 license.
 | @babel/plugin-syntax-private-property-in-object | 7.14.5 | MIT | Development |
 | @babel/plugin-syntax-top-level-await | 7.14.5 | MIT | Development |
 | @babel/plugin-syntax-typescript | 7.29.7 | MIT | Development |
+| @babel/plugin-transform-react-jsx-self | 7.29.7 | MIT | Development |
+| @babel/plugin-transform-react-jsx-source | 7.29.7 | MIT | Development |
 | @babel/runtime | 7.29.7 | MIT | Development |
 | @babel/template | 7.29.7 | MIT | Development |
 | @babel/traverse | 7.29.7 | MIT | Development |
@@ -64,6 +66,8 @@ in force independently of the project’s Apache-2.0 license.
 | @eslint/js | 9.39.5 | MIT | Development |
 | @eslint/object-schema | 2.1.7 | Apache-2.0 | Development |
 | @eslint/plugin-kit | 0.4.1 | Apache-2.0 | Development |
+| @fontsource/ibm-plex-mono | 5.3.0 | OFL-1.1 | Development |
+| @fontsource/ibm-plex-sans | 5.3.0 | OFL-1.1 | Development |
 | @humanfs/core | 0.19.2 | Apache-2.0 | Development |
 | @humanfs/node | 0.16.8 | Apache-2.0 | Development |
 | @humanfs/types | 0.15.0 | Apache-2.0 | Development |
@@ -100,6 +104,7 @@ in force independently of the project’s Apache-2.0 license.
 | @mdx-js/react | 3.1.1 | MIT | Development |
 | @pkgjs/parseargs | 0.11.0 | MIT | Development |
 | @pkgr/core | 0.3.6 | MIT | Development |
+| @rolldown/pluginutils | 1.0.0-beta.27 | MIT | Development |
 | @rollup/pluginutils | 5.4.0 | MIT | Development |
 | @rollup/rollup-linux-x64-gnu | 4.62.3 | MIT | Development |
 | @sinclair/typebox | 0.34.52 | MIT | Development |
@@ -154,6 +159,7 @@ in force independently of the project’s Apache-2.0 license.
 | @typescript-eslint/visitor-keys | 8.65.0 | MIT | Development |
 | @ungap/structured-clone | 1.3.3 | ISC | Development |
 | @unrs/resolver-binding-linux-x64-gnu | 1.12.2 | MIT | Development |
+| @vitejs/plugin-react | 4.7.0 | MIT | Development |
 | @vitest/expect | 3.2.4 | MIT | Development |
 | @vitest/mocker | 3.2.4 | MIT | Development |
 | @vitest/pretty-format | 3.2.4 | MIT | Development |
@@ -535,6 +541,7 @@ in force independently of the project’s Apache-2.0 license.
 | react-is | 17.0.2 | MIT | Development |
 | react-is | 18.3.1 | MIT | Development |
 | react-is | 19.2.8 | MIT | Development |
+| react-refresh | 0.17.0 | MIT | Development |
 | react | 19.2.8 | MIT | Development |
 | readdirp | 4.1.2 | MIT | Development |
 | recast | 0.23.14 | MIT | Development |

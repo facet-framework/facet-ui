@@ -23,7 +23,7 @@ import {
   Meter,
   Section,
   Skeleton,
-  Stat,
+  Metric,
   Surface,
 } from "./display";
 import {
@@ -33,7 +33,8 @@ import {
   Pagination,
   type CollectionState,
 } from "./collection";
-import { Breadcrumbs, Dialog, Menu, Sheet, Toast } from "./overlay";
+import { Breadcrumbs, Dialog, Menu, Sheet } from "./overlay";
+import { Toast, ToastRegion } from "./toast";
 const sample = {
   adrs480: () =>
     Array.from({ length: 480 }, (_, i) => ({
@@ -233,9 +234,10 @@ export const Display: Story = {
         lead="118 are waiting for a test."
       />
       <div className="t-row t-row--wrap" style={{ gap: 40 }}>
-        <Stat value="217" label="active features" large />
-        <Stat value="18" label="files with drift" tone="warn" />
-        <Stat value="525" of="1,852" label="files indexed" />
+        <Metric value={217} label="active features" size="large" count />
+        <Metric value={18} label="files with drift" tone="warn" />
+        <Metric value={525} of={1852} label="files indexed" />
+        <Metric value={null} label="tokens today" detail="offline" />
       </div>
       <div className="t-stack" style={{ gap: 10, maxWidth: 420 }}>
         <Meter value={0.94} label="backed" />
@@ -467,16 +469,14 @@ function OverlayDemo() {
           ]}
         />
       </div>
-      <Toast
-        tone="ok"
-        action={
-          <Button size="small" variant="quiet">
-            Undo
-          </Button>
-        }
-      >
-        Id copied
-      </Toast>
+      <ToastRegion inline>
+        <Toast tone="ok" duration={null} onUndo={() => undefined}>
+          Note removed
+        </Toast>
+        <Toast tone="bad" duration={null} irreversible>
+          Branch deleted
+        </Toast>
+      </ToastRegion>
     </div>
   );
 }

@@ -2360,12 +2360,32 @@ export function licenseIdentifier(hit, source) {
     : /^Bundled third-party software: .+ \(M[I]T\)(?:, .+ \(M[I]T\))*\.$/.test(line);
 }
 
+/**
+ * Images and fonts carry no prose; read as text, their bytes produce chance
+ * matches of short vocabulary words. A NUL byte in the first 8 KiB marks binary,
+ * as Git itself decides.
+ */
+export function isBinary(bytes) {
+  return bytes.subarray(0, 8192).includes(0);
+}
+
 export function scanTracked(root = process.cwd()) {
-  const files = execFileSync("git", ["ls-files", "-z"], { cwd: root, encoding: "utf8" })
-    .split("\0")
-    .filter(Boolean);
+  const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: root, encoding: "utf8" });
+  // Files marked export-ignore never leave the repository, so their language is not checked.
+  const attributes = execFileSync("git", ["check-attr", "-z", "--stdin", "export-ignore"], {
+    cwd: root,
+    encoding: "utf8",
+    input: tracked,
+  }).split("\0");
+  const ignored = new Set();
+  for (let i = 0; i + 2 < attributes.length; i += 3) {
+    if (attributes[i + 2] === "set") ignored.add(attributes[i]);
+  }
+  const files = tracked.split("\0").filter((file) => file && !ignored.has(file));
   return files.flatMap((file) => {
-    const source = readFileSync(resolve(root, file), "utf8");
+    const bytes = readFileSync(resolve(root, file));
+    if (isBinary(bytes)) return [];
+    const source = bytes.toString("utf8");
     return scan(file, source).filter((hit) => !licenseIdentifier(hit, source));
   });
 }

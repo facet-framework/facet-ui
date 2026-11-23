@@ -72,7 +72,11 @@ licenses, and take responsibility for the submitted patch.
 
 ## Releases
 
-A release runs the Release workflow on `main` with the version from
-`package.json`. The workflow builds and tests the package, then stages it on
-npm through trusted publishing after approval of the `npm` environment. The
-staged version is published once a maintainer approves it on npmjs.com.
+The Release workflow verifies the reviewed `release/<version>` pull request
+after squash merge to `main`. After approval of the `release` environment,
+it tags the squash commit and publishes the attested package tarball and
+checksum as a GitHub release. A manual Release run checks and builds the
+package as a dry run.
+
+The npm workflow stages the verified tarball from a published GitHub release
+through trusted publishing. A maintainer approves the staged package on npmjs.com.

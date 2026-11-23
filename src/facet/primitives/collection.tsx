@@ -1,8 +1,8 @@
-import type { ReactNode } from "react";
+import { useState, type KeyboardEvent, type ReactNode } from "react";
 import { useText } from "../i18n/TextProvider";
 import { Icon, type IconName } from "./Icon";
 import { Button, Chip, SearchField, Segment } from "./controls";
-import { EmptyState, Skeleton } from "./display";
+import { EmptyState, LoadingState } from "./display";
 
 /* Data table ------------------------------------------------------------ */
 
@@ -28,13 +28,20 @@ export type DataTableProps<R> = {
   sort?: { key: string; dir: SortDir };
   onSort?: (key: string) => void;
   onRowClick?: (row: R) => void;
+  /** Key of the selected row (`aria-selected`); only with `onRowClick`. */
+  selectedKey?: string;
   dense?: boolean;
 };
 
 /**
  * A sortable table. Sorting is a click on the column header that toggles
- * ascending and descending; the state is announced through `aria-sort`.
- * Below 768 px the table becomes a list of cards (`.t-table-cards`).
+ * ascending and descending; the state is announced through `aria-sort`, and a
+ * sortable column that is not sorted says `none`. Below 768 px the table
+ * becomes a list of cards (`.t-table-cards`).
+ *
+ * With `onRowClick` the rows form a grid with one tab stop: the arrows move
+ * between rows, Home and End jump, Enter or Space activate, as a click does.
+ * The scroll box is a named region that the keyboard can reach and scroll.
  */
 export function DataTable<R>({
   label,
@@ -44,11 +51,43 @@ export function DataTable<R>({
   sort,
   onSort,
   onRowClick,
+  selectedKey,
   dense,
 }: DataTableProps<R>) {
+  const [focusKey, setFocusKey] = useState<string>();
+  const keys = rows.map(rowKey);
+  const stop = focusKey != null && keys.includes(focusKey) ? focusKey : keys[0];
+  const interactive = !!onRowClick;
+  const onRowKeyDown = (row: R, e: KeyboardEvent<HTMLTableRowElement>) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onRowClick?.(row);
+      return;
+    }
+    const at = keys.indexOf(rowKey(row));
+    let to = -1;
+    if (e.key === "ArrowDown") to = Math.min(keys.length - 1, at + 1);
+    else if (e.key === "ArrowUp") to = Math.max(0, at - 1);
+    else if (e.key === "Home") to = 0;
+    else if (e.key === "End") to = keys.length - 1;
+    if (to < 0) return;
+    e.preventDefault();
+    setFocusKey(keys[to]);
+    const body = e.currentTarget.parentElement;
+    Array.from(body?.querySelectorAll<HTMLElement>("tr[data-row]") ?? [])
+      .find((el) => el.dataset.row === keys[to])
+      ?.focus();
+  };
   return (
-    <div className="t-table-wrap">
-      <table className={dense ? "t-table t-table--dense" : "t-table"} aria-label={label}>
+    // A table wider than the screen scrolls; the keyboard must reach that scroll too.
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+    <div className="t-table-wrap" role="region" aria-label={label} tabIndex={0}>
+      <table
+        className={dense ? "t-table t-table--dense" : "t-table"}
+        aria-label={label}
+        role={interactive ? "grid" : undefined}
+      >
         <thead>
           <tr>
             {columns.map((c) => {
@@ -57,10 +96,13 @@ export function DataTable<R>({
                 ? sort.dir === "asc"
                   ? "ascending"
                   : "descending"
-                : undefined;
+                : c.sortable
+                  ? "none"
+                  : undefined;
               return (
                 <th
                   key={c.key}
+                  scope="col"
                   aria-sort={ariaSort}
                   className={
                     [c.numeric ? "t-num" : "", c.hideOnMobile ? "t-hide-mobile" : ""]
@@ -85,27 +127,42 @@ export function DataTable<R>({
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
-            <tr
-              key={rowKey(r)}
-              data-clickable={onRowClick ? "true" : undefined}
-              onClick={onRowClick ? () => onRowClick(r) : undefined}
-            >
-              {columns.map((c) => (
-                <td
-                  key={c.key}
-                  data-label={c.label}
-                  className={
-                    [c.numeric ? "t-num" : "", c.hideOnMobile ? "t-hide-mobile" : ""]
-                      .join(" ")
-                      .trim() || undefined
-                  }
-                >
-                  {c.render(r)}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {rows.map((r) => {
+            const key = rowKey(r);
+            return (
+              <tr
+                key={key}
+                data-row={key}
+                data-clickable={interactive ? "true" : undefined}
+                aria-selected={interactive ? key === selectedKey : undefined}
+                tabIndex={interactive ? (key === stop ? 0 : -1) : undefined}
+                onClick={
+                  interactive
+                    ? () => {
+                        setFocusKey(key);
+                        onRowClick(r);
+                      }
+                    : undefined
+                }
+                onFocus={interactive ? () => setFocusKey(key) : undefined}
+                onKeyDown={interactive ? (e) => onRowKeyDown(r, e) : undefined}
+              >
+                {columns.map((c) => (
+                  <td
+                    key={c.key}
+                    data-label={c.label}
+                    className={
+                      [c.numeric ? "t-num" : "", c.hideOnMobile ? "t-hide-mobile" : ""]
+                        .join(" ")
+                        .trim() || undefined
+                    }
+                  >
+                    {c.render(r)}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -380,20 +437,7 @@ export function Collection({
     <div className="t-collection" data-state={state} aria-busy={state === "loading" || undefined}>
       {toolbar}
       {distribution}
-      {state === "loading" ? (
-        <div className="t-stack" style={{ gap: 10, padding: "8px 0" }}>
-          {Array.from({ length: skeletonRows }, (_, i) => (
-            <div key={i} className="t-row" style={{ gap: 14 }}>
-              <Skeleton width={28} height={28} radius={6} />
-              <div className="t-stack" style={{ gap: 6, flex: 1 }}>
-                <Skeleton width={`${40 + ((i * 17) % 40)}%`} height={12} />
-                <Skeleton width={`${20 + ((i * 11) % 30)}%`} height={10} />
-              </div>
-              <Skeleton width={56} height={12} />
-            </div>
-          ))}
-        </div>
-      ) : null}
+      {state === "loading" ? <LoadingState rows={skeletonRows} /> : null}
       {state === "empty" && empty ? (
         <EmptyState title={empty.title} body={empty.body} icon={empty.icon} action={empty.action} />
       ) : null}

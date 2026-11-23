@@ -305,3 +305,758 @@
     display: none !important;
   }
 }
+
+/* Page widths ------------------------------------------------------------ */
+.t-page--narrow {
+  max-width: 880px;
+}
+.t-page--wide {
+  max-width: none;
+}
+
+/* Charts ----------------------------------------------------------------- */
+.t-spark {
+  display: inline-block;
+  overflow: visible;
+  vertical-align: middle;
+}
+.t-spark__line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.t-spark__dot {
+  fill: currentColor;
+}
+.t-spark__area {
+  fill: currentColor;
+  opacity: 0.12;
+  stroke: none;
+}
+.t-spark__none {
+  stroke: var(--t-line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+/* The rows share their parent's columns (subgrid), so every track starts and
+   ends at the same place whatever the width of a value or a meta text. */
+.t-bars {
+  display: grid;
+  grid-template-columns: minmax(80px, 34%) minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.t-bars--meta {
+  grid-template-columns: minmax(80px, 34%) minmax(0, 1fr) auto auto;
+}
+.t-bars > li {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+.t-bars__row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  column-gap: 10px;
+  width: 100%;
+  min-height: 30px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: var(--t-r-ctl);
+  background: none;
+  color: var(--t-ink-2);
+  font: inherit;
+  font-size: var(--t-fs-13);
+  text-align: left;
+}
+.t-bars__row--pick {
+  cursor: pointer;
+}
+.t-bars__row--pick:hover,
+.t-bars__row--pick[aria-pressed="true"] {
+  background: var(--t-signal-wash);
+  color: var(--t-ink);
+}
+.t-bars__row--pick:focus-visible {
+  outline: 2px solid var(--t-signal);
+  outline-offset: 1px;
+}
+.t-bars__track {
+  position: relative;
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--t-r-pill);
+  background: var(--t-sunken);
+}
+.t-bars__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--t-value) * 100%);
+  min-width: 2px;
+  border-radius: inherit;
+  transition: width var(--t-dur-sheet) var(--t-ease-out);
+}
+.t-bars__unmeasured {
+  position: absolute;
+  inset: 3px 4px auto 4px;
+  border-top: 1px dashed var(--t-line-strong);
+}
+.t-bars__value {
+  color: var(--t-ink);
+  text-align: right;
+}
+.t-bars__value.t-muted {
+  color: var(--t-muted);
+}
+@media (max-width: 767px) {
+  .t-bars--meta {
+    grid-template-columns: minmax(80px, 34%) minmax(0, 1fr) auto;
+  }
+  .t-bars__meta {
+    display: none;
+  }
+}
+
+/* Text and legends shared by the SVG charts. */
+.t-chart-text {
+  fill: var(--t-muted);
+  font-family: var(--t-mono);
+  font-size: 10px;
+}
+.t-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  color: var(--t-muted);
+  font-size: var(--t-fs-12);
+}
+.t-chart-legend__swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+.t-chart-legend__swatch--unmeasured {
+  box-shadow: inset 0 0 0 1px var(--t-line-strong);
+  background: repeating-linear-gradient(135deg, transparent 0 2px, var(--t-line-strong) 2px 3px);
+}
+
+/* Band chart: span, target band, median and samples on one scale. */
+.t-band {
+  display: block;
+  max-height: 96px;
+}
+.t-band__target {
+  fill: var(--t-ok-wash);
+  stroke: var(--t-ok);
+  stroke-opacity: 0.5;
+}
+.t-band__span line {
+  stroke: var(--t-ink-2);
+  stroke-width: 1.5;
+}
+.t-band__none {
+  stroke: var(--t-line-strong);
+  stroke-dasharray: 4 4;
+}
+.t-band__dot {
+  fill: var(--t-signal);
+  opacity: 0.7;
+}
+.t-band__dot--out {
+  fill: var(--t-warn);
+}
+.t-band__median {
+  stroke: var(--t-ink);
+  stroke-width: 2.5;
+}
+
+/* Calendar heatmap. */
+.t-cal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-s-3);
+  max-width: 100%;
+  overflow-x: auto;
+}
+.t-cal svg {
+  flex: none;
+}
+.t-cal__day {
+  fill: var(--t-sunken);
+}
+.t-cal__day--unmeasured {
+  fill: none;
+  stroke: var(--t-line-strong);
+  stroke-dasharray: 2 2;
+}
+.t-cal__days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Date histogram: one column per month or year, no gaps in the axis. */
+.t-hist {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.t-hist__plot {
+  display: grid;
+  align-items: end;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--t-line);
+  list-style: none;
+}
+.t-hist__column {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  min-width: 0;
+}
+.t-hist__block {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+}
+.t-hist__axis {
+  display: grid;
+  gap: 2px;
+  color: var(--t-faint);
+  font-family: var(--t-mono);
+  font-size: var(--t-fs-11);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.t-hist__axis span {
+  min-width: 0;
+}
+.t-hist__caption {
+  margin: 0;
+  color: var(--t-muted);
+  font-family: var(--t-mono);
+  font-size: var(--t-fs-12);
+}
+
+/* Ring meter: a share as a ring, the number in its middle. */
+.t-ring {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+}
+.t-ring svg {
+  position: absolute;
+  inset: 0;
+}
+.t-ring__track {
+  fill: none;
+  stroke: var(--t-line);
+}
+.t-ring--unmeasured .t-ring__track {
+  stroke: var(--t-line-strong);
+  stroke-dasharray: 2 3;
+}
+.t-ring__value {
+  fill: none;
+  stroke-linecap: butt;
+  transition: stroke-dasharray var(--t-dur-sheet) var(--t-ease-out);
+}
+.t-ring__display {
+  position: relative;
+  color: var(--t-ink);
+  font-family: var(--t-mono);
+  font-size: var(--t-fs-20);
+  font-variant-numeric: tabular-nums;
+}
+.t-ring--unmeasured .t-ring__display {
+  color: var(--t-muted);
+}
+
+/* Sunburst: two rings, labels only where an arc can carry them. */
+.t-sun {
+  max-width: 100%;
+  margin: 0;
+}
+.t-sun__plot {
+  position: relative;
+}
+.t-sun svg {
+  display: block;
+}
+.t-sun path {
+  transition: opacity var(--t-dur-enter) var(--t-ease-out);
+}
+.t-sun__empty {
+  fill: none;
+  stroke: var(--t-sunken);
+}
+.t-sun__label {
+  fill: var(--t-ink);
+  font-size: 11px;
+  pointer-events: none;
+}
+.t-sun__label--inner {
+  font-size: 12px;
+  font-weight: 600;
+}
+.t-sun__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: var(--t-s-3) 0 0;
+  padding: 0;
+  color: var(--t-ink-2);
+  font-size: var(--t-fs-12);
+  list-style: none;
+}
+.t-sun__legend > li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.t-sun__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.t-sun__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+}
+
+/* Treemap. */
+.t-treemap {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--t-r-panel);
+  background: var(--t-sunken);
+  list-style: none;
+}
+.t-treemap__slot {
+  position: absolute;
+}
+.t-treemap__cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  overflow: hidden;
+  border: 0;
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--t-ground);
+  color: var(--t-ink);
+  font: inherit;
+  text-align: left;
+}
+button.t-treemap__cell {
+  cursor: pointer;
+  transition: filter var(--t-dur-hit) var(--t-ease-out);
+}
+button.t-treemap__cell:hover {
+  filter: brightness(1.12);
+}
+.t-treemap__cell:focus-visible {
+  outline: 2px solid var(--t-signal);
+  outline-offset: -3px;
+}
+.t-treemap__cell[aria-pressed="true"],
+.t-treemap__cell[data-selected] {
+  box-shadow:
+    inset 0 0 0 2px var(--t-ink),
+    inset 0 0 0 3px var(--t-ground);
+}
+.t-treemap__slot:has([aria-pressed="true"], [data-selected]) {
+  z-index: 1;
+}
+.t-treemap__label {
+  max-width: 100%;
+  font-size: var(--t-fs-12);
+  overflow-wrap: anywhere;
+}
+.t-treemap__value {
+  font-size: var(--t-fs-20);
+  font-variant-numeric: tabular-nums;
+  font-weight: 300;
+}
+.t-treemap__sub {
+  max-width: 100%;
+  color: var(--t-ink-2);
+  font-size: var(--t-fs-11);
+  overflow-wrap: anywhere;
+}
+
+/* Pyramid: the width is the rank, the number the size. */
+.t-pyramid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: var(--t-s-4) 0;
+  list-style: none;
+}
+.t-pyramid__slot {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.t-pyramid__layer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: baseline;
+  column-gap: var(--t-s-3);
+  width: var(--t-pyramid-w);
+  min-width: min(100%, 260px);
+  max-width: 100%;
+  padding: 14px 20px;
+  border: 0;
+  border-radius: var(--t-r-ctl);
+  background: color-mix(in srgb, var(--t-signal) 18%, var(--t-raised));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-signal) 30%, transparent);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  transition:
+    background var(--t-dur-hit) var(--t-ease-out),
+    width var(--t-dur-sheet) var(--t-ease-out);
+}
+.t-pyramid__layer--pick {
+  cursor: pointer;
+}
+.t-pyramid__layer--pick:hover {
+  background: color-mix(in srgb, var(--t-signal) 30%, var(--t-raised));
+}
+.t-pyramid__layer[aria-pressed="true"],
+.t-pyramid__layer[data-selected] {
+  background: color-mix(in srgb, var(--t-signal) 46%, var(--t-raised));
+}
+.t-pyramid__layer:focus-visible {
+  outline: 2px solid var(--t-signal);
+  outline-offset: 2px;
+}
+.t-pyramid__name {
+  font-weight: 500;
+}
+.t-pyramid__value {
+  grid-row: span 2;
+  font-size: var(--t-fs-28);
+  font-variant-numeric: tabular-nums;
+  font-weight: 300;
+}
+
+/* Share bar: a thin inline band of parts. */
+.t-share {
+  display: inline-flex;
+  flex: none;
+  gap: 1px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--t-r-pill);
+  background: var(--t-sunken);
+  vertical-align: middle;
+}
+.t-share--empty {
+  box-shadow: inset 0 0 0 1px var(--t-line);
+}
+.t-linechart {
+  margin: 0;
+}
+.t-linechart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--t-s-2) var(--t-s-4);
+  margin-bottom: var(--t-s-3);
+  color: var(--t-ink-2);
+  font-size: var(--t-fs-12);
+}
+.t-linechart__key {
+  display: inline-block;
+  width: 12px;
+  height: 3px;
+  border-radius: 2px;
+}
+.t-linechart__plot {
+  position: relative;
+  padding-left: 48px;
+}
+.t-linechart__area {
+  position: relative;
+  padding-bottom: 24px;
+}
+.t-linechart__plot svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  cursor: crosshair;
+}
+.t-linechart__grid {
+  stroke: var(--t-line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.t-linechart__line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.t-linechart__cross {
+  stroke: var(--t-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.t-linechart__axis {
+  position: absolute;
+  top: 0;
+  bottom: 24px;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 40px;
+  color: var(--t-muted);
+  font-family: var(--t-mono);
+  font-size: var(--t-fs-11);
+  text-align: right;
+}
+.t-linechart__axis span {
+  transform: translateY(-50%);
+}
+.t-linechart__axis span:first-child {
+  transform: none;
+}
+.t-linechart__axis span:last-child {
+  transform: translateY(-100%);
+}
+.t-linechart__x {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 18px;
+  color: var(--t-muted);
+  font-family: var(--t-mono);
+  font-size: var(--t-fs-11);
+}
+.t-linechart__x span {
+  position: absolute;
+  white-space: nowrap;
+}
+.t-linechart__tip {
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transform: translateX(-50%);
+  animation: none;
+}
+
+/* Activity --------------------------------------------------------------- */
+.t-avatar {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--t-avatar) 22%, var(--t-raised));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-avatar) 50%, transparent);
+  color: var(--t-ink);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+.t-avatar--busy::after {
+  position: absolute;
+  inset: -3px;
+  border: 2px solid var(--t-avatar);
+  border-radius: 50%;
+  content: "";
+  animation: t-pulse 1.6s ease-in-out infinite;
+}
+.t-avatar__status {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 30%;
+  min-width: 8px;
+  height: 30%;
+  min-height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--t-surface);
+}
+.t-timeline {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.t-timeline__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--t-s-3);
+  padding-bottom: var(--t-s-4);
+}
+.t-timeline__item:not(:last-child)::before {
+  position: absolute;
+  top: 20px;
+  bottom: 0;
+  left: 9.5px;
+  width: 1px;
+  background: var(--t-line-strong);
+  content: "";
+}
+.t-timeline__mark {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--t-sunken);
+  box-shadow: inset 0 0 0 1px var(--t-line-strong);
+  color: var(--t-muted);
+}
+.t-timeline__item--ok .t-timeline__mark {
+  background: var(--t-ok-wash);
+  color: var(--t-ok);
+}
+.t-timeline__item--warn .t-timeline__mark {
+  background: var(--t-warn-wash);
+  color: var(--t-warn);
+}
+.t-timeline__item--plan .t-timeline__mark {
+  background: var(--t-plan-wash);
+  color: var(--t-plan);
+}
+.t-timeline__item--bad .t-timeline__mark {
+  background: var(--t-bad-wash);
+  color: var(--t-bad);
+}
+.t-timeline__item--signal .t-timeline__mark {
+  background: var(--t-signal-wash);
+  color: var(--t-signal);
+}
+.t-timeline__item--live .t-timeline__mark {
+  animation: t-pulse 1.6s ease-in-out infinite;
+}
+.t-timeline__main {
+  min-width: 0;
+  padding-top: 1px;
+}
+.t-timeline__title {
+  color: var(--t-ink);
+  font-size: var(--t-fs-14);
+}
+.t-timeline__body {
+  margin-top: 4px;
+  color: var(--t-ink-2);
+  font-size: var(--t-fs-13);
+}
+.t-spinner {
+  display: inline-block;
+  flex: none;
+  border: 2px solid var(--t-line-strong);
+  border-top-color: var(--t-signal);
+  border-radius: 50%;
+  animation: t-spin 0.8s linear infinite;
+}
+@keyframes t-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-spinner,
+  .t-avatar--busy::after,
+  .t-timeline__item--live .t-timeline__mark {
+    animation: none;
+  }
+}
+
+/* Toolbars and swatches -------------------------------------------------- */
+.t-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.t-tools--vertical {
+  flex-direction: column;
+}
+.t-tools--floating {
+  padding: 4px;
+  border-radius: var(--t-r-panel);
+}
+.t-tools__sep {
+  align-self: stretch;
+  width: 1px;
+  margin: 4px 4px;
+  background: var(--t-line-strong);
+}
+.t-tools--vertical .t-tools__sep {
+  width: auto;
+  height: 1px;
+  margin: 4px;
+}
+.t-swatches {
+  display: inline-flex;
+  gap: 6px;
+  padding: 2px;
+}
+.t-swatch {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+.t-swatch[aria-checked="true"] {
+  box-shadow:
+    0 0 0 2px var(--t-float),
+    0 0 0 4px var(--t-ink);
+}
+.t-swatch:focus-visible {
+  outline: 2px solid var(--t-signal);
+  outline-offset: 3px;
+}
+
+/* Layout fixes ------------------------------------------------------------ */
+/* Sections spaced by a parent's gap or grid take no extra margin. */
+:is(.t-stack, .t-row, .t-grid, .t-cols-2, .t-cols-main-side) > .t-section + .t-section {
+  margin-top: 0;
+}
+/* A meter in a row takes the free width instead of collapsing to nothing. */
+.t-row > .t-meter {
+  flex: 1 1 auto;
+  min-width: 24px;
+}
+/* A grid that stretches its columns over the full width instead of keeping empty tracks. */
+.t-grid--fit {
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--t-grid-min, 240px), 100%), 1fr));
+}

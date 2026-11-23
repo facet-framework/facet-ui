@@ -26,7 +26,7 @@ import {
   Meter,
   Section,
   Skeleton,
-  Stat,
+  Metric,
   Surface,
 } from "./display";
 import {
@@ -37,7 +37,8 @@ import {
   SortHint,
   pageWindow,
 } from "./collection";
-import { Breadcrumbs, Dialog, Menu, Sheet, Toast, Tooltip, useMenuTrigger } from "./overlay";
+import { Breadcrumbs, Dialog, Menu, Sheet, Tooltip, useMenuTrigger } from "./overlay";
+import { Toast } from "./toast";
 import { renderInGerman } from "../i18n/testing";
 
 const germanText = createGermanText("de");
@@ -312,8 +313,8 @@ describe("display", () => {
           aside="more"
         />
         <Finding sentence="Just one sentence." />
-        <Stat value="18" of="220" label="Drift" tone="warn" large />
-        <Stat value="1" label="simple" />
+        <Metric value={18} of={220} label="Drift" tone="warn" size="large" />
+        <Metric value={1} label="simple" />
         <Section title="Section" meta="12" actions={<button type="button">All</button>} id="s">
           <Surface level="raised" pad={false} className="x">
             <ListRow title="Commit-Gate" sub="authoring/guardrails/commit-gate" onClick={onClick} />
@@ -723,9 +724,13 @@ describe("overlay", () => {
   it("announces toasts and tooltips", () => {
     render(
       <>
-        <Toast tone="ok">Copied</Toast>
-        <Toast tone="bad">Failed</Toast>
-        <Toast>Notice</Toast>
+        <Toast tone="ok" duration={null}>
+          Copied
+        </Toast>
+        <Toast tone="bad" duration={null}>
+          Failed
+        </Toast>
+        <Toast duration={null}>Notice</Toast>
         <Tooltip>Tip</Tooltip>
       </>,
     );
