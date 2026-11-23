@@ -1,6 +1,9 @@
 import { useRef, type ReactNode } from "react";
 import { useHeightVar } from "./bars";
 import { TooltipLayer } from "../primitives/tooltip";
+import { IconButton, Kbd } from "../primitives/controls";
+import { Icon } from "../primitives/Icon";
+import { useText } from "../i18n/TextProvider";
 export type AppShellProps = {
   top: ReactNode;
   nav?: ReactNode;
@@ -71,5 +74,132 @@ export function AppShell({
       {/* Every `title` inside the shell, an IconButton's label included, gets a tooltip the keyboard reaches. */}
       <TooltipLayer />
     </div>
+  );
+}
+
+/** A figure in the app bar. `null` is not measured: a dash, never zero. */
+export type AppBarStat = {
+  key: string;
+  label: ReactNode;
+  value: number | null;
+  /** Shown instead of the formatted number, e.g. "82 %". */
+  display?: ReactNode;
+  tone?: "ok" | "warn" | "plan" | "bad";
+};
+
+export type AppBarProps = {
+  /** Controls before the brand, e.g. `HistoryNav`. */
+  lead?: ReactNode;
+  /** The product mark and name at the start. */
+  brand?: ReactNode;
+  /** Makes the brand a button that leads home; `homeLabel` is its accessible name. */
+  onHome?: () => void;
+  homeLabel?: string;
+  /** The current page or document. */
+  title?: ReactNode;
+  /** A quiet line beside the title: a state, a count, a timestamp. */
+  meta?: ReactNode;
+  /** Key figures after the brand; hidden on narrow screens and in the compact bar. */
+  stats?: AppBarStat[];
+  /** Controls in the middle, e.g. tabs. */
+  children?: ReactNode;
+  /**
+   * A command field that opens the app's palette or search. `keys` are the
+   * keyboard shortcut, shown as key caps; the compact bar shows a search button.
+   */
+  command?: { label: string; onOpen: () => void; keys?: string[] };
+  /** Actions at the end. The compact bar leaves them to `MoreSheet`. */
+  actions?: ReactNode;
+  /** The phone form: lead, brand, the search button and the menu button. */
+  compact?: boolean;
+  /** Opens the app's menu, e.g. `MoreSheet`; drawn in the compact bar. */
+  onMenu?: () => void;
+};
+
+/**
+ * The bar at the top of `AppShell`: lead controls, brand, title, key figures,
+ * a centre, a command field and actions. A product's own mark goes into
+ * `brand`; the bar draws no logo of its own.
+ */
+export function AppBar({
+  lead,
+  brand,
+  onHome,
+  homeLabel,
+  title,
+  meta,
+  stats,
+  children,
+  command,
+  actions,
+  compact,
+  onMenu,
+}: AppBarProps) {
+  const { t, number } = useText();
+  return (
+    <header className="t-appbar" data-compact={compact || undefined}>
+      {lead ? <div className="t-appbar__lead">{lead}</div> : null}
+      {brand ? (
+        onHome ? (
+          <button
+            type="button"
+            className="t-appbar__brand t-appbar__brand--home"
+            aria-label={homeLabel}
+            onClick={onHome}
+          >
+            {brand}
+          </button>
+        ) : (
+          <div className="t-appbar__brand">{brand}</div>
+        )
+      ) : null}
+      {title ? (
+        <div className="t-appbar__title">
+          <span className="t-appbar__name">{title}</span>
+          {meta && !compact ? <span className="t-meta">{meta}</span> : null}
+        </div>
+      ) : null}
+      {stats?.length && !compact ? (
+        <dl className="t-appbar__stats">
+          {stats.map((s) => (
+            <div key={s.key}>
+              <dt>{s.label}</dt>
+              <dd className={s.value != null && s.tone ? `t-num t-${s.tone}` : "t-num"}>
+                {s.value == null ? (
+                  <>
+                    <span aria-hidden="true">—</span>
+                    <span className="t-sr">{t("primitives.meter.unmeasured")}</span>
+                  </>
+                ) : (
+                  (s.display ?? number(s.value))
+                )}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+      <div className="t-appbar__centre">{compact ? null : children}</div>
+      {command ? (
+        compact ? (
+          <IconButton icon="search" label={command.label} onClick={command.onOpen} />
+        ) : (
+          <button type="button" className="t-appbar__command" onClick={command.onOpen}>
+            <Icon name="search" size={16} />
+            <span className="t-appbar__command-label">{command.label}</span>
+            {command.keys?.length ? (
+              <span className="t-appbar__keys" aria-hidden="true">
+                {command.keys.map((k) => (
+                  <Kbd key={k}>{k}</Kbd>
+                ))}
+              </span>
+            ) : null}
+          </button>
+        )
+      ) : null}
+      {actions && !compact ? <div className="t-appbar__actions">{actions}</div> : null}
+      {compact && onMenu ? (
+        <IconButton icon="menu" label={t("primitives.appbar.menu")} onClick={onMenu} />
+      ) : null}
+    </header>
   );
 }

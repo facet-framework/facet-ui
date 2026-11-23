@@ -1,0 +1,21 @@
+body {
+  margin: 0;
+}
+.gwt {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--t-s-3);
+  margin: 0;
+  font-size: var(--t-fs-13);
+}
+.gwt dt {
+  color: var(--t-muted);
+  font-family: var(--t-mono);
+  font-size: var(--t-fs-11);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-top: 2px;
+}
+.gwt dd {
+  margin: 0;
+}

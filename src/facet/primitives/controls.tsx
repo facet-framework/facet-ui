@@ -1,4 +1,12 @@
-import { useId, type ButtonHTMLAttributes, type ReactNode } from "react";
+import {
+  useId,
+  useRef,
+  type AnchorHTMLAttributes,
+  type ButtonHTMLAttributes,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { useText } from "../i18n/TextProvider";
 import { Icon, type IconName } from "./Icon";
 
@@ -19,6 +27,13 @@ export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type"> 
    * description, so it never lives in a tooltip only.
    */
   disabledReason?: string;
+  /**
+   * The action is running: the button is marked `aria-busy`, keeps its place and focus, and
+   * ignores activation until it is done, so a second press never sends twice.
+   */
+  busy?: boolean;
+  /** Takes the full width of its container. */
+  block?: boolean;
 };
 
 /** Copies the attributes without any React event handler (`onClick`, `onKeyDown`, ...). */
@@ -39,6 +54,8 @@ export function Button({
   children,
   type = "button",
   disabledReason,
+  busy,
+  block,
   ...rest
 }: ButtonProps) {
   const reasonId = useId();
@@ -47,6 +64,7 @@ export function Button({
     variant !== "default" && `t-btn--${variant}`,
     size === "small" && "t-btn--small",
     !children && icon && "t-btn--icon",
+    block && "t-btn--block",
     className,
   );
   const inner = (
@@ -81,10 +99,30 @@ export function Button({
     );
   }
   if (href) {
+    // A link keeps every attribute and handler it was given; `disabled` has no meaning on it.
+    const { disabled: _disabled, ...linkAttrs } = rest;
     return (
-      <a className={cls} href={href} aria-label={rest["aria-label"]} title={rest.title}>
+      <a className={cls} href={href} {...(linkAttrs as AnchorHTMLAttributes<HTMLAnchorElement>)}>
         {inner}
       </a>
+    );
+  }
+  if (busy) {
+    const { onClick: _onClick, ...attrs } = rest;
+    return (
+      <button
+        type={type}
+        className={cls}
+        aria-pressed={pressed}
+        {...attrs}
+        aria-busy="true"
+        onClick={(e: MouseEvent<HTMLButtonElement>) => {
+          // A submit button would still submit its form: the press is swallowed, not styled away.
+          e.preventDefault();
+        }}
+      >
+        {inner}
+      </button>
     );
   }
   return (
@@ -163,31 +201,94 @@ export function Switch({ checked, label, disabled, hint, disabledReason, onChang
   );
 }
 
-export type SegmentOption<V extends string> = { value: V; label: ReactNode; icon?: IconName };
+export type SegmentOption<V extends string> = {
+  value: V;
+  label: ReactNode;
+  icon?: IconName;
+  /** Not selectable: stays visible with `aria-disabled` and is skipped by the arrow keys. */
+  disabled?: boolean;
+  /** Why the option is not selectable; its accessible description and its title. */
+  reason?: string;
+};
 
 export type SegmentProps<V extends string> = {
   label: string;
   value: V;
   options: SegmentOption<V>[];
   onChange?: (value: V) => void;
+  /** The options share the full width of the container. */
+  full?: boolean;
 };
 
-export function Segment<V extends string>({ label, value, options, onChange }: SegmentProps<V>) {
+/**
+ * A choice among few options: a radio group with one tab stop. The arrows move and choose,
+ * Home and End jump to the ends, and disabled options are skipped and never chosen.
+ */
+export function Segment<V extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  full,
+}: SegmentProps<V>) {
+  const group = useRef<HTMLDivElement>(null);
+  const reasonBase = useId();
+  const enabled = options.filter((o) => !o.disabled);
+  const stop = enabled.some((o) => o.value === value) ? value : enabled[0]?.value;
+  const choose = (next: V) => {
+    const option = options.find((o) => o.value === next);
+    if (!option || option.disabled || next === value) return;
+    onChange?.(next);
+  };
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    if (!enabled.length) return;
+    const at = enabled.findIndex((o) => o.value === value);
+    let to: number;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") to = (at + 1) % enabled.length;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowUp")
+      to = (Math.max(at, 0) - 1 + enabled.length) % enabled.length;
+    else if (e.key === "Home") to = 0;
+    else if (e.key === "End") to = enabled.length - 1;
+    else return;
+    e.preventDefault();
+    const next = enabled[to].value;
+    choose(next);
+    group.current?.querySelector<HTMLElement>(`[data-value="${CSS.escape(next)}"]`)?.focus();
+  };
   return (
-    <div className="t-segment" role="radiogroup" aria-label={label}>
-      {options.map((o) => (
+    <div
+      ref={group}
+      className={cx("t-segment", full && "t-segment--full")}
+      role="radiogroup"
+      aria-label={label}
+    >
+      {options.map((o, i) => (
         <button
           key={o.value}
           type="button"
           role="radio"
           className="t-segment__opt"
           aria-checked={o.value === value}
-          onClick={() => onChange?.(o.value)}
+          aria-disabled={o.disabled || undefined}
+          aria-describedby={o.disabled && o.reason ? `${reasonBase}-${i}` : undefined}
+          title={o.disabled ? o.reason : undefined}
+          tabIndex={o.value === stop ? 0 : -1}
+          data-value={o.value}
+          onClick={() => choose(o.value)}
+          onKeyDown={onKeyDown}
         >
           {o.icon ? <Icon name={o.icon} size={14} /> : null}
           {o.label}
         </button>
       ))}
+      {/* Outside the options, so a reason describes its option and never becomes its name. */}
+      {options.map((o, i) =>
+        o.disabled && o.reason ? (
+          <span key={o.value} id={`${reasonBase}-${i}`} className="t-sr-only">
+            {o.reason}
+          </span>
+        ) : null,
+      )}
     </div>
   );
 }
@@ -199,19 +300,64 @@ export type TabsProps<V extends string> = {
   value: V;
   items: TabItem<V>[];
   onChange?: (value: V) => void;
+  /** Id of the panel the tabs control (`TabPanel` with the same id). */
+  panelId?: string;
+  /** Prefix of the tab ids; a panel is labelled by `tabId(idPrefix, value)`. */
+  idPrefix?: string;
 };
 
-export function Tabs<V extends string>({ label, value, items, onChange }: TabsProps<V>) {
+/** Id of one tab of `Tabs` or `AreaBar`, for the panel's `aria-labelledby`. */
+export function tabId(idPrefix: string, value: string): string {
+  return `${idPrefix}-tab-${value}`;
+}
+
+/**
+ * Tabs inside a page: one tab stop, the arrows move to the next tab and select it, Home and End
+ * jump to the ends. `value` is the only truth; a press only reports `onChange`.
+ */
+export function Tabs<V extends string>({
+  label,
+  value,
+  items,
+  onChange,
+  panelId,
+  idPrefix,
+}: TabsProps<V>) {
+  const generated = useId();
+  const prefix = idPrefix ?? generated;
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    const n = items.length;
+    const at = items.findIndex((t) => t.value === value);
+    const to =
+      e.key === "ArrowRight"
+        ? (at + 1) % n
+        : e.key === "ArrowLeft"
+          ? (at - 1 + n) % n
+          : e.key === "Home"
+            ? 0
+            : e.key === "End"
+              ? n - 1
+              : -1;
+    if (to < 0 || !n) return;
+    e.preventDefault();
+    const next = items[to].value;
+    if (next !== value) onChange?.(next);
+    document.getElementById(tabId(prefix, next))?.focus();
+  };
   return (
     <div className="t-tabs" role="tablist" aria-label={label}>
       {items.map((t) => (
         <button
           key={t.value}
+          id={tabId(prefix, t.value)}
           type="button"
           role="tab"
           className="t-tab"
           aria-selected={t.value === value}
-          onClick={() => onChange?.(t.value)}
+          aria-controls={panelId}
+          tabIndex={t.value === value ? 0 : -1}
+          onClick={() => t.value !== value && onChange?.(t.value)}
+          onKeyDown={onKeyDown}
         >
           {t.label}
           {t.count != null ? <span className="t-chip__count"> {t.count}</span> : null}
@@ -238,7 +384,8 @@ export function Chip({ children, count, pressed, icon, onClick, onRemove, mono }
     <>
       {icon ? <Icon name={icon} size={12} /> : null}
       <span className={mono ? "t-mono" : undefined}>{children}</span>
-      {count != null ? <span className="t-chip__count">{count}</span> : null}
+      {/* The space keeps name and count apart for assistive technology ("Open 4", not "Open4"). */}
+      {count != null ? <span className="t-chip__count"> {count}</span> : null}
     </>
   );
   if (onRemove) {

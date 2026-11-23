@@ -25,6 +25,7 @@ export default tseslint.config(
     ignores: [
       // Generated build output.
       "dist/**",
+      "examples/*/dist/**",
       "storybook-static/**",
       "storybook-facet-static/**",
       // Generated story data (see its header).

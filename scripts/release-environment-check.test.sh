@@ -1,0 +1,149 @@
+#!/bin/sh
+# Exercise both entry points against GitHub-shaped responses.
+set -eu
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+root=$(CDPATH= cd -- "$here/.." && pwd)
+work=$(mktemp -d "${TMPDIR:-/tmp}/facet-ui-settings-check.XXXXXX")
+trap 'rm -r "$work"' EXIT
+trap 'exit 1' HUP INT TERM
+export TMPDIR="$work" FIXTURE="$work" PATH="$work/bin:$PATH"
+mkdir -p "$work/bin"
+settings="$root/settings"
+
+cp "$settings/ruleset-main.json" "$work/main.good"
+cp "$settings/ruleset-tag.json" "$work/tag.good"
+jq '. + {full_name:"facet-framework/facet-ui", visibility:"public"}' "$settings/repository-merge.json" > "$work/repo.good"
+jq 'del(.branch_policies) | .protection_rules |= map(
+    . + {id: 21, node_id: "rule"}
+    | if .type == "required_reviewers" then .reviewers |= map(
+      {type, reviewer: {id, login: "release-reviewer"}}) else . end)' "$settings/env-release.json" > "$work/env.good"
+jq '[{branch_policies: []}, {branch_policies: [.branch_policies[] | . + {id: 23}]}]' \
+  "$settings/env-release.json" > "$work/policies.good"
+jq '[[], map({id: ., target:"tag", enforcement:"active"})]' "$settings/active-tag-rulesets.json" > "$work/active.good"
+cp "$settings/immutable-releases.json" "$work/immutable.good"
+jq 'del(.branch_policies)' "$settings/env-npm.json" > "$work/npm.good"
+jq '[{branch_policies}]' "$settings/env-npm.json" > "$work/npm-policies.good"
+for fixture in main tag repo env policies active immutable npm npm-policies; do cp "$work/$fixture.good" "$work/$fixture"; done
+
+cat > "$work/bin/gh" <<'MOCK'
+#!/bin/sh
+set -eu
+[ "${FIXTURE_THEO:-}" = 1 ] || [ "${GH_TOKEN:-}" = fixture-token ] || exit 70
+[ "$1 $2 $3 $4 $5" = 'api --hostname github.com --method GET' ]
+shift 5
+endpoint=repos/facet-framework/facet-ui
+case "$*" in
+  "$endpoint/rulesets/27722422") fixture=main ;;
+  "$endpoint/rulesets/27722423") fixture=tag ;;
+  "--paginate --slurp $endpoint/rulesets?targets=tag&includes_parents=true&per_page=100") fixture=active ;;
+  "$endpoint") fixture=repo ;;
+  "$endpoint/environments/release") fixture=env ;;
+  "--paginate --slurp $endpoint/environments/release/deployment-branch-policies?per_page=100") fixture=policies ;;
+  "$endpoint/immutable-releases") fixture=immutable ;;
+  "$endpoint/environments/npm") fixture=npm ;;
+  "--paginate --slurp $endpoint/environments/npm/deployment-branch-policies?per_page=100") fixture=npm-policies ;;
+  *) echo "Unexpected API request: $*" >&2; exit 70 ;;
+esac
+printf '%s\n' "$fixture" >> "$FIXTURE/reads"
+if [ -f "$FIXTURE/$fixture.404" ]; then
+  echo 'gh: Not Found (HTTP 404)' >&2
+  exit 1
+fi
+cat "$FIXTURE/$fixture"
+MOCK
+chmod +x "$work/bin/gh"
+
+check() (
+  scope=all
+  release_gh() { FIXTURE_THEO=1 gh "$@"; }
+  . "$root/scripts/release-settings-check.sh"
+)
+workflow() { GH_TOKEN=fixture-token sh "$root/scripts/release-environment-check.sh" release; }
+expect() {
+  code=$1 message=$2
+  shift 2
+  result=0
+  "$@" > "$work/out" 2>&1 || result=$?
+  if [ "$result" -ne "$code" ] || ! grep -Fq -- "$message" "$work/out"; then
+    cat "$work/out" >&2
+    echo "Expected exit $code and message: $message" >&2
+    exit 1
+  fi
+}
+edit() { jq "$2" "$work/$1.good" > "$work/$1"; }
+
+expect 2 'RELEASE_SETTINGS_TOKEN is required' env GH_TOKEN= sh "$root/scripts/release-environment-check.sh" release
+[ ! -e "$work/reads" ]
+expect 0 'facet-ui settings match immutable-releases' check
+expect 0 'facet-ui settings match immutable-releases' workflow
+: > "$work/reads"
+npm_workflow() { GH_TOKEN=fixture-token sh "$root/scripts/release-environment-check.sh" npm; }
+expect 0 'facet-ui settings match env-npm' npm_workflow
+[ "$(cat "$work/reads")" = "$(printf 'npm\nnpm-policies')" ]
+edit npm '.protection_rules += [{type:"required_reviewers", reviewers:[]}]'
+expect 1 'npm must have no deployment approval rules' npm_workflow
+: > "$work/reads"
+expect 0 'facet-ui settings match env-release' workflow
+! grep -Eq '^npm' "$work/reads"
+cp "$work/npm.good" "$work/npm"
+touch "$work/env.404"
+expect 1 'environment release is missing (HTTP 404)' check
+grep -q 'settings match env-npm' "$work/out"
+rm "$work/env.404"
+
+edit main '.rules |= reverse'
+edit env '.protection_rules |= reverse'
+expect 0 'facet-ui settings match env-release' check
+edit main '(.rules[] | select(.type == "required_status_checks").parameters.strict_required_status_checks_policy) = false'
+edit repo '.allow_rebase_merge = true | .squash_merge_commit_message = "COMMIT_MESSAGES"'
+edit tag '.rules += [{type:"creation"}]'
+edit env '.can_admins_bypass = true'
+edit policies '.[1].branch_policies += [{name:"v*", type:"tag"}]'
+edit immutable '.enabled = false'
+edit active '. + [[{id: 99, target:"tag", enforcement:"active"}]]'
+expect 1 '+++ live/env-release.json' workflow
+for file in ruleset-main ruleset-tag active-tag-rulesets repository-merge immutable-releases; do
+  grep -Fxq "+++ live/$file.json" "$work/out"
+done
+expect 1 '+  "enabled": false' check
+
+for fixture in main tag repo env policies active immutable npm npm-policies; do cp "$work/$fixture.good" "$work/$fixture"; done
+edit main 'del(.bypass_actors)'
+expect 2 'missing bypass actors for ruleset 27722422' workflow
+expect 2 'Administration: Read and Metadata: Read' check
+grep -Fq 'missing bypass actors' "$work/out"
+cp "$work/main.good" "$work/main"
+edit tag 'del(.bypass_actors)'
+expect 2 'missing bypass actors for ruleset 27722423' workflow
+expect 2 'missing bypass actors for ruleset 27722423' check
+cp "$work/tag.good" "$work/tag"
+mv "$work/env" "$work/env.missing"
+expect 2 'Cannot read facet-ui settings (repos/facet-framework/facet-ui/environments/release)' check
+cp "$work/env.good" "$work/env"
+printf '%s\n' '{"branch_policies":[]}' > "$work/policies"
+expect 2 'facet-ui settings match ruleset-main' workflow
+
+# A release tree can change the expected JSON, but it cannot relax these invariants.
+for fixture in main tag repo env policies active immutable npm npm-policies; do cp "$work/$fixture.good" "$work/$fixture"; done
+curated="$work/curated"
+mkdir -p "$curated/scripts"
+cp -R "$settings" "$curated/settings"
+cp "$root/scripts/release-environment-check.sh" "$root/scripts/release-settings-check.sh" "$curated/scripts/"
+curated_check() { GH_TOKEN=fixture-token sh "$curated/scripts/release-environment-check.sh" release; }
+edit main '.bypass_actors = [{actor_id: 5, actor_type: "Integration", bypass_mode: "always"}]'
+cp "$work/main" "$curated/settings/ruleset-main.json"
+expect 1 'facet-ui ruleset-main must have no bypass actors' curated_check
+cp "$work/main.good" "$work/main"
+cp "$work/main.good" "$curated/settings/ruleset-main.json"
+edit tag '.bypass_actors = [{actor_id: 5, actor_type: "Integration", bypass_mode: "always"}]'
+cp "$work/tag" "$curated/settings/ruleset-tag.json"
+expect 1 'facet-ui ruleset-tag must have no bypass actors' curated_check
+edit tag '.rules += [{type: "creation"}]'
+cp "$work/tag" "$curated/settings/ruleset-tag.json"
+expect 1 'facet-ui v* tags must allow creation' curated_check
+cp "$work/tag.good" "$work/tag"
+cp "$work/tag.good" "$curated/settings/ruleset-tag.json"
+edit env '.can_admins_bypass = true'
+jq '.can_admins_bypass = true' "$settings/env-release.json" > "$curated/settings/env-release.json"
+expect 1 'facet-ui environment release must allow only main' curated_check
+echo 'OK: settings drift, unreadable bypass actors, and enforced release invariants'

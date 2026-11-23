@@ -19,6 +19,18 @@ describe("German source guard", () => {
     expect(report).toEqual({ count: 0, findings: [] });
   });
 
+  it("skips binary files but still reads text that merely looks unusual", () => {
+    expect(
+      run(`
+      import assert from 'node:assert/strict';
+      import { isBinary } from './scripts/check-language.mjs';
+      assert.equal(isBinary(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00])), true);
+      assert.equal(isBinary(Buffer.from('plain text with symbols: \u00a9 \u2192', 'utf8')), false);
+      console.log('ok');
+    `),
+    ).toBe("ok");
+  });
+
   it("detects case-insensitive whole words and every accented character", () => {
     expect(
       run(`

@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -12,6 +13,7 @@ import {
   type RefObject,
 } from "react";
 import { useText } from "../i18n/TextProvider";
+import { OverlayLayer, useOverlay } from "./overlayHost";
 import { Icon, type IconName } from "./Icon";
 import { IconButton } from "./controls";
 
@@ -194,11 +196,19 @@ export type SheetProps = {
   footer?: ReactNode;
   children: ReactNode;
   onClose?: () => void;
-  /** Without a scrim the page behind stays usable (the chat dock). */
+  /**
+   * Modal (the default): a scrim covers the page, the focus moves in and stays inside, Esc
+   * closes, and the focus returns to the trigger. Without it the page behind stays usable
+   * (e.g. a docked side panel) and nothing is trapped.
+   */
   modal?: boolean;
   width?: number;
 };
 
+/**
+ * A panel from the edge. It renders into the overlay host of its palette root, so a sheet
+ * opened inside a scrolled or transformed panel still covers the viewport.
+ */
 export function Sheet({
   open,
   side = "right",
@@ -212,93 +222,106 @@ export function Sheet({
   width,
 }: SheetProps) {
   const { t } = useText();
+  const titleId = useId();
+  const { markerRef, host, shown, ref, onKeyDown } = useOverlay(open, onClose, {
+    modal,
+    portal: true,
+  });
   if (!open) return null;
   return (
-    <>
-      {modal ? <div className="t-scrim" aria-hidden="true" onClick={onClose} /> : null}
-      <section
-        className={`t-sheet t-sheet--${side}`}
-        role={modal ? "dialog" : "complementary"}
-        aria-modal={modal || undefined}
-        aria-label={typeof title === "string" ? title : undefined}
-        style={width && side === "right" ? { width } : undefined}
-      >
-        {side === "bottom" ? <div className="t-sheet__grip" aria-hidden="true" /> : null}
-        <header className="t-sheet__head">
-          <div className="t-stack" style={{ gap: 2, flex: 1, minWidth: 0 }}>
-            <span className="t-h3 t-wrap">{title}</span>
-            {meta ? <span className="t-meta t-wrap">{meta}</span> : null}
-          </div>
-          {actions}
-          {onClose ? (
-            <IconButton icon="close" label={t("primitives.overlay.close")} onClick={onClose} />
-          ) : null}
-        </header>
-        <div className="t-sheet__body">{children}</div>
-        {footer ? <footer className="t-sheet__foot">{footer}</footer> : null}
-      </section>
-    </>
+    <OverlayLayer markerRef={markerRef} host={host} portal>
+      {shown ? (
+        <>
+          {modal ? <div className="t-scrim" aria-hidden="true" onClick={onClose} /> : null}
+          {/* Esc and the Tab trap belong to the overlay as a whole, not to one control. */}
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+          <section
+            ref={ref as RefObject<HTMLElement>}
+            className={`t-sheet t-sheet--${side}`}
+            role={modal ? "dialog" : "complementary"}
+            aria-modal={modal || undefined}
+            aria-labelledby={titleId}
+            tabIndex={-1}
+            style={width && side === "right" ? { width } : undefined}
+            onKeyDown={onKeyDown}
+          >
+            {side === "bottom" ? <div className="t-sheet__grip" aria-hidden="true" /> : null}
+            <header className="t-sheet__head">
+              <div className="t-stack" style={{ gap: 2, flex: 1, minWidth: 0 }}>
+                <h2 id={titleId} className="t-h3 t-wrap t-overlay__title">
+                  {title}
+                </h2>
+                {meta ? <span className="t-meta t-wrap">{meta}</span> : null}
+              </div>
+              {actions}
+              {onClose ? (
+                <IconButton icon="close" label={t("primitives.overlay.close")} onClick={onClose} />
+              ) : null}
+            </header>
+            <div className="t-sheet__body">{children}</div>
+            {footer ? <footer className="t-sheet__foot">{footer}</footer> : null}
+          </section>
+        </>
+      ) : null}
+    </OverlayLayer>
   );
 }
 
-export function Dialog({
-  open,
-  title,
-  children,
-  footer,
-  onClose,
-}: {
+export type DialogProps = {
   open: boolean;
   title: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
+  /** Esc, a press on the scrim and the close button. */
   onClose?: () => void;
-}) {
+  /** In the page flow instead of an overlay: no scrim, no focus trap (patterns, stories). */
+  inline?: boolean;
+};
+
+/**
+ * A centred dialog. Opening moves the focus in (an element with `data-autofocus` or
+ * `autoFocus` first), Tab stays inside, Esc and the scrim close through `onClose`, and the
+ * focus returns to the control that opened it.
+ */
+export function Dialog({ open, title, children, footer, onClose, inline }: DialogProps) {
   const { t } = useText();
+  const titleId = useId();
+  const layered = !inline;
+  const { markerRef, host, shown, ref, onKeyDown } = useOverlay(open, onClose, {
+    modal: layered,
+    portal: layered,
+  });
   if (!open) return null;
   return (
-    <>
-      <div className="t-scrim" aria-hidden="true" onClick={onClose} />
-      <section
-        className="t-dialog t-float"
-        role="dialog"
-        aria-modal="true"
-        aria-label={typeof title === "string" ? title : undefined}
-      >
-        <header className="t-sheet__head">
-          <span className="t-h3" style={{ flex: 1 }}>
-            {title}
-          </span>
-          {onClose ? (
-            <IconButton icon="close" label={t("primitives.overlay.close")} onClick={onClose} />
-          ) : null}
-        </header>
-        <div className="t-sheet__body">{children}</div>
-        {footer ? <footer className="t-sheet__foot">{footer}</footer> : null}
-      </section>
-    </>
-  );
-}
-
-export function Toast({
-  tone = "neutral",
-  children,
-  action,
-}: {
-  tone?: "neutral" | "ok" | "bad";
-  children: ReactNode;
-  action?: ReactNode;
-}) {
-  return (
-    <div className="t-toast" role="status">
-      <Icon
-        name={tone === "ok" ? "check" : tone === "bad" ? "error" : "info"}
-        size={16}
-        className={tone === "neutral" ? undefined : `t-${tone}`}
-      />
-      <span>{children}</span>
-      {action}
-    </div>
+    <OverlayLayer markerRef={markerRef} host={host} portal={layered}>
+      {shown ? (
+        <>
+          {layered ? <div className="t-scrim" aria-hidden="true" onClick={onClose} /> : null}
+          {/* Esc and the Tab trap belong to the overlay as a whole, not to one control. */}
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+          <section
+            ref={ref as RefObject<HTMLElement>}
+            className={inline ? "t-dialog t-dialog--inline t-float" : "t-dialog t-float"}
+            role="dialog"
+            aria-modal={layered || undefined}
+            aria-labelledby={titleId}
+            tabIndex={-1}
+            onKeyDown={layered ? onKeyDown : undefined}
+          >
+            <header className="t-sheet__head">
+              <h2 id={titleId} className="t-h3 t-overlay__title" style={{ flex: 1 }}>
+                {title}
+              </h2>
+              {onClose ? (
+                <IconButton icon="close" label={t("primitives.overlay.close")} onClick={onClose} />
+              ) : null}
+            </header>
+            <div className="t-sheet__body">{children}</div>
+            {footer ? <footer className="t-sheet__foot">{footer}</footer> : null}
+          </section>
+        </>
+      ) : null}
+    </OverlayLayer>
   );
 }
 
