@@ -39,7 +39,7 @@ older=$(git -C "$pub" rev-parse HEAD)
 git -C "$pub" commit -qm base --allow-empty
 base=$(git -C "$pub" rev-parse HEAD)
 git -C "$pub" add .
-git -C "$pub" commit -qm 'curated release'
+git -C "$pub" commit -qm 'release commit'
 head=$(git -C "$pub" rev-parse HEAD)
 tree=$(git -C "$pub" rev-parse 'HEAD^{tree}')
 squash=$(git -C "$pub" commit-tree "$tree" -p "$base" -m 'squash release')
@@ -172,7 +172,7 @@ version=0.2.0
 printf '{"version":"%s"}\n' "$version" > "$pub/package.json"
 git -C "$pub" add package.json
 tree=$(git -C "$pub" write-tree)
-head=$(git -C "$pub" commit-tree "$tree" -p "$base" -m 'curated stable release')
+head=$(git -C "$pub" commit-tree "$tree" -p "$base" -m 'stable release commit')
 squash=$(git -C "$pub" commit-tree "$tree" -p "$base" -m 'squash stable release')
 git -C "$pub" reset -q --hard "$squash"
 write_pr_fixtures
